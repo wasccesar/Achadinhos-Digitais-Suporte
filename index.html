@@ -675,6 +675,16 @@ hr.div{border:none;border-top:1px solid var(--border);margin:18px 0;}
 <div class="toast" id="toast"></div>
 
 <!-- Firebase SDK -->
+
+<script>
+// Show client screen immediately - module script will override if needed
+document.addEventListener('DOMContentLoaded', function() {
+  var screens = document.querySelectorAll('.screen');
+  screens.forEach(function(s) { s.classList.remove('active'); });
+  var client = document.getElementById('screen-client');
+  if(client) client.classList.add('active');
+});
+</script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
