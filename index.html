@@ -29,6 +29,57 @@ input[type=file]{color:var(--text2);}
 input[type=file]::file-selector-button{background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:7px 14px;border-radius:8px;font-family:var(--font);font-size:12px;cursor:pointer;margin-right:10px;transition:.2s;}
 input[type=file]::file-selector-button:hover{border-color:var(--purple2);color:var(--purple3);}
 
+
+/* ── CLIENT PORTAL ── */
+#screen-portal{align-items:flex-start;justify-content:center;background:var(--bg);padding:0;}
+#screen-portal::after{content:'';position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(rgba(124,58,237,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(124,58,237,.04) 1px,transparent 1px);background-size:48px 48px;z-index:0;}
+.portal-wrap{position:relative;z-index:2;width:100%;max-width:520px;margin:0 auto;padding:0 0 40px;}
+.portal-header{background:linear-gradient(135deg,var(--purple) 0%,#3b0d8a 100%);padding:28px 24px 24px;display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden;}
+.portal-header::before{content:'';position:absolute;top:-60px;right:-60px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.05);}
+.portal-user-info{display:flex;align-items:center;gap:14px;position:relative;z-index:1;}
+.portal-avatar{width:52px;height:52px;border-radius:50%;border:2.5px solid rgba(255,255,255,.35);object-fit:cover;flex-shrink:0;}
+.portal-avatar-init{width:52px;height:52px;border-radius:50%;border:2.5px solid rgba(255,255,255,.35);background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;}
+.portal-name{font-size:17px;font-weight:800;color:#fff;}
+.portal-email{font-size:11px;color:rgba(255,255,255,.6);margin-top:2px;}
+.portal-signout{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.8);padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;font-family:var(--font);font-weight:600;transition:.2s;position:relative;z-index:1;}
+.portal-signout:hover{background:rgba(255,255,255,.2);}
+.portal-section{padding:20px 20px 0;}
+.portal-section-title{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--text3);font-family:var(--mono);margin-bottom:14px;}
+.portal-new-btn{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,rgba(124,58,237,.15),rgba(124,58,237,.05));border:1px solid rgba(124,58,237,.35);border-radius:14px;padding:16px 18px;cursor:pointer;transition:.2s;text-align:left;font-family:var(--font);color:var(--text);width:100%;margin-bottom:10px;}
+.portal-new-btn:hover{border-color:var(--purple2);transform:translateY(-1px);box-shadow:0 6px 24px rgba(124,58,237,.2);}
+.portal-new-btn .pnb-icon{font-size:28px;flex-shrink:0;}
+.portal-new-btn .pnb-text{flex:1;}
+.portal-new-btn .pnb-title{font-size:14px;font-weight:700;}
+.portal-new-btn .pnb-sub{font-size:11px;color:var(--text3);margin-top:2px;}
+.portal-ticket-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:0;margin-bottom:10px;cursor:pointer;transition:.2s;overflow:hidden;}
+.portal-ticket-card:hover{border-color:var(--purple2);transform:translateY(-1px);}
+.ptc-top{padding:14px 16px 10px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+.ptc-info{flex:1;}
+.ptc-id{font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:4px;}
+.ptc-title{font-weight:700;font-size:14px;margin-bottom:3px;}
+.ptc-prod{font-size:11px;color:var(--text3);}
+.ptc-status{flex-shrink:0;}
+.ptc-msg-preview{padding:10px 16px 12px;background:var(--bg2);border-top:1px solid var(--border);font-size:12px;color:var(--text2);line-height:1.5;display:flex;align-items:center;gap:8px;}
+.ptc-msg-preview .pm-avatar{font-size:14px;flex-shrink:0;}
+.ptc-msg-preview .pm-text{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ptc-msg-preview .pm-time{font-size:10px;color:var(--text3);font-family:var(--mono);flex-shrink:0;}
+.ptc-unread-dot{width:8px;height:8px;border-radius:50%;background:var(--purple2);flex-shrink:0;box-shadow:0 0 8px var(--pglow);}
+.portal-empty{text-align:center;padding:40px 20px;color:var(--text3);}
+.portal-empty .pe-icon{font-size:48px;margin-bottom:12px;}
+.portal-empty p{font-size:13px;line-height:1.6;}
+/* Popup notification overlay */
+.notif-popup{position:fixed;top:20px;right:20px;z-index:9999;display:flex;align-items:flex-start;gap:12px;background:var(--surface);border:1px solid rgba(124,58,237,.4);border-radius:16px;padding:16px;box-shadow:0 8px 40px rgba(0,0,0,.5),0 0 0 1px rgba(124,58,237,.1);max-width:320px;animation:slideInRight .3s cubic-bezier(.34,1.56,.64,1);}
+@keyframes slideInRight{from{opacity:0;transform:translateX(100px)}to{opacity:1;transform:none}}
+.notif-popup .np-icon{font-size:26px;flex-shrink:0;}
+.notif-popup .np-body{flex:1;}
+.notif-popup .np-title{font-size:13px;font-weight:700;}
+.notif-popup .np-sub{font-size:12px;color:var(--text3);margin-top:3px;}
+.notif-popup .np-close{font-size:16px;cursor:pointer;color:var(--text3);padding:2px 4px;line-height:1;}
+.notif-popup .np-close:hover{color:var(--text);}
+/* Image upload tip banner */
+.img-tip-banner{background:rgba(245,197,24,.07);border:1px solid rgba(245,197,24,.25);border-radius:12px;padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text2);line-height:1.5;}
+.img-tip-banner .itb-icon{font-size:22px;flex-shrink:0;}
+
 /* ── LOGIN ── */
 #screen-login{align-items:center;justify-content:center;padding:24px;}
 .login-card{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:44px 36px;box-shadow:0 0 80px rgba(124,58,237,.12),0 40px 80px rgba(0,0,0,.5);position:relative;}
@@ -395,7 +446,7 @@ hr.div{border:none;border-top:1px solid var(--border);margin:18px 0;}
       </div>
       <div style="padding:10px 16px 16px;position:relative;z-index:2">
         <div style="height:1px;background:var(--border);margin-bottom:12px"></div>
-        <button onclick="signInWithGoogle()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;border:1.5px solid #e0e0e0;color:#3c3c3c;padding:12px 16px;border-radius:12px;font-size:14px;font-weight:600;font-family:var(--font);cursor:pointer;transition:.2s;box-shadow:0 1px 6px rgba(0,0,0,.15)" onmouseover="this.style.boxShadow='0 3px 12px rgba(0,0,0,.2)'" onmouseout="this.style.boxShadow='0 1px 6px rgba(0,0,0,.15)'">
+        <button onclick="currentGoogleUser?showGoogleDashboard(currentGoogleUser):signInWithGoogle()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;border:1.5px solid #e0e0e0;color:#3c3c3c;padding:12px 16px;border-radius:12px;font-size:14px;font-weight:600;font-family:var(--font);cursor:pointer;transition:.2s;box-shadow:0 1px 6px rgba(0,0,0,.15)" onmouseover="this.style.boxShadow='0 3px 12px rgba(0,0,0,.2)'" onmouseout="this.style.boxShadow='0 1px 6px rgba(0,0,0,.15)'">
           <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z"/></svg>
           Continuar com Google — ver meus chamados
         </button>
@@ -404,6 +455,53 @@ hr.div{border:none;border-top:1px solid var(--border);margin:18px 0;}
     </div>
   </div>
   <div class="internal-link-area"><button onclick="goLogin()">área interna</button></div>
+
+
+<!-- CLIENT PORTAL SCREEN (logged in with Google) -->
+<div id="screen-portal" class="screen">
+  <div class="portal-wrap">
+    <!-- Header -->
+    <div class="portal-header">
+      <div class="portal-user-info">
+        <img id="prt-photo" src="" class="portal-avatar" onerror="this.style.display='none';document.getElementById('prt-initials').style.display='flex'"/>
+        <div id="prt-initials" class="portal-avatar-init" style="display:none">?</div>
+        <div>
+          <div class="portal-name" id="prt-name">—</div>
+          <div class="portal-email" id="prt-email">—</div>
+        </div>
+      </div>
+      <button class="portal-signout" onclick="signOutGoogle()">Sair</button>
+    </div>
+
+    <!-- New ticket buttons -->
+    <div class="portal-section" style="margin-top:20px">
+      <div class="portal-section-title">Preciso de ajuda com...</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button class="portal-new-btn" onclick="startTicketPortal('suporte')">
+          <span class="pnb-icon">🛠️</span>
+          <div class="pnb-text"><div class="pnb-title">Suporte Técnico</div><div class="pnb-sub">Erro, produto não funciona</div></div>
+        </button>
+        <button class="portal-new-btn" onclick="startTicketPortal('resgatar')">
+          <span class="pnb-icon">🎁</span>
+          <div class="pnb-text"><div class="pnb-title">Resgatar Produto</div><div class="pnb-sub">Gemini, ChatGPT, etc.</div></div>
+        </button>
+        <button class="portal-new-btn" onclick="startTicketPortal('renovacao')">
+          <span class="pnb-icon">🔄</span>
+          <div class="pnb-text"><div class="pnb-title">Renovar Plano</div><div class="pnb-sub">Mensal ou anual</div></div>
+        </button>
+        <button class="portal-new-btn" onclick="startTicketPortal('duvida')">
+          <span class="pnb-icon">❓</span>
+          <div class="pnb-text"><div class="pnb-title">Dúvida Geral</div><div class="pnb-sub">Outra solicitação</div></div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Tickets list -->
+    <div class="portal-section" style="margin-top:22px">
+      <div class="portal-section-title">Meus Chamados</div>
+      <div id="prt-tickets-list"></div>
+    </div>
+  </div>
 </div>
 
 
@@ -467,7 +565,7 @@ hr.div{border:none;border-top:1px solid var(--border);margin:18px 0;}
       <div class="fgroup"><label>📱 Seu WhatsApp</label><input type="tel" id="tk-email" placeholder="Ex: (11) 99999-9999" inputmode="numeric"/></div>
       <div class="fgroup"><label>📦 Qual é o seu produto?</label><div class="prod-grid" id="tk-prod-grid"></div></div>
       <div class="fgroup"><label>💬 Conta o que aconteceu</label><textarea id="tk-desc" placeholder="Descreva seu problema com detalhes. Quanto mais info, mais rápido te ajudamos! 😊"></textarea></div>
-      <div class="fgroup"><label>📎 Anexar imagem ou print (opcional)</label><input type="file" id="tk-file" accept="image/*,.pdf" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:10px;font-family:var(--font);font-size:13px;cursor:pointer;"/><div style="font-size:11px;color:var(--text3);margin-top:5px">📷 Fotos, prints, comprovantes — máx. 5MB</div></div>
+      <div id="img-tip-banner" class="img-tip-banner" style="display:none"><span class="itb-icon">📸</span><div><strong style="color:var(--yellow)">Dica importante:</strong> Para problemas técnicos, <strong>enviar um print ou foto</strong> do erro ajuda o atendente a resolver muito mais rápido!</div></div><div class="fgroup"><label>📎 Anexar imagem ou print <span id="img-optional-label">(opcional)</span></label><input type="file" id="tk-file" accept="image/*,.pdf" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:10px;font-family:var(--font);font-size:13px;cursor:pointer;"/><div style="font-size:11px;color:var(--text3);margin-top:5px">📷 Fotos, prints, comprovantes — máx. 5MB</div></div>
       <button class="submit-btn" onclick="submitTicket()">📩 Enviar Pedido de Suporte</button>
       <div style="text-align:center;font-size:11px;color:var(--text3);margin-top:10px">✅ Não precisa criar conta. Resposta em breve!</div>
     </div>
@@ -566,27 +664,7 @@ hr.div{border:none;border-top:1px solid var(--border);margin:18px 0;}
 </div>
 
 <!-- Google Portal Overlay -->
-<div class="overlay" id="ov-google-portal">
-  <div class="modal" style="max-width:480px">
-    <div class="modal-head" style="background:linear-gradient(135deg,var(--purple),#3b0d8a);border-radius:16px 16px 0 0;padding:20px 24px">
-      <div style="display:flex;align-items:center;gap:14px">
-        <img id="google-portal-photo" src="" style="width:46px;height:46px;border-radius:50%;border:2px solid rgba(255,255,255,.3);object-fit:cover" onerror="this.style.display='none'"/>
-        <div>
-          <div id="google-portal-name" style="font-weight:800;font-size:16px;color:#fff"></div>
-          <div id="google-portal-email" style="font-size:11px;color:rgba(255,255,255,.6)"></div>
-        </div>
-      </div>
-      <button class="modal-close" onclick="closeOv('ov-google-portal')" style="color:#fff;opacity:.7">×</button>
-    </div>
-    <div class="modal-body">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-        <div style="font-size:13px;font-weight:700">Meus Chamados</div>
-        <button onclick="signOutGoogle()" style="background:none;border:1px solid var(--border);color:var(--text3);padding:5px 12px;border-radius:8px;font-size:11px;cursor:pointer;font-family:var(--font)">Sair</button>
-      </div>
-      <div id="google-portal-tickets"></div>
-    </div>
-  </div>
-</div>
+<!-- google portal overlay removed - now uses screen-portal -->
 
 <!-- Withdrawal Modal -->
 <div class="overlay" id="ov-withdrawal">
@@ -870,6 +948,7 @@ window.signInWithGoogle = async function() {
       photo: user.photoURL,
       lastLogin: new Date().toISOString()
     }, {merge: true});
+    await requestNotifPermission();
     showGoogleDashboard(user);
   } catch(e) {
     console.warn('Google sign-in error', e);
@@ -878,49 +957,203 @@ window.signInWithGoogle = async function() {
   }
 };
 
-window.signOutGoogle = async function() {
-  try { await signOut(auth); } catch(e){}
-  showScreen('client');
-};
+// Current Google user
+let currentGoogleUser = null;
+let _lastSeenMsgCounts = {}; // ticketId -> msg count seen by client
 
 function showGoogleDashboard(user) {
-  // Find tickets linked to this google email
-  const myTickets = TICKETS.filter(t => 
+  currentGoogleUser = user;
+  const myTickets = TICKETS.filter(t =>
     (t.googleUid && t.googleUid === user.uid) ||
     (t.clientEmail && t.clientEmail.toLowerCase() === user.email.toLowerCase())
   );
-  showGooglePortal(user, myTickets);
+  showPortalScreen(user, myTickets);
 }
 
-function showGooglePortal(user, tickets) {
-  // Render a screen overlay showing the user's tickets
-  document.getElementById('google-portal-name').textContent = user.displayName || user.email;
-  document.getElementById('google-portal-email').textContent = user.email;
-  if(user.photoURL) document.getElementById('google-portal-photo').src = user.photoURL;
-  
-  const list = document.getElementById('google-portal-tickets');
-  const statusLabel = {open:'⏳ Aguardando',claimed:'🎧 Em Atendimento',done:'✅ Finalizado'};
-  const statusColor = {open:'var(--yellow)',claimed:'var(--green)',done:'#94a3b8'};
-  if(tickets.length === 0) {
-    list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text3);font-size:13px">📭 Nenhum chamado encontrado.<br><br>Abra um chamado no chat principal.</div>';
+function showPortalScreen(user, tickets) {
+  // Fill header
+  const nameEl = document.getElementById('prt-name');
+  const emailEl = document.getElementById('prt-email');
+  const photoEl = document.getElementById('prt-photo');
+  const initEl = document.getElementById('prt-initials');
+  if(nameEl) nameEl.textContent = user.displayName || user.email;
+  if(emailEl) emailEl.textContent = user.email;
+  if(photoEl && user.photoURL) {
+    photoEl.src = user.photoURL;
+    photoEl.style.display = '';
+    if(initEl) initEl.style.display = 'none';
+  } else if(initEl) {
+    initEl.textContent = (user.displayName||user.email||'?')[0].toUpperCase();
+    initEl.style.display = 'flex';
+    if(photoEl) photoEl.style.display = 'none';
+  }
+
+  // Render tickets sorted by most recent activity
+  const listEl = document.getElementById('prt-tickets-list');
+  if(!listEl) return;
+
+  const sorted = [...tickets].sort((a,b)=>{
+    const aLast = a.messages&&a.messages.length ? new Date(a.messages[a.messages.length-1].ts) : new Date(a.createdAt);
+    const bLast = b.messages&&b.messages.length ? new Date(b.messages[b.messages.length-1].ts) : new Date(b.createdAt);
+    return bLast - aLast;
+  });
+
+  const statusLabel = {open:'⏳ Aguardando atendente',claimed:'🎧 Em Atendimento',done:'✅ Finalizado'};
+  const statusColor = {open:'var(--yellow)',claimed:'var(--purple3)',done:'#64748b'};
+
+  if(sorted.length === 0) {
+    listEl.innerHTML = '<div class="portal-empty"><div class="pe-icon">📭</div><p>Você ainda não tem chamados.<br>Use os botões acima para abrir um!</p></div>';
   } else {
-    list.innerHTML = tickets.map(t => {
+    listEl.innerHTML = sorted.map(t => {
       const prods = (t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join(', ');
-      return '<div class="ticket-card-client" onclick="openClientChat(&quot;'+t.id+'&quot;,&quot;google&quot;)">'
-        +'<div class="tc-left">'
-        +'<div class="tc-id">TICKET '+t.id+' · '+fmtDate(t.createdAt)+'</div>'
-        +'<div class="tc-title">'+prods+'</div>'
-        +'<div class="tc-prod" style="color:'+statusColor[t.status]+'">'+statusLabel[t.status]+'</div>'
-        +'</div><div class="tc-arrow">→</div></div>';
+      const msgs = t.messages||[];
+      const lastMsg = msgs.length ? msgs[msgs.length-1] : null;
+      const seenCount = _lastSeenMsgCounts[t.id]||0;
+      const hasUnread = msgs.filter(m=>m.isAgent).length > seenCount && t.status !== 'open';
+
+      const preview = lastMsg
+        ? '<div class="ptc-msg-preview">'
+          +(hasUnread ? '<div class="ptc-unread-dot"></div>' : '<span class="pm-avatar">'+(lastMsg.isAgent?'🎧':'👤')+'</span>')
+          +'<div class="pm-text">'+(lastMsg.isAgent?'<strong style="color:var(--purple3)">Atendente:</strong> ':'')+lastMsg.text+'</div>'
+          +'<div class="pm-time">'+fmtDate(lastMsg.ts)+'</div>'
+          +'</div>'
+        : '<div class="ptc-msg-preview"><span class="pm-avatar">⏳</span><div class="pm-text" style="color:var(--text3)">Aguardando atendente...</div></div>';
+
+      return '<div class="portal-ticket-card" onclick="openClientChatPortal(''+t.id+'')">'
+        +'<div class="ptc-top">'
+        +'<div class="ptc-info">'
+        +'<div class="ptc-id">TICKET '+t.id+' · '+fmtDate(t.createdAt)+'</div>'
+        +'<div class="ptc-title">'+prods+'</div>'
+        +'<div class="ptc-prod">'+t.type+'</div>'
+        +'</div>'
+        +'<div class="ptc-status"><span class="badge" style="color:'+statusColor[t.status]+';background:transparent;border-color:'+statusColor[t.status]+'20">'+statusLabel[t.status]+'</span></div>'
+        +'</div>'
+        +preview
+        +'</div>';
     }).join('');
   }
-  openOv('ov-google-portal');
+
+  showScreen('portal');
+}
+
+function openClientChatPortal(ticketId) {
+  const t = TICKETS.find(t=>t.id===ticketId);
+  if(!t) return;
+  // Mark as seen
+  const agentMsgs = (t.messages||[]).filter(m=>m.isAgent).length;
+  _lastSeenMsgCounts[ticketId] = agentMsgs;
+  openClientChat(ticketId, 'google');
+}
+
+window.signOutGoogle = async function() {
+  try { await signOut(auth); } catch(e){}
+  currentGoogleUser = null;
+  showScreen('client');
+};
+
+// Notification system
+let _notifPermission = false;
+
+async function requestNotifPermission() {
+  if(!('Notification' in window)) return;
+  if(Notification.permission === 'granted') { _notifPermission = true; return; }
+  if(Notification.permission !== 'denied') {
+    const perm = await Notification.requestPermission();
+    _notifPermission = perm === 'granted';
+  }
+}
+
+function showNotifPopup(title, body, onClick) {
+  // Remove existing
+  const existing = document.getElementById('notif-popup-el');
+  if(existing) existing.remove();
+
+  const el = document.createElement('div');
+  el.id = 'notif-popup-el';
+  el.className = 'notif-popup';
+  el.innerHTML = '<div class="np-icon">🔔</div><div class="np-body"><div class="np-title">'+title+'</div><div class="np-sub">'+body+'</div></div><div class="np-close" onclick="document.getElementById('notif-popup-el').remove()">✕</div>';
+  el.style.cursor = onClick ? 'pointer' : 'default';
+  if(onClick) el.addEventListener('click', function(e){ if(!e.target.classList.contains('np-close')) onClick(); });
+  document.body.appendChild(el);
+  setTimeout(()=>{ if(el.parentNode) el.remove(); }, 6000);
+
+  // Also send system notification if permission granted
+  if(_notifPermission && Notification.permission === 'granted') {
+    try { new Notification(title, {body, icon:'/favicon.ico'}); } catch(e){}
+  }
+}
+
+// Watch for new agent messages on client's tickets
+let _prevMsgCounts = {};
+function checkForNewAgentMessages() {
+  if(!currentGoogleUser) return;
+  const myTickets = TICKETS.filter(t =>
+    (t.googleUid && t.googleUid === currentGoogleUser.uid) ||
+    (t.clientEmail && t.clientEmail.toLowerCase() === currentGoogleUser.email.toLowerCase())
+  );
+  myTickets.forEach(t => {
+    const agentMsgs = (t.messages||[]).filter(m=>m.isAgent);
+    const prev = _prevMsgCounts[t.id] || 0;
+    if(agentMsgs.length > prev) {
+      const lastMsg = agentMsgs[agentMsgs.length-1];
+      const prods = (t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join(', ');
+      showNotifPopup('💬 Resposta no seu chamado!', prods+': '+lastMsg.text.slice(0,60), ()=>openClientChatPortal(t.id));
+      _prevMsgCounts[t.id] = agentMsgs.length;
+    } else if(prev===0) {
+      _prevMsgCounts[t.id] = agentMsgs.length;
+    }
+  });
+}
+
+// Agent/admin notification when new ticket is created
+function notifyStaffNewTicket(ticket) {
+  const prods = (ticket.products||[ticket.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join(', ');
+  showNotifPopup('🎫 Novo chamado chegou!', ticket.clientName+' · '+prods, ()=>{if(currentUser)navTo('admin-tickets');});
+  if(_notifPermission && Notification.permission === 'granted') {
+    try { new Notification('🎫 Novo chamado!', {body: ticket.clientName+' abriu: '+prods}); } catch(e){}
+  }
+}
+
+// Watch for new tickets (for agents/admin)
+let _prevTicketCount = 0;
+function checkForNewTickets() {
+  if(!currentUser) return;
+  const openCount = TICKETS.filter(t=>t.status==='open').length;
+  if(_prevTicketCount > 0 && openCount > _prevTicketCount) {
+    const newest = TICKETS.filter(t=>t.status==='open').slice(-1)[0];
+    if(newest) notifyStaffNewTicket(newest);
+  }
+  _prevTicketCount = openCount;
+}
+
+// Periodic check
+setInterval(()=>{
+  checkForNewAgentMessages();
+  checkForNewTickets();
+}, 3000);
+
+// startTicket from portal context  
+function startTicketPortal(type) {
+  pendingType = type;
+  const labels = {suporte:'🛠️ Suporte Técnico',resgatar:'🎁 Resgatar Produto',renovacao:'🔄 Renovar Assinatura',cancelamento:'❌ Cancelamento',duvida:'❓ Dúvida Geral'};
+  document.getElementById('ov-ticket-title').textContent = '📩 '+labels[type];
+  // Pre-fill name/email if Google user
+  if(currentGoogleUser) {
+    const nameEl = document.getElementById('tk-name');
+    const emailEl = document.getElementById('tk-email');
+    if(nameEl && !nameEl.value) nameEl.value = currentGoogleUser.displayName||'';
+    // Don't overwrite phone if already set
+  }
+  // Show image tip for suporte
+  const banner = document.getElementById('img-tip-banner');
+  if(banner) banner.style.display = type==='suporte' ? 'flex' : 'none';
+  openOv('ov-ticket');
 }
 
 // Check if user was already signed in (page refresh)
 onAuthStateChanged(auth, user => {
   if(user) {
-    // Re-attach listener after tickets load
+    currentGoogleUser = user;
     setTimeout(()=>showGoogleDashboard(user), 1500);
   }
 });
@@ -937,6 +1170,7 @@ onAuthStateChanged(auth, user => {
   } else if(hash==='#login'){
     showScreen('login');
   } else {
+    // Show client screen by default; onAuthStateChanged will upgrade to portal if logged in
     document.getElementById('screen-client').classList.add('active');
   }
 })();
@@ -983,6 +1217,14 @@ function startTicket(type){
   pendingType=type;
   const labels={suporte:'🛠️ Suporte Técnico',resgatar:'🎁 Resgatar Produto',renovacao:'🔄 Renovar Assinatura',cancelamento:'❌ Cancelamento',duvida:'❓ Dúvida Geral'};
   document.getElementById('ov-ticket-title').textContent='📩 '+labels[type];
+  // Show image tip for tech support
+  const banner = document.getElementById('img-tip-banner');
+  if(banner) banner.style.display = type==='suporte' ? 'flex' : 'none';
+  // Pre-fill if Google user
+  if(currentGoogleUser) {
+    const nameEl = document.getElementById('tk-name');
+    if(nameEl && !nameEl.value) nameEl.value = currentGoogleUser.displayName||'';
+  }
   openOv('ov-ticket');
 }
 
@@ -1229,8 +1471,11 @@ function submitTicket(){
     if(window._fbFinish) window._fbFinish(name,email,desc,attachment,fileInput);
     else {
       const ticketId=genId(),ticketCode=genCode();
-      TICKETS.unshift({id:ticketId,code:ticketCode,clientName:name,clientEmail:email,products:[...selectedProducts],product:selectedProducts[0],type:pendingType||'duvida',desc,attachment:attachment||null,status:'open',agent:null,createdAt:new Date().toISOString(),messages:[]});
+      const newTicket={id:ticketId,code:ticketCode,clientName:name,clientEmail:email,googleUid:currentGoogleUser?currentGoogleUser.uid:null,products:[...selectedProducts],product:selectedProducts[0],type:pendingType||'duvida',desc,attachment:attachment||null,status:'open',agent:null,createdAt:new Date().toISOString(),messages:[]};
+      TICKETS.unshift(newTicket);
+      notifyStaffNewTicket(newTicket);
       closeOv('ov-ticket');showTicketCode(ticketCode);
+      if(currentGoogleUser) setTimeout(()=>showGoogleDashboard(currentGoogleUser),800);
       document.getElementById('tk-name').value='';document.getElementById('tk-email').value='';document.getElementById('tk-desc').value='';
       if(fileInput)fileInput.value='';selectedProducts=[];pendingType='';
       document.querySelectorAll('.prod-card').forEach(c=>c.classList.remove('sel'));
@@ -1335,7 +1580,6 @@ const MISTIC_CLIENT_SECRET = 'cs_hz69fztetgpbi51tfad7c25fg';
 
 async function misticPayWithdraw(pixKey, amount, name, pixKeyType) {
   try {
-    // Detect pix key type if not provided
     if(!pixKeyType) {
       const cleaned = pixKey.replace(/[^0-9a-zA-Z@._\-]/g,'');
       if(/^\d{11}$/.test(cleaned)) pixKeyType = 'CPF';
@@ -1344,8 +1588,6 @@ async function misticPayWithdraw(pixKey, amount, name, pixKeyType) {
       else if(cleaned.includes('@')) pixKeyType = 'EMAIL';
       else pixKeyType = 'CHAVE_ALEATORIA';
     }
-
-    // Use MisticPay v1 API - POST /api/transactions/withdraw
     const payRes = await fetch('https://api.misticpay.com/api/transactions/withdraw', {
       method: 'POST',
       headers: {
@@ -1478,45 +1720,27 @@ function renderAdminWithdrawals() {
 
 function renderAgentProfile() {
   const me = getAgent(currentUser.id); if(!me) return;
-  const allDone = TICKETS.filter(t=>t.agent===me.id&&t.status==='done');
-  const total = allDone.reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0) + me.earnings;
-  const withdrawn = (WITHDRAWALS[me.id]||[]).filter(w=>w.status==='completed').reduce((s,w)=>s+w.amount,0);
-  const pending = (WITHDRAWALS[me.id]||[]).filter(w=>w.status==='pending').reduce((s,w)=>s+w.amount,0);
-  const available = total - withdrawn - pending;
-
   document.getElementById('ag-profile-content').innerHTML =
-    '<div style="max-width:560px">'
+    '<div style="max-width:500px">'
     +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:26px;margin-bottom:16px">'
     +'<div style="display:flex;align-items:center;gap:16px;margin-bottom:22px">'
     +'<div class="ag-avatar" style="width:60px;height:60px;font-size:22px">'+initials(me.name)+'</div>'
-    +'<div><div style="font-size:18px;font-weight:800">'+me.name+'</div>'
-    +'<div class="ag-login-tag" style="margin-top:4px">@'+me.login+'</div></div>'
+    +'<div><div style="font-size:18px;font-weight:800">'+me.name+'</div><div class="ag-login-tag" style="margin-top:4px">@'+me.login+'</div></div>'
     +'</div>'
-    +'<div style="font-size:10px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px">Produtos que atendo</div>'
-    +'<div style="display:flex;flex-wrap:wrap;gap:6px">'
+    +'<div style="font-size:10px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px">Produtos que atendo</div>'
+    +'<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:22px">'
     +me.products.map(pid=>{const p=getProd(pid);return p?'<span class="ag-prod-tag">'+p.emoji+' '+p.name+' '+p.plan+'</span>':'';}).join('')
     +'</div>'
     +'</div>'
-    +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">'
-    +'<div class="stat-box gold"><div class="s-label">Disponível p/ Saque</div><div class="s-val">'+fmtMoney(available)+'</div></div>'
-    +'<div class="stat-box green"><div class="s-label">Total Ganho</div><div class="s-val">'+fmtMoney(total)+'</div></div>'
-    +'<div class="stat-box purple"><div class="s-label">Já Sacado</div><div class="s-val">'+fmtMoney(withdrawn)+'</div></div>'
-    +'</div>'
     +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:26px">'
-    +'<div style="font-size:14px;font-weight:700;margin-bottom:6px">💳 Chave Pix para Saques</div>'
-    +'<div style="font-size:12px;color:var(--text3);margin-bottom:14px">Configure sua chave Pix para receber saques automáticos via MisticPay</div>'
-    +'<div style="display:grid;grid-template-columns:1fr 140px;gap:8px;margin-bottom:8px">'
+    +'<div style="font-size:14px;font-weight:700;margin-bottom:16px">💳 Chave Pix para Saques</div>'
+    +'<div style="font-size:12px;color:var(--text3);margin-bottom:12px">Informe sua chave Pix (CPF, telefone, e-mail ou chave aleatória)</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 130px;gap:8px;margin-bottom:8px">'
     +'<input id="pix-key-input" type="text" placeholder="Sua chave Pix..." value="'+(me.pixKey||'')+'" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:10px;font-size:13px;font-family:var(--font);outline:none"/>'
-    +'<select id="pix-key-type" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:10px;font-size:13px;font-family:var(--font);outline:none">'
-    +'<option value="CPF" '+(me.pixKeyType==='CPF'?'selected':'')+'>CPF</option>'
-    +'<option value="EMAIL" '+(me.pixKeyType==='EMAIL'?'selected':'')+'>E-mail</option>'
-    +'<option value="TELEFONE" '+(me.pixKeyType==='TELEFONE'?'selected':'')+'>Telefone</option>'
-    +'<option value="CNPJ" '+(me.pixKeyType==='CNPJ'?'selected':'')+'>CNPJ</option>'
-    +'<option value="CHAVE_ALEATORIA" '+(me.pixKeyType==='CHAVE_ALEATORIA'?'selected':'')+'>Aleatória</option>'
-    +'</select>'
+    +'<select id="pix-key-type" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:10px;font-size:13px;font-family:var(--font);outline:none"><option value="CPF" '+(me.pixKeyType===\'CPF\'?'selected':'')+'>CPF</option><option value="EMAIL" '+(me.pixKeyType===\'EMAIL\'?'selected':'')+'>E-mail</option><option value="TELEFONE" '+(me.pixKeyType===\'TELEFONE\'?'selected':'')+'>Telefone</option><option value="CNPJ" '+(me.pixKeyType===\'CNPJ\'?'selected':'')+'>CNPJ</option><option value="CHAVE_ALEATORIA" '+(me.pixKeyType===\'CHAVE_ALEATORIA\'?'selected':'')+'>Aleatória</option></select>'
     +'</div>'
     +'<button class="act-btn fill" onclick="savePixKey()" style="width:100%;padding:11px">Salvar Chave Pix</button>'
-    +(me.pixKey?'<div style="margin-top:10px;font-size:12px;color:var(--green)">✅ Chave cadastrada: <strong>'+me.pixKey+'</strong> ('+( me.pixKeyType||'auto')+')</div>':'')
+    +(me.pixKey?'<div style="margin-top:10px;font-size:12px;color:var(--green)">✅ Chave cadastrada: '+me.pixKey+'</div>':'')
     +'</div>'
     +'</div>';
 }
@@ -1529,7 +1753,7 @@ function savePixKey() {
   me.pixKey = key;
   me.pixKeyType = type;
   if(window._fbAddAgent) window._fbAddAgent();
-  toast('✅ Chave Pix salva! (' + type + ')');
+  toast('✅ Chave Pix salva! ('+type+')');
   renderAgentProfile();
 }
 
