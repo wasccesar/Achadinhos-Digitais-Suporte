@@ -703,6 +703,15 @@ const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
+// Expose globally so inline scripts can use them
+window._fbAuth = auth;
+window._fbGoogleProvider = googleProvider;
+window._fbReady = true;
+// Resolve any queued sign-in attempts
+if(window._fbSignInQueue) {
+  window._fbSignInQueue.forEach(fn => fn());
+  window._fbSignInQueue = [];
+}
 
 // ── Collections ──
 const ticketsCol = collection(db,'tickets');
@@ -774,14 +783,12 @@ function startTicketListener() {
   }, err => console.warn('ticket listener error', err));
 }
 
-// ── Firebase: expose signInWithPopup for use in inline script ──
-window._fbSignInWithPopup = async function() {
-  const result = await signInWithPopup(auth, googleProvider);
-  const user = result.user;
-  window._gUser = user;
-  const userRef = doc(db, 'clientUsers', user.uid);
-  await setDoc(userRef, {uid:user.uid,name:user.displayName,email:user.email,photo:user.photoURL,lastLogin:new Date().toISOString()},{merge:true});
-  return user;
+// ── Firebase: expose signInWithPopup (now also saves to Firestore) ──
+window._fbSaveGoogleUser = async function(user) {
+  try {
+    const userRef = doc(db, 'clientUsers', user.uid);
+    await setDoc(userRef, {uid:user.uid,name:user.displayName,email:user.email,photo:user.photoURL,lastLogin:new Date().toISOString()},{merge:true});
+  } catch(e) { console.warn('save google user error', e); }
 };
 
 // ── Override submitTicket to also save to Firestore ──
@@ -934,6 +941,24 @@ window._fbSendMsg = async function(id, text, sender) {
 };
 
 // ── Google Sign-In ──
+// ── Google Sign-In (works even before Firebase module loads) ──
+window._fbSignInQueue = [];
+window._fbSignInWithPopup = async function() {
+  // Wait for Firebase to be ready (max 8 seconds)
+  if(!window._fbReady) {
+    await new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => reject(new Error('Firebase não carregou. Verifique sua conexão.')), 8000);
+      window._fbSignInQueue.push(() => { clearTimeout(timeout); resolve(); });
+    });
+  }
+  const {signInWithPopup} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
+  const result = await signInWithPopup(window._fbAuth, window._fbGoogleProvider);
+  const user = result.user;
+  window._gUser = user;
+  if(window._fbSaveGoogleUser) await window._fbSaveGoogleUser(user);
+  return user;
+};
+
 window.signInWithGoogle = async function() {
   try {
     const result = await signInWithPopup(auth, googleProvider);
