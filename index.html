@@ -521,6 +521,7 @@ hr.div{border:none;border-top:1px solid var(--border);margin:18px 0;}
     <div id="page-admin-commissions" class="dash-page"><div class="page-title">Comissões</div><div class="page-sub">Valor por ticket finalizado</div><div class="comm-list" id="adm-comm-list"></div></div>
     <div id="page-admin-ranking" class="dash-page"><div class="page-title">Ranking</div><div class="page-sub">Disputa em tempo real</div><div class="rank-list" id="adm-rank-list"></div></div>
     <div id="page-admin-finance" class="dash-page"><div class="page-title">💰 Acerto de Contas</div><div class="page-sub">Marque os pagamentos feitos — saiba exatamente quanto ainda deve para cada atendente</div><div id="adm-finance-content"></div></div>
+    <div id="page-admin-config" class="dash-page"><div class="page-title">⚙️ Configurações</div><div class="page-sub">Gerencie suas credenciais de acesso</div><div id="adm-config-content"></div></div>
     <div id="page-agent-queue" class="dash-page"><div style="display:flex;align-items:center;gap:10px;margin-bottom:4px"><div class="page-title" style="margin:0">Fila de Tickets</div><div class="live-pill"><div class="live-dot"></div>AO VIVO</div></div><div class="page-sub">Pegue primeiro e ganhe a comissão!</div><div class="data-table" id="ag-queue-tbl"></div></div>
     <div id="page-agent-mine" class="dash-page"><div class="page-title">Meus Tickets</div><div class="page-sub">Em andamento</div><div class="data-table" id="ag-mine-tbl"></div></div>
     <div id="page-agent-done" class="dash-page"><div class="page-title">Finalizados</div><div class="page-sub">Histórico</div><div class="data-table" id="ag-done-tbl"></div></div>
@@ -715,6 +716,7 @@ async function loadConfig() {
     const snap = await getDoc(configDoc);
     if(snap.exists()){
       const d = snap.data();
+      if(d.adminCred) Object.assign(ADMIN_CRED, d.adminCred);
       if(d.commissions) COMMISSIONS = d.commissions;
       if(d.agents) AGENTS = d.agents;
     }
@@ -734,9 +736,14 @@ async function loadPayments() {
 }
 
 async function saveConfig() {
-  try { await setDoc(configDoc, { commissions: COMMISSIONS, agents: AGENTS }, {merge:true}); }
+  try { await setDoc(configDoc, { commissions: COMMISSIONS, agents: AGENTS, adminCred: ADMIN_CRED }, {merge:true}); }
   catch(e){ console.warn('saveConfig error',e); }
 }
+
+window._fbSaveAdminCreds = async function() {
+  try { await setDoc(configDoc, { adminCred: ADMIN_CRED }, {merge:true}); }
+  catch(e){ console.warn('Save admin creds error', e); }
+};
 
 async function savePayments() {
   try { await setDoc(paymentsDoc, { payments: PAYMENTS }); }
@@ -1101,7 +1108,7 @@ onAuthStateChanged(auth, user => {
 <script>
 const PRODUCTS=[{id:'gemini-m',name:'Gemini',plan:'Mensal',emoji:'🤖'},{id:'gemini-a',name:'Gemini',plan:'Anual',emoji:'🤖'},{id:'chatgpt-m',name:'ChatGPT',plan:'Mensal',emoji:'💬'},{id:'chatgpt-a',name:'ChatGPT',plan:'Anual',emoji:'💬'},{id:'capcut-m',name:'CapCut',plan:'Mensal',emoji:'🎬'},{id:'capcut-a',name:'CapCut',plan:'Anual',emoji:'🎬'},{id:'grok',name:'Super Grok',plan:'Único',emoji:'⚡'},{id:'perplexity',name:'Perplexity',plan:'Único',emoji:'🔍'}];
 let COMMISSIONS={'gemini-m':5,'gemini-a':15,'chatgpt-m':6,'chatgpt-a':18,'capcut-m':4,'capcut-a':12,'grok':10,'perplexity':8};
-const ADMIN_CRED={login:'admin',pass:'admin123'};
+let ADMIN_CRED={login:'admin',pass:'admin123',name:'Admin Principal'};
 let AGENTS=[{id:'ag1',name:'Carlos Henrique',email:'carlos@suporte.com',login:'carlos',pass:'1234',products:['gemini-m','gemini-a','chatgpt-m','chatgpt-a'],closed:12,earnings:187,perms:{phone:true,name:true,desc:true}},{id:'ag2',name:'Ana Beatriz',email:'ana@suporte.com',login:'ana',pass:'1234',products:['capcut-m','capcut-a','grok'],closed:9,earnings:134,perms:{phone:true,name:true,desc:true}},{id:'ag3',name:'Rafael Souza',email:'rafael@suporte.com',login:'rafael',pass:'1234',products:['chatgpt-m','chatgpt-a','perplexity','grok'],closed:7,earnings:98,perms:{phone:true,name:true,desc:true}}];
 let TICKETS=[{id:'T001',code:'DEMO1234',clientName:'Maria Santos',clientEmail:'(11) 99887-6655',products:['gemini-m'],product:'gemini-m',type:'suporte',desc:'Não consigo fazer login no Gemini. Erro 403.',status:'open',agent:null,createdAt:new Date(Date.now()-3600000).toISOString(),messages:[]},{id:'T002',code:'JOAO5678',clientName:'João Pedro',clientEmail:'(21) 98765-4321',products:['chatgpt-a'],product:'chatgpt-a',type:'resgatar',desc:'Quero resgatar meu acesso ChatGPT Plus anual.',status:'claimed',agent:'ag1',createdAt:new Date(Date.now()-7200000).toISOString(),messages:[{from:'Carlos Henrique',isAgent:true,text:'Olá João! Vou te ajudar. Pode me passar seu login?',ts:new Date(Date.now()-3000000).toISOString()}]},{id:'T003',code:'FERN9012',clientName:'Fernanda Lima',clientEmail:'(31) 97654-3210',products:['capcut-m'],product:'capcut-m',type:'cancelamento',desc:'Quero cancelar minha assinatura mensal.',status:'done',agent:'ag2',createdAt:new Date(Date.now()-86400000).toISOString(),closedAt:new Date(Date.now()-3600000).toISOString(),messages:[{from:'Ana Beatriz',isAgent:true,text:'Olá Fernanda! Vou processar o cancelamento.',ts:new Date(Date.now()-80000000).toISOString()},{from:'Cliente',isAgent:false,text:'Obrigada!',ts:new Date(Date.now()-79000000).toISOString()}]}];
 let tkCounter=4,currentUser=null,currentPage='',loginTab='admin',selectedProducts=[],filterStatus='all',pendingType='';
@@ -1227,7 +1234,7 @@ function doLogin(){
 function doLogout(){currentUser=null;document.getElementById('login-user').value='';document.getElementById('login-pass').value='';location.hash='';showScreen('client');}
 function enterDashboard(){buildSidebar();showScreen('dashboard');location.hash='#dashboard';if(currentUser.role==='admin')navTo('admin-dash');else navTo('agent-queue');}
 function buildSidebar(){
-  document.getElementById('sb-role').textContent=currentUser.role==='admin'?'👑 Admin Principal':'🎧 Atendente';
+  document.getElementById('sb-role').textContent=currentUser.role==='admin'?'👑 '+(ADMIN_CRED.name||'Admin Principal'):'🎧 Atendente';
   document.getElementById('sb-nav').innerHTML=currentUser.role==='admin'?`<div class="nav-section"><span class="nav-section-label">Painel</span><button class="nav-item" onclick="navTo('admin-dash')"><span class="ni">📊</span>Dashboard</button><button class="nav-item" onclick="navTo('admin-tickets')"><span class="ni">🎫</span>Todos os Tickets<span class="nav-badge" id="nb-open">0</span></button><button class="nav-item" onclick="navTo('admin-agents')"><span class="ni">👥</span>Atendentes</button><button class="nav-item" onclick="navTo('admin-commissions')"><span class="ni">💸</span>Comissões</button><button class="nav-item" onclick="navTo('admin-ranking')"><span class="ni">🏆</span>Ranking</button><button class="nav-item" onclick="navTo('admin-finance')"><span class="ni">💰</span>Acerto de Contas</button><button class="nav-item" onclick="navTo('admin-withdrawals')"><span class="ni">💸</span>Saques<span class="nav-badge" id="nb-withdrawals" style="display:none">!</span></button><button class=\"nav-item\" onclick=\"exportarDados()\"><span class=\"ni\">💾</span>Exportar Dados</button></div>`:`<div class="nav-section"><span class="nav-section-label">Atendimento</span><button class="nav-item" onclick="navTo('agent-queue')"><span class="ni">🎯</span>Fila de Tickets<span class="nav-badge" id="nb-queue">0</span></button><button class="nav-item" onclick="navTo('agent-mine')"><span class="ni">📋</span>Meus Tickets</button><button class="nav-item" onclick="navTo('agent-done')"><span class="ni">✅</span>Finalizados</button></div><div class="nav-section"><span class="nav-section-label">Performance</span><button class="nav-item" onclick="navTo('agent-earnings')"><span class="ni">💰</span>Meus Ganhos</button><button class="nav-item" onclick="navTo('agent-ranking')"><span class="ni">🏆</span>Ranking</button></div><div class="nav-section"><span class="nav-section-label">Conta</span><button class="nav-item" onclick="navTo('agent-profile')"><span class="ni">👤</span>Meu Perfil</button></div>`;
   updateBadges();
 }
@@ -1238,7 +1245,7 @@ function navTo(page){
   document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
   const pe=document.getElementById('page-'+page);if(pe)pe.classList.add('active');
   document.querySelectorAll('.nav-item').forEach(b=>{if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes(`'${page}'`))b.classList.add('active');});
-  const r={'admin-dash':renderAdminDash,'admin-tickets':renderAdminTickets,'admin-agents':renderAdminAgents,'admin-commissions':renderCommissions,'admin-ranking':()=>renderRanking('adm-rank-list'),'admin-finance':renderAdminFinance,'agent-queue':renderAgentQueue,'agent-mine':renderAgentMine,'agent-done':renderAgentDone,'agent-earnings':renderAgentEarnings,'agent-profile':renderAgentProfile,'agent-ranking':()=>renderRanking('ag-rank-list'),'admin-withdrawals':renderAdminWithdrawals,'admin-agent-profile':()=>{},};
+  const r={'admin-dash':renderAdminDash,'admin-tickets':renderAdminTickets,'admin-agents':renderAdminAgents,'admin-commissions':renderCommissions,'admin-ranking':()=>renderRanking('adm-rank-list'),'admin-finance':renderAdminFinance,'agent-queue':renderAgentQueue,'agent-mine':renderAgentMine,'agent-done':renderAgentDone,'agent-earnings':renderAgentEarnings,'agent-profile':renderAgentProfile,'agent-ranking':()=>renderRanking('ag-rank-list'),'admin-withdrawals':renderAdminWithdrawals,'admin-agent-profile':()=>{},'admin-config':renderAdminConfig,};
   if(r[page])r[page]();updateBadges();
 }
 function renderAdminDash(){
@@ -1256,12 +1263,12 @@ function renderAdminDash(){
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px">
       <div style="font-size:13px;font-weight:700;margin-bottom:4px">📅 Atendimentos por Dia da Semana</div>
       <div style="font-size:11px;color:var(--text3);margin-bottom:14px">Tickets criados nos últimos 30 dias</div>
-      <canvas id="chart-weekday" height="160"></canvas>
+      <div style="position:relative;height:200px"><canvas id="chart-weekday"></canvas></div>
     </div>
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px">
       <div style="font-size:13px;font-weight:700;margin-bottom:4px">📊 Status Atual</div>
       <div style="font-size:11px;color:var(--text3);margin-bottom:14px">Distribuição de tickets por status</div>
-      <canvas id="chart-status" height="160"></canvas>
+      <div style="position:relative;height:200px"><canvas id="chart-status"></canvas></div>
     </div>`;
 
   // Weekday chart
@@ -1996,6 +2003,53 @@ function renderAdminAgentProfile(agId) {
     }, 50);
   }
 }
+
+function renderAdminConfig() {
+  document.getElementById('adm-config-content').innerHTML =
+    '<div style="max-width:480px">'
+    // Admin credentials card
+    +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:26px;margin-bottom:16px">'
+    +'<div style="font-size:15px;font-weight:800;margin-bottom:6px">👑 Credenciais do Admin</div>'
+    +'<div style="font-size:12px;color:var(--text3);margin-bottom:20px">Altere seu usuário e senha de acesso ao painel</div>'
+    +'<div style="display:flex;flex-direction:column;gap:12px">'
+    +'<div><div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:6px">NOME DE EXIBIÇÃO</div>'
+    +'<input id="cfg-name" type="text" value="'+(ADMIN_CRED.name||'Admin Principal')+'" placeholder="Ex: Wasccesar" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:10px;font-size:13px;font-family:var(--font);outline:none;box-sizing:border-box"/></div>'
+    +'<div><div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:6px">USUÁRIO (LOGIN)</div>'
+    +'<input id="cfg-login" type="text" value="'+ADMIN_CRED.login+'" placeholder="Ex: admin" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:10px;font-size:13px;font-family:var(--font);outline:none;box-sizing:border-box"/></div>'
+    +'<div><div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:6px">NOVA SENHA</div>'
+    +'<input id="cfg-pass" type="password" placeholder="Deixe em branco para manter a atual" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:10px;font-size:13px;font-family:var(--font);outline:none;box-sizing:border-box"/></div>'
+    +'<div><div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:6px">CONFIRMAR NOVA SENHA</div>'
+    +'<input id="cfg-pass2" type="password" placeholder="Repita a nova senha" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:10px;font-size:13px;font-family:var(--font);outline:none;box-sizing:border-box"/></div>'
+    +'<button class="act-btn fill" onclick="saveAdminCreds()" style="padding:13px;font-size:14px;margin-top:4px">💾 Salvar Credenciais</button>'
+    +'</div></div>'
+    // Info card
+    +'<div style="background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.2);border-radius:14px;padding:16px;font-size:12px;color:var(--text3);line-height:1.7">'
+    +'⚠️ <strong style="color:var(--purple3)">Atenção:</strong> Após salvar, você continuará logado. Na próxima vez, use as novas credenciais. As credenciais ficam salvas no Firebase.'
+    +'</div>'
+    +'</div>';
+}
+
+function saveAdminCreds() {
+  const name = document.getElementById('cfg-name').value.trim();
+  const login = document.getElementById('cfg-login').value.trim();
+  const pass = document.getElementById('cfg-pass').value;
+  const pass2 = document.getElementById('cfg-pass2').value;
+  if(!login) { toast('⚠️ Informe um usuário!'); return; }
+  if(pass && pass !== pass2) { toast('⚠️ As senhas não coincidem!'); return; }
+  if(pass && pass.length < 4) { toast('⚠️ Senha muito curta! Mínimo 4 caracteres.'); return; }
+  ADMIN_CRED.login = login;
+  ADMIN_CRED.name = name || 'Admin Principal';
+  if(pass) ADMIN_CRED.pass = pass;
+  // Update display name in sidebar
+  const roleEl = document.getElementById('sb-role');
+  if(roleEl) roleEl.textContent = '👑 '+(ADMIN_CRED.name||'Admin Principal');
+  // Save to Firebase
+  if(window._fbSaveAdminCreds) window._fbSaveAdminCreds();
+  toast('✅ Credenciais salvas com sucesso!');
+  document.getElementById('cfg-pass').value = '';
+  document.getElementById('cfg-pass2').value = '';
+}
+
 function addAgent(){const name=document.getElementById('ag-name').value.trim(),email=document.getElementById('ag-email').value.trim(),login=document.getElementById('ag-login').value.trim(),pass=document.getElementById('ag-pass').value,products=[...document.querySelectorAll('#ag-chk-grid input:checked')].map(i=>i.value);if(!name||!email||!login||!pass||products.length===0){toast('⚠️ Preencha tudo e selecione ao menos 1 produto!');return;}if(AGENTS.find(a=>a.login===login)){toast('⚠️ Login já em uso!');return;}if(login===ADMIN_CRED.login){toast('⚠️ Login reservado!');return;}AGENTS.push({id:'ag'+Date.now(),name,email,login,pass,products,closed:0,earnings:0});closeOv('ov-add-agent');['ag-name','ag-email','ag-login','ag-pass'].forEach(id=>document.getElementById(id).value='');document.querySelectorAll('#ag-chk-grid input').forEach(i=>i.checked=false);toast(`✅ Atendente ${name} cadastrado! Login: ${login}`);if(window._fbAddAgent)window._fbAddAgent();navTo('admin-agents');}
 // ── Phone Lookup ──
 function normalizePhone(p){return p.replace(/\D/g,'');}
