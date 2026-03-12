@@ -247,18 +247,18 @@ hr.div{border:none;border-top:1px solid var(--border);margin:18px 0;}
 .modal-body{padding:22px 28px 28px;}
 .submit-btn{width:100%;background:linear-gradient(135deg,var(--purple),#4c1d95);border:none;color:#fff;padding:14px;border-radius:12px;font-size:15px;font-weight:700;font-family:var(--font);cursor:pointer;transition:.25s;box-shadow:0 4px 28px var(--pglow);margin-top:6px;}
 .submit-btn:hover{opacity:.88;transform:translateY(-1px);}
-.prod-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;}
-.prod-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;transition:.2s;position:relative;}
+.prod-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;}
+.prod-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:9px 8px;cursor:pointer;transition:.2s;position:relative;text-align:center;}
 .prod-card:hover{border-color:var(--border2);}
 .prod-card.sel{border-color:var(--purple2);background:rgba(124,58,237,.08);}
-.prod-card .p-check{position:absolute;top:9px;right:9px;width:18px;height:18px;border-radius:50%;background:var(--purple);display:none;align-items:center;justify-content:center;font-size:10px;}
+.prod-card .p-check{position:absolute;top:5px;right:5px;width:16px;height:16px;border-radius:50%;background:var(--purple);display:none;align-items:center;justify-content:center;font-size:9px;}
 .prod-card.sel .p-check{display:flex;}
-.prod-card .p-emoji{font-size:24px;display:block;margin-bottom:7px;}
-.prod-card .p-name{font-weight:700;font-size:13px;}
-.prod-card .p-plan{font-size:11px;color:var(--text3);margin-top:1px;}
+.prod-card .p-emoji{font-size:20px;display:block;margin-bottom:4px;}
+.prod-card .p-name{font-weight:700;font-size:12px;}
+.prod-card .p-plan{font-size:10px;color:var(--text3);margin-top:1px;}
 
 @media(max-width:960px){.stats-row{grid-template-columns:1fr 1fr;}.agents-grid{grid-template-columns:1fr;}#screen-dashboard{flex-direction:column;}.sidebar{width:100%;height:auto;position:relative;}}
-@media(max-width:600px){.stats-row{grid-template-columns:1fr;}.prod-grid{grid-template-columns:1fr;}.frow{grid-template-columns:1fr;}.dash-page{padding:18px 14px;}.comm-row{grid-template-columns:1fr auto;}}
+@media(max-width:600px){.stats-row{grid-template-columns:1fr;}.prod-grid{grid-template-columns:repeat(2,1fr);}.frow{grid-template-columns:1fr;}.dash-page{padding:18px 14px;}.comm-row{grid-template-columns:1fr auto;}}
 ::-webkit-scrollbar{width:5px;height:5px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
 .pay-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);}
 .pay-row:last-child{border:none;}
@@ -399,6 +399,12 @@ hr.div{border:none;border-top:1px solid var(--border);margin:18px 0;}
       </div>
     </div>
   </div>
+  <div style="padding:0 16px 12px;position:relative;z-index:2">
+    <button onclick="signInWithGoogle()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;border:1.5px solid #e0e0e0;color:#3c3c3c;padding:11px 16px;border-radius:12px;font-size:14px;font-weight:600;font-family:var(--font);cursor:pointer;transition:.2s;box-shadow:0 1px 6px rgba(0,0,0,.15)" onmouseover="this.style.boxShadow='0 3px 12px rgba(0,0,0,.2)'" onmouseout="this.style.boxShadow='0 1px 6px rgba(0,0,0,.15)'">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z"/></svg>
+      Continuar com Google
+    </button>
+  </div>
   <div class="internal-link-area"><button onclick="goLogin()">área interna</button></div>
 </div>
 
@@ -529,12 +535,64 @@ hr.div{border:none;border-top:1px solid var(--border);margin:18px 0;}
   </div>
 </div>
 
+
+<!-- Change Sector Modal (agent) -->
+<div class="overlay" id="ov-change-sector">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-head"><div><div class="modal-head-title">🔄 Alterar meu Setor</div><div class="modal-head-sub">Escolha os produtos que quer atender</div></div><button class="modal-close" onclick="closeOv('ov-change-sector')">×</button></div>
+    <div class="modal-body">
+      <div style="background:rgba(245,197,24,.06);border:1px solid rgba(245,197,24,.2);border-radius:10px;padding:12px;margin-bottom:16px;font-size:12px;color:var(--text3)">
+        ⚠️ Ao alterar seu setor, os tickets da fila serão filtrados pelos novos produtos escolhidos.
+      </div>
+      <div class="fgroup"><label>Produtos que posso atender</label><div class="chk-grid" id="sector-chk-grid"></div></div>
+      <button class="submit-btn" onclick="saveAgentSector()">💾 Salvar Setor</button>
+    </div>
+  </div>
+</div>
+
+<!-- Permissions Modal -->
+<div class="overlay" id="ov-agent-perms">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-head"><div><div class="modal-head-title">🔐 Permissões do Atendente</div><div class="modal-head-sub" id="perms-agent-name">—</div></div><button class="modal-close" onclick="closeOv('ov-agent-perms')">×</button></div>
+    <div class="modal-body">
+      <div style="background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.2);border-radius:10px;padding:12px;margin-bottom:18px;font-size:12px;color:var(--text3);line-height:1.6">
+        🛡️ Controle o que este atendente pode visualizar dos clientes. As restrições se aplicam na tela de ticket.
+      </div>
+      <div id="perms-chk-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px"></div>
+      <button class="submit-btn" onclick="saveAgentPerms()">💾 Salvar Permissões</button>
+    </div>
+  </div>
+</div>
+
+<!-- Google Portal Overlay -->
+<div class="overlay" id="ov-google-portal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-head" style="background:linear-gradient(135deg,var(--purple),#3b0d8a);border-radius:16px 16px 0 0;padding:20px 24px">
+      <div style="display:flex;align-items:center;gap:14px">
+        <img id="google-portal-photo" src="" style="width:46px;height:46px;border-radius:50%;border:2px solid rgba(255,255,255,.3);object-fit:cover" onerror="this.style.display='none'"/>
+        <div>
+          <div id="google-portal-name" style="font-weight:800;font-size:16px;color:#fff"></div>
+          <div id="google-portal-email" style="font-size:11px;color:rgba(255,255,255,.6)"></div>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeOv('ov-google-portal')" style="color:#fff;opacity:.7">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div style="font-size:13px;font-weight:700">Meus Chamados</div>
+        <button onclick="signOutGoogle()" style="background:none;border:1px solid var(--border);color:var(--text3);padding:5px 12px;border-radius:8px;font-size:11px;cursor:pointer;font-family:var(--font)">Sair</button>
+      </div>
+      <div id="google-portal-tickets"></div>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <!-- Firebase SDK -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBHbJfEVu6oeyOCg1fX7HecJXYTC11rQ3s",
@@ -547,6 +605,8 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
+const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
 
 // ── Collections ──
 const ticketsCol = collection(db,'tickets');
@@ -757,6 +817,75 @@ window._fbSendMsg = async function(id, text, sender) {
   }
 };
 
+// ── Google Sign-In ──
+window.signInWithGoogle = async function() {
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    const user = result.user;
+    // Save/update user profile in Firestore
+    const userRef = doc(db, 'clientUsers', user.uid);
+    await setDoc(userRef, {
+      uid: user.uid,
+      name: user.displayName,
+      email: user.email,
+      photo: user.photoURL,
+      lastLogin: new Date().toISOString()
+    }, {merge: true});
+    showGoogleDashboard(user);
+  } catch(e) {
+    console.warn('Google sign-in error', e);
+    if(e.code !== 'auth/popup-closed-by-user')
+      toast('❌ Erro ao entrar com Google. Tente novamente.');
+  }
+};
+
+window.signOutGoogle = async function() {
+  try { await signOut(auth); } catch(e){}
+  showScreen('client');
+};
+
+function showGoogleDashboard(user) {
+  // Find tickets linked to this google email
+  const myTickets = TICKETS.filter(t => 
+    (t.googleUid && t.googleUid === user.uid) ||
+    (t.clientEmail && t.clientEmail.toLowerCase() === user.email.toLowerCase())
+  );
+  showGooglePortal(user, myTickets);
+}
+
+function showGooglePortal(user, tickets) {
+  // Render a screen overlay showing the user's tickets
+  document.getElementById('google-portal-name').textContent = user.displayName || user.email;
+  document.getElementById('google-portal-email').textContent = user.email;
+  if(user.photoURL) document.getElementById('google-portal-photo').src = user.photoURL;
+  
+  const list = document.getElementById('google-portal-tickets');
+  const statusLabel = {open:'⏳ Aguardando',claimed:'🎧 Em Atendimento',done:'✅ Finalizado'};
+  const statusColor = {open:'var(--yellow)',claimed:'var(--green)',done:'#94a3b8'};
+  if(tickets.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text3);font-size:13px">📭 Nenhum chamado encontrado.<br><br>Abra um chamado no chat principal.</div>';
+  } else {
+    list.innerHTML = tickets.map(t => {
+      const prods = (t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join(', ');
+      return '<div class="ticket-card-client" onclick="openClientChat(&quot;'+t.id+'&quot;,&quot;google&quot;)">'
+        +'<div class="tc-left">'
+        +'<div class="tc-id">TICKET '+t.id+' · '+fmtDate(t.createdAt)+'</div>'
+        +'<div class="tc-title">'+prods+'</div>'
+        +'<div class="tc-prod" style="color:'+statusColor[t.status]+'">'+statusLabel[t.status]+'</div>'
+        +'</div><div class="tc-arrow">→</div></div>';
+    }).join('');
+  }
+  openOv('ov-google-portal');
+}
+
+// Check if user was already signed in (page refresh)
+onAuthStateChanged(auth, user => {
+  if(user) {
+    // Re-attach listener after tickets load
+    setTimeout(()=>showGoogleDashboard(user), 1500);
+  }
+});
+
 // ── Bootstrap ──
 (async () => {
   await loadConfig();
@@ -778,7 +907,7 @@ window._fbSendMsg = async function(id, text, sender) {
 const PRODUCTS=[{id:'gemini-m',name:'Gemini',plan:'Mensal',emoji:'🤖'},{id:'gemini-a',name:'Gemini',plan:'Anual',emoji:'🤖'},{id:'chatgpt-m',name:'ChatGPT',plan:'Mensal',emoji:'💬'},{id:'chatgpt-a',name:'ChatGPT',plan:'Anual',emoji:'💬'},{id:'capcut-m',name:'CapCut',plan:'Mensal',emoji:'🎬'},{id:'capcut-a',name:'CapCut',plan:'Anual',emoji:'🎬'},{id:'grok',name:'Super Grok',plan:'Único',emoji:'⚡'},{id:'perplexity',name:'Perplexity',plan:'Único',emoji:'🔍'}];
 let COMMISSIONS={'gemini-m':5,'gemini-a':15,'chatgpt-m':6,'chatgpt-a':18,'capcut-m':4,'capcut-a':12,'grok':10,'perplexity':8};
 const ADMIN_CRED={login:'admin',pass:'admin123'};
-let AGENTS=[{id:'ag1',name:'Carlos Henrique',email:'carlos@suporte.com',login:'carlos',pass:'1234',products:['gemini-m','gemini-a','chatgpt-m','chatgpt-a'],closed:12,earnings:187},{id:'ag2',name:'Ana Beatriz',email:'ana@suporte.com',login:'ana',pass:'1234',products:['capcut-m','capcut-a','grok'],closed:9,earnings:134},{id:'ag3',name:'Rafael Souza',email:'rafael@suporte.com',login:'rafael',pass:'1234',products:['chatgpt-m','chatgpt-a','perplexity','grok'],closed:7,earnings:98}];
+let AGENTS=[{id:'ag1',name:'Carlos Henrique',email:'carlos@suporte.com',login:'carlos',pass:'1234',products:['gemini-m','gemini-a','chatgpt-m','chatgpt-a'],closed:12,earnings:187,perms:{phone:true,name:true,desc:true}},{id:'ag2',name:'Ana Beatriz',email:'ana@suporte.com',login:'ana',pass:'1234',products:['capcut-m','capcut-a','grok'],closed:9,earnings:134,perms:{phone:true,name:true,desc:true}},{id:'ag3',name:'Rafael Souza',email:'rafael@suporte.com',login:'rafael',pass:'1234',products:['chatgpt-m','chatgpt-a','perplexity','grok'],closed:7,earnings:98,perms:{phone:true,name:true,desc:true}}];
 let TICKETS=[{id:'T001',code:'DEMO1234',clientName:'Maria Santos',clientEmail:'(11) 99887-6655',products:['gemini-m'],product:'gemini-m',type:'suporte',desc:'Não consigo fazer login no Gemini. Erro 403.',status:'open',agent:null,createdAt:new Date(Date.now()-3600000).toISOString(),messages:[]},{id:'T002',code:'JOAO5678',clientName:'João Pedro',clientEmail:'(21) 98765-4321',products:['chatgpt-a'],product:'chatgpt-a',type:'resgatar',desc:'Quero resgatar meu acesso ChatGPT Plus anual.',status:'claimed',agent:'ag1',createdAt:new Date(Date.now()-7200000).toISOString(),messages:[{from:'Carlos Henrique',isAgent:true,text:'Olá João! Vou te ajudar. Pode me passar seu login?',ts:new Date(Date.now()-3000000).toISOString()}]},{id:'T003',code:'FERN9012',clientName:'Fernanda Lima',clientEmail:'(31) 97654-3210',products:['capcut-m'],product:'capcut-m',type:'cancelamento',desc:'Quero cancelar minha assinatura mensal.',status:'done',agent:'ag2',createdAt:new Date(Date.now()-86400000).toISOString(),closedAt:new Date(Date.now()-3600000).toISOString(),messages:[{from:'Ana Beatriz',isAgent:true,text:'Olá Fernanda! Vou processar o cancelamento.',ts:new Date(Date.now()-80000000).toISOString()},{from:'Cliente',isAgent:false,text:'Obrigada!',ts:new Date(Date.now()-79000000).toISOString()}]}];
 let tkCounter=4,currentUser=null,currentPage='',loginTab='admin',selectedProducts=[],filterStatus='all',pendingType='';
 let ccUnsubscribe=null,clientPhone='',clientTicketId='';
@@ -829,7 +958,7 @@ function doLogout(){currentUser=null;document.getElementById('login-user').value
 function enterDashboard(){buildSidebar();showScreen('dashboard');location.hash='#dashboard';if(currentUser.role==='admin')navTo('admin-dash');else navTo('agent-queue');}
 function buildSidebar(){
   document.getElementById('sb-role').textContent=currentUser.role==='admin'?'👑 Admin Principal':'🎧 Atendente';
-  document.getElementById('sb-nav').innerHTML=currentUser.role==='admin'?`<div class="nav-section"><span class="nav-section-label">Painel</span><button class="nav-item" onclick="navTo('admin-dash')"><span class="ni">📊</span>Dashboard</button><button class="nav-item" onclick="navTo('admin-tickets')"><span class="ni">🎫</span>Todos os Tickets<span class="nav-badge" id="nb-open">0</span></button><button class="nav-item" onclick="navTo('admin-agents')"><span class="ni">👥</span>Atendentes</button><button class="nav-item" onclick="navTo('admin-commissions')"><span class="ni">💸</span>Comissões</button><button class="nav-item" onclick="navTo('admin-ranking')"><span class="ni">🏆</span>Ranking</button><button class="nav-item" onclick="navTo('admin-finance')"><span class="ni">💰</span>Acerto de Contas</button></div>`:`<div class="nav-section"><span class="nav-section-label">Atendimento</span><button class="nav-item" onclick="navTo('agent-queue')"><span class="ni">🎯</span>Fila de Tickets<span class="nav-badge" id="nb-queue">0</span></button><button class="nav-item" onclick="navTo('agent-mine')"><span class="ni">📋</span>Meus Tickets</button><button class="nav-item" onclick="navTo('agent-done')"><span class="ni">✅</span>Finalizados</button></div><div class="nav-section"><span class="nav-section-label">Performance</span><button class="nav-item" onclick="navTo('agent-earnings')"><span class="ni">💰</span>Meus Ganhos</button><button class="nav-item" onclick="navTo('agent-ranking')"><span class="ni">🏆</span>Ranking</button></div>`;
+  document.getElementById('sb-nav').innerHTML=currentUser.role==='admin'?`<div class="nav-section"><span class="nav-section-label">Painel</span><button class="nav-item" onclick="navTo('admin-dash')"><span class="ni">📊</span>Dashboard</button><button class="nav-item" onclick="navTo('admin-tickets')"><span class="ni">🎫</span>Todos os Tickets<span class="nav-badge" id="nb-open">0</span></button><button class="nav-item" onclick="navTo('admin-agents')"><span class="ni">👥</span>Atendentes</button><button class="nav-item" onclick="navTo('admin-commissions')"><span class="ni">💸</span>Comissões</button><button class="nav-item" onclick="navTo('admin-ranking')"><span class="ni">🏆</span>Ranking</button><button class="nav-item" onclick="navTo('admin-finance')"><span class="ni">💰</span>Acerto de Contas</button></div>`:`<div class="nav-section"><span class="nav-section-label">Atendimento</span><button class="nav-item" onclick="navTo('agent-queue')"><span class="ni">🎯</span>Fila de Tickets<span class="nav-badge" id="nb-queue">0</span></button><button class="nav-item" onclick="navTo('agent-mine')"><span class="ni">📋</span>Meus Tickets</button><button class="nav-item" onclick="navTo('agent-done')"><span class="ni">✅</span>Finalizados</button></div><div class="nav-section"><span class="nav-section-label">Performance</span><button class="nav-item" onclick="navTo('agent-earnings')"><span class="ni">💰</span>Meus Ganhos</button><button class="nav-item" onclick="navTo('agent-ranking')"><span class="ni">🏆</span>Ranking</button></div><div class="nav-section"><span class="nav-section-label">Conta</span><button class="nav-item" onclick="openChangeSector()"><span class="ni">🔄</span>Alterar Setor</button></div>`;
   updateBadges();
 }
 function updateBadges(){const o=TICKETS.filter(t=>t.status==='open').length;const nb=document.getElementById('nb-open');if(nb)nb.textContent=o;if(currentUser&&currentUser.role==='agent'){const ag=getAgent(currentUser.id);if(ag){const nq=document.getElementById('nb-queue');if(nq)nq.textContent=TICKETS.filter(t=>t.status==='open'&&ag.products.includes(t.product)).length;}}}
@@ -852,12 +981,12 @@ function renderAdminTickets(){
   document.getElementById('adm-tickets-tbl').innerHTML=`<div class="table-top"><h3>Tickets (${list.length})</h3><div class="filter-row">${['all','open','claimed','done'].map(s=>`<button class="f-btn ${filterStatus===s?'on':''}" onclick="setFilter('${s}')">${s==='all'?'Todos':s==='open'?'Abertos':s==='claimed'?'Em Atend.':'Finalizados'}</button>`).join('')}</div></div><table><thead><tr><th>ID</th><th>Código</th><th>Cliente</th><th>Produto</th><th>Tipo</th><th>Status</th><th>Atendente</th><th>Abertura</th><th>Ações</th></tr></thead><tbody>${list.map(t=>{const pr=getProd(t.product),ag=getAgent(t.agent);return`<tr><td><span class="t-id">${t.id}</span></td><td><span class="t-id" style="color:var(--yellow);letter-spacing:.06em">${t.code||'—'}</span></td><td><div class="t-client">${t.clientName}</div><div class="t-email">${t.clientEmail}</div></td><td>${(t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join(', ')}</td><td style="font-size:11px;color:var(--text3)">${t.type}</td><td>${badge(t.status)}</td><td>${ag?ag.name:'<span style="color:var(--text3)">—</span>'}</td><td style="color:var(--text3);font-size:11px">${fmtDate(t.createdAt)}</td><td><button class="act-btn" onclick="openDetail('${t.id}')">👁 Ver</button>${t.status!=='done'?`<button class="act-btn green" onclick="adminClose('${t.id}')">✅</button>`:''}<button class="act-btn red" onclick="adminDel('${t.id}')">🗑</button></td></tr>`;}).join('')}</tbody></table>`;
 }
 function renderAdminAgents(){
-  document.getElementById('adm-agents-grid').innerHTML=AGENTS.map(a=>{const extra=TICKETS.filter(t=>t.agent===a.id&&t.status==='done').reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0);const active=TICKETS.filter(t=>t.agent===a.id&&t.status==='claimed').length;return`<div class="agent-card"><div class="ag-top"><div class="ag-avatar">${initials(a.name)}</div><div><div class="ag-name">${a.name}</div><div class="ag-email"><a href="https://wa.me/55${(a.email||'').replace(/\D/g,'')}" target="_blank" style="color:var(--green);text-decoration:none">📱 ${a.email}</a></div><div class="ag-login-tag">@${a.login}</div></div></div><div class="ag-stats"><div class="ag-stat"><div class="label">Fechados</div><div class="val">${a.closed}</div></div><div class="ag-stat"><div class="label">Em Aberto</div><div class="val">${active}</div></div></div><div class="ag-prods">${a.products.map(pid=>{const p=getProd(pid);return`<span class="ag-prod-tag">${p?p.emoji+' '+p.name:pid}</span>`;}).join('')}</div><div class="ag-earnings"><div class="label">💰 Ganhos</div><div class="amount">${fmtMoney(a.earnings+extra)}</div></div><div class="ag-actions"><button class="act-btn red" onclick="removeAgent('${a.id}')">Remover</button></div></div>`;}).join('')||'<div class="empty-box"><div class="e-icon">👥</div><p>Nenhum atendente cadastrado.</p></div>';
+  document.getElementById('adm-agents-grid').innerHTML=AGENTS.map(a=>{const extra=TICKETS.filter(t=>t.agent===a.id&&t.status==='done').reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0);const active=TICKETS.filter(t=>t.agent===a.id&&t.status==='claimed').length;return`<div class="agent-card"><div class="ag-top"><div class="ag-avatar">${initials(a.name)}</div><div><div class="ag-name">${a.name}</div><div class="ag-email"><a href="https://wa.me/55${(a.email||'').replace(/\D/g,'')}" target="_blank" style="color:var(--green);text-decoration:none">📱 ${a.email}</a></div><div class="ag-login-tag">@${a.login}</div></div></div><div class="ag-stats"><div class="ag-stat"><div class="label">Fechados</div><div class="val">${a.closed}</div></div><div class="ag-stat"><div class="label">Em Aberto</div><div class="val">${active}</div></div></div><div class="ag-prods">${a.products.map(pid=>{const p=getProd(pid);return`<span class="ag-prod-tag">${p?p.emoji+' '+p.name:pid}</span>`;}).join('')}</div><div class="ag-earnings"><div class="label">💰 Ganhos</div><div class="amount">${fmtMoney(a.earnings+extra)}</div></div><div class="ag-actions"><button class="act-btn" onclick="openAgentPerms('${a.id}')">🔐 Permissões</button><button class="act-btn red" onclick="removeAgent('${a.id}')">Remover</button></div></div>`;}).join('')||'<div class="empty-box"><div class="e-icon">👥</div><p>Nenhum atendente cadastrado.</p></div>';
 }
 function renderCommissions(){document.getElementById('adm-comm-list').innerHTML=PRODUCTS.map(p=>`<div class="comm-row"><div><div class="comm-prod-name">${p.emoji} ${p.name}</div><div class="comm-prod-plan">${p.plan}</div></div><div style="font-size:11px;color:var(--text3);font-family:var(--mono)">por ticket</div><div style="display:flex;align-items:center;gap:7px"><span style="color:var(--text3)">R$</span><input class="comm-input" type="number" min="0" step="0.5" value="${COMMISSIONS[p.id]||0}" oninput="COMMISSIONS['${p.id}']=parseFloat(this.value)||0;document.getElementById('cd-${p.id}').textContent=fmtMoney(COMMISSIONS['${p.id}']);if(window._fbSaveCommissions)window._fbSaveCommissions()"/></div><div class="comm-display" id="cd-${p.id}">${fmtMoney(COMMISSIONS[p.id]||0)}</div></div>`).join('');}
 function renderRanking(cid){const sorted=AGENTS.map(a=>{const extra=TICKETS.filter(t=>t.agent===a.id&&t.status==='done').reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0);return{...a,total:a.earnings+extra};}).sort((a,b)=>b.total-a.total);document.getElementById(cid).innerHTML=sorted.map((a,i)=>`<div class="rank-row ${i===0?'first':''}"><div class="rank-num ${i===0?'g':i===1?'s':i===2?'b':''}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</div><div class="ag-avatar" style="width:42px;height:42px;font-size:15px">${initials(a.name)}</div><div class="rank-info"><div class="rank-name">${a.name}</div><div class="rank-sub">${a.closed} tickets · @${a.login}</div></div><div class="rank-earn">${fmtMoney(a.total)}</div></div>`).join('')||'<div class="empty-box"><div class="e-icon">🏆</div><p>Nenhum dado ainda.</p></div>';}
 function renderAgentQueue(){const me=getAgent(currentUser.id),avail=me?TICKETS.filter(t=>t.status==='open'&&(t.products||[t.product]).some(p=>me.products.includes(p))):[];document.getElementById('ag-queue-tbl').innerHTML=avail.length===0?'<div class="empty-box"><div class="e-icon">🎉</div><p>Fila vazia!</p></div>':`<table><thead><tr><th>ID</th><th>Cliente</th><th>Produto</th><th>Tipo</th><th>Abertura</th><th>Comissão</th><th>Ação</th></tr></thead><tbody>${avail.map(t=>{const pr=getProd(t.product);return`<tr><td><span class="t-id">${t.id}</span></td><td>${t.clientName}</td><td>${(t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join(', ')}</td><td style="font-size:11px;color:var(--text3)">${t.type}</td><td style="font-size:11px;color:var(--text3)">${fmtDate(t.createdAt)}</td><td style="color:var(--yellow);font-weight:800">${fmtMoney(COMMISSIONS[t.product]||0)}</td><td><button class="act-btn yf" onclick="claimTicket('${t.id}')">⚡ Pegar</button></td></tr>`;}).join('')}</tbody></table>`;}
-function renderAgentMine(){const mine=TICKETS.filter(t=>t.agent===currentUser.id&&t.status==='claimed');document.getElementById('ag-mine-tbl').innerHTML=mine.length===0?'<div class="empty-box"><div class="e-icon">📭</div><p>Nenhum ticket em andamento.</p></div>':`<table><thead><tr><th>ID</th><th>Cliente</th><th>Produto</th><th>Status</th><th>Comissão</th><th>Ações</th></tr></thead><tbody>${mine.map(t=>{const pr=getProd(t.product);return`<tr><td><span class="t-id">${t.id}</span></td><td>${t.clientName}</td><td>${(t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join(', ')}</td><td>${badge(t.status)}</td><td style="color:var(--yellow);font-weight:800">${fmtMoney(COMMISSIONS[t.product]||0)}</td><td><button class="act-btn" onclick="openDetail('${t.id}')">💬 Atender</button><button class="act-btn green" onclick="agentClose('${t.id}')">✅ Finalizar</button></td></tr>`;}).join('')}</tbody></table>`;}
+function renderAgentMine(){const mine=TICKETS.filter(t=>t.agent===currentUser.id&&t.status==='claimed');document.getElementById('ag-mine-tbl').innerHTML=mine.length===0?'<div class="empty-box"><div class="e-icon">📭</div><p>Nenhum ticket em andamento.</p></div>':`<table><thead><tr><th>ID</th><th>Cliente</th><th>Produto</th><th>Status</th><th>Comissão</th><th>Ações</th></tr></thead><tbody>${mine.map(t=>{const pr=getProd(t.product);return`<tr><td><span class="t-id">${t.id}</span></td><td>${agentCan('name')?t.clientName:'🔒 Oculto'}</td><td>${(t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join(', ')}</td><td>${badge(t.status)}</td><td style="color:var(--yellow);font-weight:800">${fmtMoney(COMMISSIONS[t.product]||0)}</td><td><button class="act-btn" onclick="openDetail('${t.id}')">💬 Atender</button><button class="act-btn green" onclick="agentClose('${t.id}')">✅ Finalizar</button></td></tr>`;}).join('')}</tbody></table>`;}
 function renderAgentDone(){const done=TICKETS.filter(t=>t.agent===currentUser.id&&t.status==='done');document.getElementById('ag-done-tbl').innerHTML=done.length===0?'<div class="empty-box"><div class="e-icon">📦</div><p>Nenhum finalizado ainda.</p></div>':`<table><thead><tr><th>ID</th><th>Cliente</th><th>Produto</th><th>Finalizado em</th><th>Comissão</th><th></th></tr></thead><tbody>${done.map(t=>{const pr=getProd(t.product);return`<tr><td><span class="t-id">${t.id}</span></td><td>${t.clientName}</td><td>${(t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join(', ')}</td><td style="font-size:11px;color:var(--text3)">${fmtDate(t.closedAt)}</td><td style="color:var(--green);font-weight:800">${fmtMoney(COMMISSIONS[t.product]||0)}</td><td><button class="act-btn" onclick="openDetail('${t.id}')">👁 Ver</button></td></tr>`;}).join('')}</tbody></table>`;}
 function renderAgentEarnings(){const me=getAgent(currentUser.id);if(!me)return;const extra=TICKETS.filter(t=>t.agent===me.id&&t.status==='done').reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0);const total=me.earnings+extra;document.getElementById('ag-earnings-content').innerHTML=`<div class="stats-row" style="grid-template-columns:repeat(3,1fr)"><div class="stat-box green"><div class="s-label">Total Acumulado</div><div class="s-val">${fmtMoney(total)}</div></div><div class="stat-box purple"><div class="s-label">Tickets Fechados</div><div class="s-val">${me.closed}</div></div><div class="stat-box gold"><div class="s-label">Média por Ticket</div><div class="s-val">${fmtMoney(total/Math.max(1,me.closed))}</div></div></div><div class="data-table" style="margin-top:20px"><div class="table-top"><h3>Comissões por Produto</h3></div><table><thead><tr><th>Produto</th><th>Comissão por Ticket</th></tr></thead><tbody>${me.products.map(pid=>{const p=getProd(pid);return`<tr><td>${p?p.emoji+' '+p.name+' '+p.plan:pid}</td><td style="color:var(--yellow);font-size:19px;font-weight:800">${fmtMoney(COMMISSIONS[pid]||0)}</td></tr>`;}).join('')}</tbody></table></div>`;}
 function claimTicket(id){if(window._fbClaimTicket){window._fbClaimTicket(id);return;}const t=TICKETS.find(t=>t.id===id);if(!t||t.status!=='open'){toast('⚠️ Ticket já foi pego!');return;}t.status='claimed';t.agent=currentUser.id;toast(`⚡ Você pegou o ticket ${id}!`);navTo('agent-queue');}
@@ -865,14 +994,65 @@ function agentClose(id){if(window._fbAgentClose){window._fbAgentClose(id);return
 function adminClose(id){if(window._fbAdminClose){window._fbAdminClose(id);return;}const t=TICKETS.find(t=>t.id===id);if(!t||t.status==='done')return;t.status='done';t.closedAt=new Date().toISOString();const ag=getAgent(t.agent);if(ag){ag.closed++;ag.earnings+=(COMMISSIONS[t.product]||0);}toast(`✅ Ticket ${id} encerrado.`);navTo(currentPage);}
 function adminDel(id){if(window._fbAdminDel){window._fbAdminDel(id);return;}const idx=TICKETS.findIndex(t=>t.id===id);if(idx>-1){TICKETS.splice(idx,1);toast('🗑 Ticket removido.');navTo(currentPage);}}
 function setFilter(s){filterStatus=s;renderAdminTickets();}
+function msgContent(m){
+  if(m.mediaType&&m.mediaType.startsWith('image/'))
+    return '<img src="'+m.mediaData+'" style="max-width:200px;border-radius:10px;display:block;cursor:pointer" onclick="window.open(this.src)"/>';
+  if(m.mediaType) return '📄 '+(m.mediaName||'Arquivo');
+  return m.text||'';
+}
 function openDetail(id){
   const t=TICKETS.find(t=>t.id===id);if(!t)return;
-  const pr=getProd(t.product),ag=getAgent(t.agent);
+  const ag=getAgent(t.agent);
   const isAdmin=currentUser.role==='admin',isOwner=currentUser.role==='agent'&&t.agent===currentUser.id,canFinalize=isOwner&&t.status==='claimed';
-  document.getElementById('dt-title').innerHTML=`Ticket ${t.id} <span style='font-family:var(--mono);font-size:13px;color:var(--yellow);font-weight:600;margin-left:8px'>${t.code||''}</span>`;
-  document.getElementById('dt-sub').textContent=`${t.clientName} · ${(t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.name:pid;}).join(', ')}` ;
-  document.getElementById('dt-body').innerHTML=`<div class="detail-grid"><div class="detail-item"><div class="label">Cliente</div><div class="val">${t.clientName}</div></div><div class="detail-item"><div class="label">📱 WhatsApp</div><div class="val"><a href="https://wa.me/55${t.clientEmail.replace(/\D/g,'')}" target="_blank" style="color:var(--green);text-decoration:none">${t.clientEmail} 💬</a></div></div><div class="detail-item"><div class="label">Produto(s)</div><div class="val">${(t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join('<br/>')}</div></div><div class="detail-item"><div class="label">Tipo</div><div class="val">${t.type}</div></div><div class="detail-item"><div class="label">Status</div><div class="val">${badge(t.status)}</div></div><div class="detail-item"><div class="label">Atendente</div><div class="val">${ag?ag.name:'<span style="color:var(--text3)">Aguardando</span>'}</div></div></div><div style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:18px;font-size:13px;line-height:1.7"><div style="font-size:9px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px">Descrição</div>${t.desc}</div>
-    ${t.attachment?`<div style="margin-bottom:18px"><div style="font-size:9px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">📎 Anexo do Cliente</div>${t.attachment.type&&t.attachment.type.startsWith('image/')?`<img src="${t.attachment.data}" style="max-width:100%;border-radius:10px;border:1px solid var(--border);cursor:pointer" onclick="window.open(this.src)" title="Clique para abrir"/>`:''}<div style="font-size:12px;color:var(--text3);margin-top:6px">📄 ${t.attachment.name}</div></div>`:''}<div style="margin-bottom:7px;font-size:9px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em">Conversa (${t.messages.length} mensagens)</div><div class="chat-thread" id="chat-thread-${t.id}">${t.messages.length===0?'<div style="text-align:center;color:var(--text3);padding:18px;font-size:12px">Nenhuma mensagem ainda.</div>':t.messages.map(m=>`<div class="msg-bubble ${m.isAgent?'agent':''}"><div class="msg-from">${m.from} · ${fmtDate(m.ts)}</div><div class="msg-text">${m.text}</div></div>`).join('')}</div>${(isAdmin||isOwner)?`<div class="chat-input-row"><input id="chat-inp-${t.id}" placeholder="Digite uma mensagem..." onkeydown="if(event.key==='Enter')sendMsg('${t.id}')"/><button class="act-btn fill" onclick="sendMsg('${t.id}')">Enviar</button></div>`:''}<hr class="div"><div style="display:flex;gap:8px"><button class="act-btn" style="flex:1;padding:11px" onclick="closeOv('ov-detail')">Fechar</button>${canFinalize?`<button class="act-btn fill" style="flex:2;padding:11px" onclick="agentClose('${t.id}');closeOv('ov-detail')">✅ Finalizar · Ganhar ${fmtMoney(COMMISSIONS[t.product]||0)}</button>`:''} ${isAdmin&&t.status!=='done'?`<button class="act-btn green" style="flex:2;padding:11px" onclick="adminClose('${t.id}');closeOv('ov-detail')">✅ Encerrar (Admin)</button>`:''}</div>`;
+  document.getElementById('dt-title').innerHTML='Ticket '+t.id+(t.code?' <span style="font-family:var(--mono);font-size:13px;color:var(--yellow);font-weight:600;margin-left:8px">'+t.code+'</span>':'');
+  document.getElementById('dt-sub').textContent=t.clientName+' · '+(t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.name:pid;}).join(', ');
+
+  const nameVal = agentCan('name')?t.clientName:'<span style="color:var(--text3);font-style:italic">🔒 Oculto</span>';
+  const phoneVal = agentCan('phone')?('<a href="https://wa.me/55'+t.clientEmail.replace(/\D/g,'')+'" target="_blank" style="color:var(--green);text-decoration:none">'+t.clientEmail+' 💬</a>'):'<span style="color:var(--text3);font-style:italic">🔒 Oculto</span>';
+  const descVal = agentCan('desc')?t.desc:'<span style="color:var(--text3);font-style:italic">🔒 Descrição oculta.</span>';
+  const prodsVal = (t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join('<br/>');
+  const agVal = ag?ag.name:'<span style="color:var(--text3)">Aguardando</span>';
+
+  let html = '<div class="detail-grid">'
+    +'<div class="detail-item"><div class="label">Cliente</div><div class="val">'+nameVal+'</div></div>'
+    +'<div class="detail-item"><div class="label">📱 WhatsApp</div><div class="val">'+phoneVal+'</div></div>'
+    +'<div class="detail-item"><div class="label">Produto(s)</div><div class="val">'+prodsVal+'</div></div>'
+    +'<div class="detail-item"><div class="label">Tipo</div><div class="val">'+t.type+'</div></div>'
+    +'<div class="detail-item"><div class="label">Status</div><div class="val">'+badge(t.status)+'</div></div>'
+    +'<div class="detail-item"><div class="label">Atendente</div><div class="val">'+agVal+'</div></div>'
+    +'</div>'
+    +'<div style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:18px;font-size:13px;line-height:1.7">'
+    +'<div style="font-size:9px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px">Descrição</div>'
+    +descVal+'</div>';
+
+  if(t.attachment&&agentCan('attachment')){
+    html += '<div style="margin-bottom:18px"><div style="font-size:9px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">📎 Anexo do Cliente</div>';
+    if(t.attachment.type&&t.attachment.type.startsWith('image/'))
+      html += '<img src="'+t.attachment.data+'" style="max-width:100%;border-radius:10px;border:1px solid var(--border);cursor:pointer" onclick="window.open(this.src)" title="Clique para abrir"/>';
+    html += '<div style="font-size:12px;color:var(--text3);margin-top:6px">📄 '+t.attachment.name+'</div></div>';
+  }
+
+  const msgsHtml = t.messages.length===0
+    ?'<div style="text-align:center;color:var(--text3);padding:18px;font-size:12px">Nenhuma mensagem ainda.</div>'
+    :t.messages.map(m=>'<div class="msg-bubble '+(m.isAgent?'agent':'')+'"><div class="msg-from">'+m.from+' · '+fmtDate(m.ts)+'</div><div class="msg-text">'+msgContent(m)+'</div></div>').join('');
+
+  html += '<div style="margin-bottom:7px;font-size:9px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em">Conversa ('+t.messages.length+' mensagens)</div>'
+    +'<div class="chat-thread" id="chat-thread-'+t.id+'">'+msgsHtml+'</div>';
+
+  if(isAdmin||isOwner){
+    const tid=t.id;
+    html += '<div class="chat-input-row"><input id="chat-inp-'+tid+'" placeholder="Digite uma mensagem..." onkeydown="if(event.key===&quot;Enter&quot;)sendMsg(&quot;'+tid+'&quot;)"/><button class="act-btn fill" onclick="sendMsg(&quot;'+tid+'&quot;)">Enviar</button></div>';
+  }
+
+  html += '<hr class="div"><div style="display:flex;gap:8px">'
+    +'<button class="act-btn" style="flex:1;padding:11px" onclick="closeOv(&quot;ov-detail&quot;)">Fechar</button>';
+  if(canFinalize)
+    html += '<button class="act-btn fill" style="flex:2;padding:11px" onclick="agentClose(&quot;'+t.id+'&quot;);closeOv(&quot;ov-detail&quot;)">✅ Finalizar · Ganhar '+fmtMoney(COMMISSIONS[t.product]||0)+'</button>';
+  if(isAdmin&&t.status!=='done')
+    html += '<button class="act-btn green" style="flex:2;padding:11px" onclick="adminClose(&quot;'+t.id+'&quot;);closeOv(&quot;ov-detail&quot;)">✅ Encerrar (Admin)</button>';
+  html += '</div>';
+
+  document.getElementById('dt-body').innerHTML=html;
   openOv('ov-detail');
 }
 function sendMsg(id){const inp=document.getElementById('chat-inp-'+id);if(!inp)return;const text=inp.value.trim();if(!text)return;const t=TICKETS.find(t=>t.id===id);if(!t)return;const sender=currentUser.role==='admin'?'Admin':getAgent(currentUser.id)?.name||'Atendente';if(window._fbSendMsg){window._fbSendMsg(id,text,sender);}else{const msg={from:sender,isAgent:true,text,ts:new Date().toISOString()};t.messages.push(msg);}const thread=document.getElementById('chat-thread-'+id);if(thread){const d=document.createElement('div');d.className='msg-bubble agent';d.innerHTML=`<div class="msg-from">${sender} · Agora</div><div class="msg-text">${text}</div>`;thread.appendChild(d);thread.scrollTop=thread.scrollHeight;}inp.value='';}
@@ -1154,6 +1334,77 @@ function ccSendMedia(input){
 }
 
 
+
+
+let editingAgentPerms=null;
+const PERM_DEFS=[
+  {key:'name',label:'Ver nome completo do cliente',icon:'👤'},
+  {key:'phone',label:'Ver e ligar para o WhatsApp do cliente',icon:'📱'},
+  {key:'desc',label:'Ver descrição completa do problema',icon:'📝'},
+  {key:'attachment',label:'Ver arquivos/imagens anexados',icon:'📎'},
+];
+function openAgentPerms(agId){
+  editingAgentPerms=agId;
+  const ag=getAgent(agId);if(!ag)return;
+  const perms=ag.perms||{name:true,phone:true,desc:true,attachment:true};
+  document.getElementById('perms-agent-name').textContent=ag.name+' @'+ag.login;
+  document.getElementById('perms-chk-list').innerHTML=PERM_DEFS.map(d=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 14px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:18px">${d.icon}</span>
+        <div>
+          <div style="font-size:13px;font-weight:600">${d.label}</div>
+        </div>
+      </div>
+      <label style="position:relative;display:inline-block;width:42px;height:24px;cursor:pointer">
+        <input type="checkbox" id="perm-${d.key}" ${perms[d.key]!==false?'checked':''} style="opacity:0;width:0;height:0;position:absolute"/>
+        <span style="position:absolute;inset:0;background:${perms[d.key]!==false?'var(--purple)':'var(--surface2)'};border-radius:100px;transition:.2s;border:1px solid var(--border)" id="perm-track-${d.key}"></span>
+        <span style="position:absolute;top:3px;left:${perms[d.key]!==false?'21':'3'}px;width:16px;height:16px;background:#fff;border-radius:50%;transition:.2s" id="perm-thumb-${d.key}"></span>
+      </label>
+    </div>
+  `).join('');
+  // Wire toggles
+  PERM_DEFS.forEach(d=>{
+    document.getElementById('perm-'+d.key).addEventListener('change',function(){
+      const on=this.checked;
+      document.getElementById('perm-track-'+d.key).style.background=on?'var(--purple)':'var(--surface2)';
+      document.getElementById('perm-thumb-'+d.key).style.left=on?'21px':'3px';
+    });
+  });
+  openOv('ov-agent-perms');
+}
+function saveAgentPerms(){
+  const ag=getAgent(editingAgentPerms);if(!ag)return;
+  const perms={};
+  PERM_DEFS.forEach(d=>{perms[d.key]=document.getElementById('perm-'+d.key).checked;});
+  ag.perms=perms;
+  closeOv('ov-agent-perms');
+  toast('✅ Permissões salvas para '+ag.name+'!');
+  if(window._fbAddAgent)window._fbAddAgent();
+}
+function agentCan(perm){
+  if(!currentUser||currentUser.role==='admin')return true;
+  const ag=getAgent(currentUser.id);
+  if(!ag)return false;
+  const perms=ag.perms||{};
+  return perms[perm]!==false;
+}
+function openChangeSector(){
+  const me=getAgent(currentUser.id);if(!me)return;
+  document.getElementById('sector-chk-grid').innerHTML=PRODUCTS.map(p=>`<div class="chk-item"><input type="checkbox" id="sc-${p.id}" value="${p.id}" ${me.products.includes(p.id)?'checked':''}><label for="sc-${p.id}">${p.emoji} ${p.name} ${p.plan}</label></div>`).join('');
+  openOv('ov-change-sector');
+}
+function saveAgentSector(){
+  const me=getAgent(currentUser.id);if(!me)return;
+  const selected=[...document.querySelectorAll('#sector-chk-grid input:checked')].map(i=>i.value);
+  if(selected.length===0){toast('⚠️ Selecione ao menos 1 produto!');return;}
+  me.products=selected;
+  closeOv('ov-change-sector');
+  toast('✅ Setor atualizado!');
+  if(window._fbAddAgent)window._fbAddAgent();
+  updateBadges();
+  navTo('agent-queue');
+}
 function removeAgent(id){const idx=AGENTS.findIndex(a=>a.id===id);if(idx>-1){AGENTS.splice(idx,1);toast('🗑 Atendente removido.');if(window._fbRemoveAgent)window._fbRemoveAgent();renderAdminAgents();}}
 
 // screen activated by async bootstrap above
