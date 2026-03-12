@@ -1038,7 +1038,7 @@ window.showNotifPop = function(title, msg, cb) {
   el.querySelector('.np-x').addEventListener('click',function(e){e.stopPropagation();el.remove();});
   if(cb) el.addEventListener('click',cb);
   document.body.appendChild(el);
-  setTimeout(()=>{const e=document.getElementById('_np');if(e)e.remove();},6000);
+  setTimeout(()=>{const np2=document.getElementById('_np');if(np2)np2.remove();},6000);
 };
 
 // Poll for new messages (client side)
