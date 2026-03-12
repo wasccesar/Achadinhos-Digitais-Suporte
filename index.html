@@ -30,55 +30,52 @@ input[type=file]::file-selector-button{background:var(--surface2);border:1px sol
 input[type=file]::file-selector-button:hover{border-color:var(--purple2);color:var(--purple3);}
 
 
-/* ── CLIENT PORTAL ── */
+/* ── CLIENT PORTAL SCREEN ── */
 #screen-portal{align-items:flex-start;justify-content:center;background:var(--bg);padding:0;}
 #screen-portal::after{content:'';position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(rgba(124,58,237,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(124,58,237,.04) 1px,transparent 1px);background-size:48px 48px;z-index:0;}
-.portal-wrap{position:relative;z-index:2;width:100%;max-width:520px;margin:0 auto;padding:0 0 40px;}
-.portal-header{background:linear-gradient(135deg,var(--purple) 0%,#3b0d8a 100%);padding:28px 24px 24px;display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden;}
-.portal-header::before{content:'';position:absolute;top:-60px;right:-60px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.05);}
-.portal-user-info{display:flex;align-items:center;gap:14px;position:relative;z-index:1;}
-.portal-avatar{width:52px;height:52px;border-radius:50%;border:2.5px solid rgba(255,255,255,.35);object-fit:cover;flex-shrink:0;}
-.portal-avatar-init{width:52px;height:52px;border-radius:50%;border:2.5px solid rgba(255,255,255,.35);background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;}
-.portal-name{font-size:17px;font-weight:800;color:#fff;}
-.portal-email{font-size:11px;color:rgba(255,255,255,.6);margin-top:2px;}
+.portal-wrap{position:relative;z-index:2;width:100%;max-width:520px;margin:0 auto;padding:0 0 60px;}
+.portal-hdr{background:linear-gradient(135deg,var(--purple) 0%,#3b0d8a 100%);padding:28px 24px 24px;display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden;}
+.portal-hdr::before{content:'';position:absolute;top:-60px;right:-60px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.05);}
+.portal-user{display:flex;align-items:center;gap:14px;position:relative;z-index:1;}
+.portal-photo{width:52px;height:52px;border-radius:50%;border:2.5px solid rgba(255,255,255,.35);object-fit:cover;flex-shrink:0;}
+.portal-initials{width:52px;height:52px;border-radius:50%;border:2.5px solid rgba(255,255,255,.35);background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;flex-shrink:0;}
+.portal-uname{font-size:17px;font-weight:800;color:#fff;}
+.portal-uemail{font-size:11px;color:rgba(255,255,255,.6);margin-top:2px;}
 .portal-signout{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.8);padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;font-family:var(--font);font-weight:600;transition:.2s;position:relative;z-index:1;}
 .portal-signout:hover{background:rgba(255,255,255,.2);}
-.portal-section{padding:20px 20px 0;}
-.portal-section-title{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--text3);font-family:var(--mono);margin-bottom:14px;}
-.portal-new-btn{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,rgba(124,58,237,.15),rgba(124,58,237,.05));border:1px solid rgba(124,58,237,.35);border-radius:14px;padding:16px 18px;cursor:pointer;transition:.2s;text-align:left;font-family:var(--font);color:var(--text);width:100%;margin-bottom:10px;}
-.portal-new-btn:hover{border-color:var(--purple2);transform:translateY(-1px);box-shadow:0 6px 24px rgba(124,58,237,.2);}
-.portal-new-btn .pnb-icon{font-size:28px;flex-shrink:0;}
-.portal-new-btn .pnb-text{flex:1;}
-.portal-new-btn .pnb-title{font-size:14px;font-weight:700;}
-.portal-new-btn .pnb-sub{font-size:11px;color:var(--text3);margin-top:2px;}
-.portal-ticket-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:0;margin-bottom:10px;cursor:pointer;transition:.2s;overflow:hidden;}
-.portal-ticket-card:hover{border-color:var(--purple2);transform:translateY(-1px);}
-.ptc-top{padding:14px 16px 10px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
-.ptc-info{flex:1;}
-.ptc-id{font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:4px;}
-.ptc-title{font-weight:700;font-size:14px;margin-bottom:3px;}
-.ptc-prod{font-size:11px;color:var(--text3);}
-.ptc-status{flex-shrink:0;}
-.ptc-msg-preview{padding:10px 16px 12px;background:var(--bg2);border-top:1px solid var(--border);font-size:12px;color:var(--text2);line-height:1.5;display:flex;align-items:center;gap:8px;}
-.ptc-msg-preview .pm-avatar{font-size:14px;flex-shrink:0;}
-.ptc-msg-preview .pm-text{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.ptc-msg-preview .pm-time{font-size:10px;color:var(--text3);font-family:var(--mono);flex-shrink:0;}
-.ptc-unread-dot{width:8px;height:8px;border-radius:50%;background:var(--purple2);flex-shrink:0;box-shadow:0 0 8px var(--pglow);}
-.portal-empty{text-align:center;padding:40px 20px;color:var(--text3);}
-.portal-empty .pe-icon{font-size:48px;margin-bottom:12px;}
-.portal-empty p{font-size:13px;line-height:1.6;}
-/* Popup notification overlay */
-.notif-popup{position:fixed;top:20px;right:20px;z-index:9999;display:flex;align-items:flex-start;gap:12px;background:var(--surface);border:1px solid rgba(124,58,237,.4);border-radius:16px;padding:16px;box-shadow:0 8px 40px rgba(0,0,0,.5),0 0 0 1px rgba(124,58,237,.1);max-width:320px;animation:slideInRight .3s cubic-bezier(.34,1.56,.64,1);}
-@keyframes slideInRight{from{opacity:0;transform:translateX(100px)}to{opacity:1;transform:none}}
-.notif-popup .np-icon{font-size:26px;flex-shrink:0;}
-.notif-popup .np-body{flex:1;}
-.notif-popup .np-title{font-size:13px;font-weight:700;}
-.notif-popup .np-sub{font-size:12px;color:var(--text3);margin-top:3px;}
-.notif-popup .np-close{font-size:16px;cursor:pointer;color:var(--text3);padding:2px 4px;line-height:1;}
-.notif-popup .np-close:hover{color:var(--text);}
-/* Image upload tip banner */
-.img-tip-banner{background:rgba(245,197,24,.07);border:1px solid rgba(245,197,24,.25);border-radius:12px;padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text2);line-height:1.5;}
-.img-tip-banner .itb-icon{font-size:22px;flex-shrink:0;}
+.portal-sec{padding:20px 20px 0;}
+.portal-sec-label{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--text3);font-family:var(--mono);margin-bottom:12px;}
+.pnb-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;}
+.pnb{display:flex;flex-direction:column;gap:4px;background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.25);border-radius:14px;padding:14px 16px;cursor:pointer;transition:.2s;text-align:left;font-family:var(--font);color:var(--text);}
+.pnb:hover{border-color:var(--purple2);transform:translateY(-1px);box-shadow:0 6px 24px rgba(124,58,237,.2);}
+.pnb-icon{font-size:24px;}
+.pnb-title{font-size:13px;font-weight:700;}
+.pnb-sub{font-size:11px;color:var(--text3);}
+.ptk-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:10px;cursor:pointer;transition:.2s;overflow:hidden;}
+.ptk-card:hover{border-color:var(--purple2);transform:translateY(-1px);}
+.ptk-top{padding:14px 16px 10px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+.ptk-info{flex:1;}
+.ptk-id{font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:4px;}
+.ptk-title{font-weight:700;font-size:14px;margin-bottom:2px;}
+.ptk-type{font-size:11px;color:var(--text3);}
+.ptk-preview{padding:9px 16px 12px;background:var(--bg2);border-top:1px solid var(--border);font-size:12px;display:flex;align-items:center;gap:8px;}
+.ptk-preview .pp-txt{flex:1;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ptk-preview .pp-time{font-size:10px;color:var(--text3);font-family:var(--mono);flex-shrink:0;}
+.ptk-unread{width:8px;height:8px;border-radius:50%;background:var(--purple2);flex-shrink:0;box-shadow:0 0 8px var(--pglow);}
+.portal-empty{text-align:center;padding:40px 20px;}
+.portal-empty .pe-ico{font-size:48px;margin-bottom:12px;}
+.portal-empty p{font-size:13px;color:var(--text3);line-height:1.6;}
+/* Notification popup */
+.notif-pop{position:fixed;top:20px;right:20px;z-index:9999;display:flex;align-items:flex-start;gap:12px;background:var(--surface);border:1px solid rgba(124,58,237,.4);border-radius:16px;padding:14px 16px;box-shadow:0 8px 40px rgba(0,0,0,.6);max-width:300px;animation:npIn .3s cubic-bezier(.34,1.56,.64,1);cursor:pointer;}
+@keyframes npIn{from{opacity:0;transform:translateX(120px)}to{opacity:1;transform:none}}
+.notif-pop .np-ico{font-size:22px;flex-shrink:0;margin-top:1px;}
+.notif-pop .np-body{flex:1;}
+.notif-pop .np-title{font-size:13px;font-weight:700;}
+.notif-pop .np-msg{font-size:11px;color:var(--text3);margin-top:2px;line-height:1.4;}
+.notif-pop .np-x{font-size:16px;cursor:pointer;color:var(--text3);line-height:1;padding:0 2px;}
+/* Image tip banner */
+.img-tip{background:rgba(245,197,24,.07);border:1px solid rgba(245,197,24,.25);border-radius:12px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text2);line-height:1.5;}
+.img-tip .it-ico{font-size:22px;flex-shrink:0;}
 
 /* ── LOGIN ── */
 #screen-login{align-items:center;justify-content:center;padding:24px;}
@@ -446,7 +443,7 @@ hr.div{border:none;border-top:1px solid var(--border);margin:18px 0;}
       </div>
       <div style="padding:10px 16px 16px;position:relative;z-index:2">
         <div style="height:1px;background:var(--border);margin-bottom:12px"></div>
-        <button onclick="window.currentGoogleUser?showGoogleDashboard(window.currentGoogleUser):signInWithGoogle()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;border:1.5px solid #e0e0e0;color:#3c3c3c;padding:12px 16px;border-radius:12px;font-size:14px;font-weight:600;font-family:var(--font);cursor:pointer;transition:.2s;box-shadow:0 1px 6px rgba(0,0,0,.15)" onmouseover="this.style.boxShadow='0 3px 12px rgba(0,0,0,.2)'" onmouseout="this.style.boxShadow='0 1px 6px rgba(0,0,0,.15)'">
+        <button onclick="window._gUser?showGoogleDashboard(window._gUser):signInWithGoogle()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;border:1.5px solid #e0e0e0;color:#3c3c3c;padding:12px 16px;border-radius:12px;font-size:14px;font-weight:600;font-family:var(--font);cursor:pointer;transition:.2s;box-shadow:0 1px 6px rgba(0,0,0,.15)" onmouseover="this.style.boxShadow='0 3px 12px rgba(0,0,0,.2)'" onmouseout="this.style.boxShadow='0 1px 6px rgba(0,0,0,.15)'">
           <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z"/></svg>
           Continuar com Google — ver meus chamados
         </button>
@@ -455,55 +452,35 @@ hr.div{border:none;border-top:1px solid var(--border);margin:18px 0;}
     </div>
   </div>
   <div class="internal-link-area"><button onclick="goLogin()">área interna</button></div>
+</div>
 
 
-<!-- CLIENT PORTAL SCREEN (logged in with Google) -->
+<!-- CLIENT PORTAL (Google logged in) -->
 <div id="screen-portal" class="screen">
   <div class="portal-wrap">
-    <!-- Header -->
-    <div class="portal-header">
-      <div class="portal-user-info">
-        <img id="prt-photo" src="" class="portal-avatar" onerror="this.style.display='none';document.getElementById('prt-initials').style.display='flex'"/>
-        <div id="prt-initials" class="portal-avatar-init" style="display:none">?</div>
-        <div>
-          <div class="portal-name" id="prt-name">—</div>
-          <div class="portal-email" id="prt-email">—</div>
-        </div>
+    <div class="portal-hdr">
+      <div class="portal-user">
+        <img id="prt-photo" src="" class="portal-photo" onerror="this.style.display='none';document.getElementById('prt-init').style.display='flex'"/>
+        <div id="prt-init" class="portal-initials" style="display:none">?</div>
+        <div><div class="portal-uname" id="prt-name">—</div><div class="portal-uemail" id="prt-email">—</div></div>
       </div>
       <button class="portal-signout" onclick="signOutGoogle()">Sair</button>
     </div>
-
-    <!-- New ticket buttons -->
-    <div class="portal-section" style="margin-top:20px">
-      <div class="portal-section-title">Preciso de ajuda com...</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <button class="portal-new-btn" onclick="startTicketPortal('suporte')">
-          <span class="pnb-icon">🛠️</span>
-          <div class="pnb-text"><div class="pnb-title">Suporte Técnico</div><div class="pnb-sub">Erro, produto não funciona</div></div>
-        </button>
-        <button class="portal-new-btn" onclick="startTicketPortal('resgatar')">
-          <span class="pnb-icon">🎁</span>
-          <div class="pnb-text"><div class="pnb-title">Resgatar Produto</div><div class="pnb-sub">Gemini, ChatGPT, etc.</div></div>
-        </button>
-        <button class="portal-new-btn" onclick="startTicketPortal('renovacao')">
-          <span class="pnb-icon">🔄</span>
-          <div class="pnb-text"><div class="pnb-title">Renovar Plano</div><div class="pnb-sub">Mensal ou anual</div></div>
-        </button>
-        <button class="portal-new-btn" onclick="startTicketPortal('duvida')">
-          <span class="pnb-icon">❓</span>
-          <div class="pnb-text"><div class="pnb-title">Dúvida Geral</div><div class="pnb-sub">Outra solicitação</div></div>
-        </button>
+    <div class="portal-sec" style="margin-top:20px">
+      <div class="portal-sec-label">Preciso de ajuda com...</div>
+      <div class="pnb-grid">
+        <button class="pnb" onclick="portalStartTicket('suporte')"><span class="pnb-icon">🛠️</span><span class="pnb-title">Suporte Técnico</span><span class="pnb-sub">Erro, produto não funciona</span></button>
+        <button class="pnb" onclick="portalStartTicket('resgatar')"><span class="pnb-icon">🎁</span><span class="pnb-title">Resgatar Produto</span><span class="pnb-sub">Gemini, ChatGPT…</span></button>
+        <button class="pnb" onclick="portalStartTicket('renovacao')"><span class="pnb-icon">🔄</span><span class="pnb-title">Renovar Plano</span><span class="pnb-sub">Mensal ou anual</span></button>
+        <button class="pnb" onclick="portalStartTicket('duvida')"><span class="pnb-icon">❓</span><span class="pnb-title">Dúvida Geral</span><span class="pnb-sub">Outra solicitação</span></button>
       </div>
     </div>
-
-    <!-- Tickets list -->
-    <div class="portal-section" style="margin-top:22px">
-      <div class="portal-section-title">Meus Chamados</div>
-      <div id="prt-tickets-list"></div>
+    <div class="portal-sec" style="margin-top:22px">
+      <div class="portal-sec-label">Meus Chamados</div>
+      <div id="prt-list"></div>
     </div>
   </div>
 </div>
-
 
 <!-- CLIENT LIVE CHAT SCREEN -->
 <div id="screen-chat" class="screen">
@@ -565,7 +542,8 @@ hr.div{border:none;border-top:1px solid var(--border);margin:18px 0;}
       <div class="fgroup"><label>📱 Seu WhatsApp</label><input type="tel" id="tk-email" placeholder="Ex: (11) 99999-9999" inputmode="numeric"/></div>
       <div class="fgroup"><label>📦 Qual é o seu produto?</label><div class="prod-grid" id="tk-prod-grid"></div></div>
       <div class="fgroup"><label>💬 Conta o que aconteceu</label><textarea id="tk-desc" placeholder="Descreva seu problema com detalhes. Quanto mais info, mais rápido te ajudamos! 😊"></textarea></div>
-      <div id="img-tip-banner" class="img-tip-banner" style="display:none"><span class="itb-icon">📸</span><div><strong style="color:var(--yellow)">Dica importante:</strong> Para problemas técnicos, <strong>enviar um print ou foto</strong> do erro ajuda o atendente a resolver muito mais rápido!</div></div><div class="fgroup"><label>📎 Anexar imagem ou print <span id="img-optional-label">(opcional)</span></label><input type="file" id="tk-file" accept="image/*,.pdf" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:10px;font-family:var(--font);font-size:13px;cursor:pointer;"/><div style="font-size:11px;color:var(--text3);margin-top:5px">📷 Fotos, prints, comprovantes — máx. 5MB</div></div>
+      <div id="img-tip" class="img-tip" style="display:none"><span class="it-ico">📸</span><strong style="color:var(--yellow)">Dica:</strong>&nbsp;Enviar um print do erro acelera muito o atendimento!</div>
+      <div class="fgroup"><label>📎 Anexar imagem ou print (opcional)</label><input type="file" id="tk-file" accept="image/*,.pdf" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:10px;font-family:var(--font);font-size:13px;cursor:pointer;"/><div style="font-size:11px;color:var(--text3);margin-top:5px">📷 Fotos, prints, comprovantes — máx. 5MB</div></div>
       <button class="submit-btn" onclick="submitTicket()">📩 Enviar Pedido de Suporte</button>
       <div style="text-align:center;font-size:11px;color:var(--text3);margin-top:10px">✅ Não precisa criar conta. Resposta em breve!</div>
     </div>
@@ -664,7 +642,8 @@ hr.div{border:none;border-top:1px solid var(--border);margin:18px 0;}
 </div>
 
 <!-- Google Portal Overlay -->
-<!-- google portal overlay removed - now uses screen-portal -->
+<!-- portal now uses screen-portal --></div>
+</div>
 
 <!-- Withdrawal Modal -->
 <div class="overlay" id="ov-withdrawal">
@@ -948,7 +927,7 @@ window.signInWithGoogle = async function() {
       photo: user.photoURL,
       lastLogin: new Date().toISOString()
     }, {merge: true});
-    await requestNotifPermission();
+    if(typeof Notification!=='undefined'&&Notification.permission==='default')Notification.requestPermission().catch(()=>{});
     showGoogleDashboard(user);
   } catch(e) {
     console.warn('Google sign-in error', e);
@@ -957,184 +936,127 @@ window.signInWithGoogle = async function() {
   }
 };
 
-// Current Google user - exposed globally
-window.currentGoogleUser = null;
-let _lastSeenMsgCounts = {}; // ticketId -> msg count seen by client
+window.signOutGoogle = async function() {
+  try { await signOut(auth); } catch(e){}
+  showScreen('client');
+};
+
+// ── Google portal ──
+window._gUser = null;
+window._seenMsgs = {};
 
 function showGoogleDashboard(user) {
-  window.currentGoogleUser = user;
+  window._gUser = user;
   const myTickets = TICKETS.filter(t =>
     (t.googleUid && t.googleUid === user.uid) ||
     (t.clientEmail && t.clientEmail.toLowerCase() === user.email.toLowerCase())
   );
-  showPortalScreen(user, myTickets);
+  // Fill header
+  const nm=document.getElementById('prt-name'), em=document.getElementById('prt-email');
+  const ph=document.getElementById('prt-photo'), ini=document.getElementById('prt-init');
+  if(nm) nm.textContent = user.displayName||user.email;
+  if(em) em.textContent = user.email;
+  if(ph && user.photoURL){ ph.src=user.photoURL; ph.style.display=''; if(ini)ini.style.display='none'; }
+  else if(ini){ ini.textContent=(user.displayName||user.email||'?')[0].toUpperCase(); ini.style.display='flex'; if(ph)ph.style.display='none'; }
+  // Render ticket list
+  const listEl = document.getElementById('prt-list');
+  if(listEl) {
+    const sLabel={open:'⏳ Aguardando',claimed:'🎧 Em Atendimento',done:'✅ Finalizado'};
+    const sColor={open:'var(--yellow)',claimed:'var(--purple3)',done:'#64748b'};
+    const sorted=[...myTickets].sort((a,b)=>{
+      const at=a.messages&&a.messages.length?new Date(a.messages[a.messages.length-1].ts):new Date(a.createdAt);
+      const bt=b.messages&&b.messages.length?new Date(b.messages[b.messages.length-1].ts):new Date(b.createdAt);
+      return bt-at;
+    });
+    if(sorted.length===0){
+      listEl.innerHTML='<div class="portal-empty"><div class="pe-ico">📭</div><p>Nenhum chamado ainda.<br>Use os botões acima para abrir um!</p></div>';
+    } else {
+      listEl.innerHTML=sorted.map(t=>{
+        const prods=(t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join(', ');
+        const msgs=t.messages||[];
+        const last=msgs.length?msgs[msgs.length-1]:null;
+        const seen=window._seenMsgs[t.id]||0;
+        const unread=msgs.filter(m=>m.isAgent).length>seen&&t.status!=='open';
+        const preview=last
+          ?'<div class="ptk-preview">'+(unread?'<div class="ptk-unread"></div>':'<span style="font-size:13px">'+(last.isAgent?'🎧':'👤')+'</span>')+'<div class="pp-txt">'+(last.isAgent?'<strong style="color:var(--purple3)">Atendente:</strong> ':'')+last.text+'</div><div class="pp-time">'+fmtDate(last.ts)+'</div></div>'
+          :'<div class="ptk-preview"><span style="font-size:13px">⏳</span><div class="pp-txt" style="color:var(--text3)">Aguardando atendente...</div></div>';
+        return '<div class="ptk-card" onclick="portalOpenChat(''+t.id+'')"><div class="ptk-top"><div class="ptk-info"><div class="ptk-id">TICKET '+t.id+' · '+fmtDate(t.createdAt)+'</div><div class="ptk-title">'+prods+'</div><div class="ptk-type">'+t.type+'</div></div><span class="badge" style="color:'+sColor[t.status]+';background:transparent;border-color:'+sColor[t.status]+'30;flex-shrink:0">'+sLabel[t.status]+'</span></div>'+preview+'</div>';
+      }).join('');
+    }
+  }
+  showScreen('portal');
 }
 window.showGoogleDashboard = showGoogleDashboard;
 
-function showPortalScreen(user, tickets) {
-  const nameEl = document.getElementById('prt-name');
-  const emailEl = document.getElementById('prt-email');
-  const photoEl = document.getElementById('prt-photo');
-  const initEl = document.getElementById('prt-initials');
-  if(nameEl) nameEl.textContent = user.displayName || user.email;
-  if(emailEl) emailEl.textContent = user.email;
-  if(photoEl && user.photoURL) {
-    photoEl.src = user.photoURL;
-    photoEl.style.display = '';
-    if(initEl) initEl.style.display = 'none';
-  } else if(initEl) {
-    initEl.textContent = (user.displayName||user.email||'?')[0].toUpperCase();
-    initEl.style.display = 'flex';
-    if(photoEl) photoEl.style.display = 'none';
-  }
-
-  const listEl = document.getElementById('prt-tickets-list');
-  if(!listEl) return;
-
-  const sorted = [...tickets].sort((a,b)=>{
-    const aLast = a.messages&&a.messages.length ? new Date(a.messages[a.messages.length-1].ts) : new Date(a.createdAt);
-    const bLast = b.messages&&b.messages.length ? new Date(b.messages[b.messages.length-1].ts) : new Date(b.createdAt);
-    return bLast - aLast;
-  });
-
-  const statusLabel = {open:'⏳ Aguardando atendente',claimed:'🎧 Em Atendimento',done:'✅ Finalizado'};
-  const statusColor = {open:'var(--yellow)',claimed:'var(--purple3)',done:'#64748b'};
-
-  if(sorted.length === 0) {
-    listEl.innerHTML = '<div class="portal-empty"><div class="pe-icon">📭</div><p>Você ainda não tem chamados.<br>Use os botões acima para abrir um!</p></div>';
-  } else {
-    listEl.innerHTML = sorted.map(t => {
-      const prods = (t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join(', ');
-      const msgs = t.messages||[];
-      const lastMsg = msgs.length ? msgs[msgs.length-1] : null;
-      const seenCount = _lastSeenMsgCounts[t.id]||0;
-      const hasUnread = msgs.filter(m=>m.isAgent).length > seenCount && t.status !== 'open';
-
-      const preview = lastMsg
-        ? '<div class="ptc-msg-preview">'
-          +(hasUnread ? '<div class="ptc-unread-dot"></div>' : '<span class="pm-avatar">'+(lastMsg.isAgent?'🎧':'👤')+'</span>')
-          +'<div class="pm-text">'+(lastMsg.isAgent?'<strong style="color:var(--purple3)">Atendente:</strong> ':'')+lastMsg.text+'</div>'
-          +'<div class="pm-time">'+fmtDate(lastMsg.ts)+'</div>'
-          +'</div>'
-        : '<div class="ptc-msg-preview"><span class="pm-avatar">⏳</span><div class="pm-text" style="color:var(--text3)">Aguardando atendente...</div></div>';
-
-      return '<div class="portal-ticket-card" onclick="openClientChatPortal(''+t.id+'')">'
-        +'<div class="ptc-top">'
-        +'<div class="ptc-info">'
-        +'<div class="ptc-id">TICKET '+t.id+' · '+fmtDate(t.createdAt)+'</div>'
-        +'<div class="ptc-title">'+prods+'</div>'
-        +'<div class="ptc-prod">'+t.type+'</div>'
-        +'</div>'
-        +'<div class="ptc-status"><span class="badge" style="color:'+statusColor[t.status]+';background:transparent;border-color:'+statusColor[t.status]+'20">'+statusLabel[t.status]+'</span></div>'
-        +'</div>'
-        +preview
-        +'</div>';
-    }).join('');
-  }
-
-  showScreen('portal');
-}
-
-window.openClientChatPortal = function(ticketId) {
-  const t = TICKETS.find(t=>t.id===ticketId);
-  if(!t) return;
-  const agentMsgs = (t.messages||[]).filter(m=>m.isAgent).length;
-  _lastSeenMsgCounts[ticketId] = agentMsgs;
-  openClientChat(ticketId, 'google');
+window.portalOpenChat = function(tid) {
+  const t=TICKETS.find(t=>t.id===tid); if(!t) return;
+  window._seenMsgs[tid]=(t.messages||[]).filter(m=>m.isAgent).length;
+  openClientChat(tid,'google');
 };
 
-window.signOutGoogle = async function() {
-  try { await signOut(auth); } catch(e){}
-  window.currentGoogleUser = null;
-  showScreen('client');
-};
-
-// Notification system
-let _notifPermission = false;
-
-async function requestNotifPermission() {
-  if(!('Notification' in window)) return;
-  if(Notification.permission === 'granted') { _notifPermission = true; return; }
-  if(Notification.permission !== 'denied') {
-    const perm = await Notification.requestPermission();
-    _notifPermission = perm === 'granted';
+window.portalStartTicket = function(type) {
+  pendingType=type;
+  const labels={suporte:'🛠️ Suporte Técnico',resgatar:'🎁 Resgatar Produto',renovacao:'🔄 Renovar Assinatura',cancelamento:'❌ Cancelamento',duvida:'❓ Dúvida Geral'};
+  document.getElementById('ov-ticket-title').textContent='📩 '+labels[type];
+  const tip=document.getElementById('img-tip');
+  if(tip) tip.style.display=type==='suporte'?'flex':'none';
+  if(window._gUser){
+    const n=document.getElementById('tk-name');
+    if(n&&!n.value) n.value=window._gUser.displayName||'';
   }
-}
-window.requestNotifPermission = requestNotifPermission;
-
-function showNotifPopup(title, body, onClick) {
-  const existing = document.getElementById('notif-popup-el');
-  if(existing) existing.remove();
-  const el = document.createElement('div');
-  el.id = 'notif-popup-el';
-  el.className = 'notif-popup';
-  el.innerHTML = '<div class="np-icon">🔔</div><div class="np-body"><div class="np-title">'+title+'</div><div class="np-sub">'+body+'</div></div><div class="np-close" onclick="document.getElementById('notif-popup-el').remove()">✕</div>';
-  if(onClick) { el.style.cursor='pointer'; el.addEventListener('click',function(e){if(!e.target.classList.contains('np-close'))onClick();}); }
-  document.body.appendChild(el);
-  setTimeout(()=>{ if(el.parentNode) el.remove(); }, 6000);
-  if(_notifPermission && Notification.permission === 'granted') {
-    try { new Notification(title, {body}); } catch(e){}
-  }
-}
-window.showNotifPopup = showNotifPopup;
-
-function notifyStaffNewTicket(ticket) {
-  const prods = (ticket.products||[ticket.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join(', ');
-  showNotifPopup('🎫 Novo chamado chegou!', ticket.clientName+' · '+prods, ()=>{if(window.currentUser)navTo('admin-tickets');});
-}
-window.notifyStaffNewTicket = notifyStaffNewTicket;
-
-let _prevMsgCounts = {};
-function checkForNewAgentMessages() {
-  if(!window.currentGoogleUser) return;
-  const u = window.currentGoogleUser;
-  const myTickets = TICKETS.filter(t =>
-    (t.googleUid && t.googleUid === u.uid) ||
-    (t.clientEmail && t.clientEmail.toLowerCase() === u.email.toLowerCase())
-  );
-  myTickets.forEach(t => {
-    const agentMsgs = (t.messages||[]).filter(m=>m.isAgent);
-    const prev = _prevMsgCounts[t.id] || 0;
-    if(agentMsgs.length > prev && prev > 0) {
-      const lastMsg = agentMsgs[agentMsgs.length-1];
-      const prods = (t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join(', ');
-      showNotifPopup('💬 Resposta no seu chamado!', prods+': '+lastMsg.text.slice(0,60), ()=>window.openClientChatPortal(t.id));
-    }
-    _prevMsgCounts[t.id] = agentMsgs.length;
-  });
-}
-
-let _prevTicketCount = -1;
-function checkForNewTickets() {
-  if(!window.currentUser) return;
-  const openCount = TICKETS.filter(t=>t.status==='open').length;
-  if(_prevTicketCount >= 0 && openCount > _prevTicketCount) {
-    const newest = [...TICKETS].filter(t=>t.status==='open').slice(-1)[0];
-    if(newest) notifyStaffNewTicket(newest);
-  }
-  _prevTicketCount = openCount;
-}
-
-setInterval(()=>{ checkForNewAgentMessages(); checkForNewTickets(); }, 3000);
-
-window.startTicketPortal = function(type) {
-  pendingType = type;
-  const labels = {suporte:'🛠️ Suporte Técnico',resgatar:'🎁 Resgatar Produto',renovacao:'🔄 Renovar Assinatura',cancelamento:'❌ Cancelamento',duvida:'❓ Dúvida Geral'};
-  document.getElementById('ov-ticket-title').textContent = '📩 '+labels[type];
-  if(window.currentGoogleUser) {
-    const nameEl = document.getElementById('tk-name');
-    if(nameEl && !nameEl.value) nameEl.value = window.currentGoogleUser.displayName||'';
-  }
-  const banner = document.getElementById('img-tip-banner');
-  if(banner) banner.style.display = type==='suporte' ? 'flex' : 'none';
   openOv('ov-ticket');
 };
 
+window.signOutGoogle = async function() {
+  try{await signOut(auth);}catch(e){}
+  window._gUser=null;
+  showScreen('client');
+};
 
-// Check if user was already signed in (page refresh)
+// Notification popup
+window.showNotifPop = function(title, msg, cb) {
+  const old=document.getElementById('_np'); if(old)old.remove();
+  const el=document.createElement('div');
+  el.id='_np'; el.className='notif-pop';
+  el.innerHTML='<div class="np-ico">🔔</div><div class="np-body"><div class="np-title">'+title+'</div><div class="np-msg">'+msg+'</div></div><div class="np-x" onclick="event.stopPropagation();document.getElementById('_np').remove()">✕</div>';
+  if(cb) el.addEventListener('click',cb);
+  document.body.appendChild(el);
+  setTimeout(()=>{const e=document.getElementById('_np');if(e)e.remove();},6000);
+};
+
+// Poll for new messages (client side)
+let _prevMC={};
+setInterval(()=>{
+  if(!window._gUser) return;
+  const u=window._gUser;
+  TICKETS.filter(t=>(t.googleUid&&t.googleUid===u.uid)||(t.clientEmail&&t.clientEmail.toLowerCase()===u.email.toLowerCase())).forEach(t=>{
+    const agMsgs=(t.messages||[]).filter(m=>m.isAgent).length;
+    const prev=_prevMC[t.id];
+    if(prev!==undefined&&agMsgs>prev){
+      const last=t.messages.filter(m=>m.isAgent).slice(-1)[0];
+      const prods=(t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.name:pid;}).join(', ');
+      window.showNotifPop('💬 Resposta no seu chamado!',prods+': '+last.text.slice(0,50),()=>window.portalOpenChat(t.id));
+    }
+    _prevMC[t.id]=agMsgs;
+  });
+},3000);
+
+// Poll for new tickets (staff side)
+let _prevTC=-1;
+setInterval(()=>{
+  if(!window.currentUser) return;
+  const open=TICKETS.filter(t=>t.status==='open').length;
+  if(_prevTC>=0&&open>_prevTC){
+    const t=[...TICKETS].filter(t=>t.status==='open').slice(-1)[0];
+    if(t){const pr=(t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.name:pid;}).join(', ');window.showNotifPop('🎫 Novo chamado!',t.clientName+' · '+pr,()=>navTo('admin-tickets'));}
+  }
+  _prevTC=open;
+},4000);
+
+// Auto-restore session on page load
 onAuthStateChanged(auth, user => {
   if(user) {
-    currentGoogleUser = user;
+    window._gUser = user;
     setTimeout(()=>showGoogleDashboard(user), 1500);
   }
 });
@@ -1151,7 +1073,6 @@ onAuthStateChanged(auth, user => {
   } else if(hash==='#login'){
     showScreen('login');
   } else {
-    // Show client screen by default; onAuthStateChanged will upgrade to portal if logged in
     document.getElementById('screen-client').classList.add('active');
   }
 })();
@@ -1198,14 +1119,9 @@ function startTicket(type){
   pendingType=type;
   const labels={suporte:'🛠️ Suporte Técnico',resgatar:'🎁 Resgatar Produto',renovacao:'🔄 Renovar Assinatura',cancelamento:'❌ Cancelamento',duvida:'❓ Dúvida Geral'};
   document.getElementById('ov-ticket-title').textContent='📩 '+labels[type];
-  // Show image tip for tech support
-  const banner = document.getElementById('img-tip-banner');
-  if(banner) banner.style.display = type==='suporte' ? 'flex' : 'none';
-  // Pre-fill if Google user
-  if(window.currentGoogleUser) {
-    const nameEl = document.getElementById('tk-name');
-    if(nameEl && !nameEl.value) nameEl.value = window.currentGoogleUser.displayName||'';
-  }
+  const tip=document.getElementById('img-tip');
+  if(tip) tip.style.display=type==='suporte'?'flex':'none';
+  if(window._gUser){const n=document.getElementById('tk-name');if(n&&!n.value)n.value=window._gUser.displayName||'';}
   openOv('ov-ticket');
 }
 
@@ -1452,11 +1368,11 @@ function submitTicket(){
     if(window._fbFinish) window._fbFinish(name,email,desc,attachment,fileInput);
     else {
       const ticketId=genId(),ticketCode=genCode();
-      const newTicket={id:ticketId,code:ticketCode,clientName:name,clientEmail:email,googleUid:window.currentGoogleUser?window.currentGoogleUser.uid:null,products:[...selectedProducts],product:selectedProducts[0],type:pendingType||'duvida',desc,attachment:attachment||null,status:'open',agent:null,createdAt:new Date().toISOString(),messages:[]};
-      TICKETS.unshift(newTicket);
-      notifyStaffNewTicket(newTicket);
+      const newTk={id:ticketId,code:ticketCode,clientName:name,clientEmail:email,googleUid:window._gUser?window._gUser.uid:null,products:[...selectedProducts],product:selectedProducts[0],type:pendingType||'duvida',desc,attachment:attachment||null,status:'open',agent:null,createdAt:new Date().toISOString(),messages:[]};
+      TICKETS.unshift(newTk);
+      if(window.showNotifPop){const pr=(newTk.products||[]).map(pid=>{const p=getProd(pid);return p?p.name:pid;}).join(', ');window.showNotifPop('🎫 Novo chamado!',newTk.clientName+' · '+pr,()=>navTo('admin-tickets'));}
       closeOv('ov-ticket');showTicketCode(ticketCode);
-      if(window.currentGoogleUser) setTimeout(()=>showGoogleDashboard(window.currentGoogleUser),800);
+      if(window._gUser) setTimeout(()=>showGoogleDashboard(window._gUser),600);
       document.getElementById('tk-name').value='';document.getElementById('tk-email').value='';document.getElementById('tk-desc').value='';
       if(fileInput)fileInput.value='';selectedProducts=[];pendingType='';
       document.querySelectorAll('.prod-card').forEach(c=>c.classList.remove('sel'));
@@ -1561,38 +1477,22 @@ const MISTIC_CLIENT_SECRET = 'cs_hz69fztetgpbi51tfad7c25fg';
 
 async function misticPayWithdraw(pixKey, amount, name, pixKeyType) {
   try {
-    if(!pixKeyType) {
-      const cleaned = pixKey.replace(/[^0-9a-zA-Z@._\-]/g,'');
-      if(/^\d{11}$/.test(cleaned)) pixKeyType = 'CPF';
-      else if(/^\d{14}$/.test(cleaned)) pixKeyType = 'CNPJ';
-      else if(/^\+?\d{10,13}$/.test(cleaned)) pixKeyType = 'TELEFONE';
-      else if(cleaned.includes('@')) pixKeyType = 'EMAIL';
-      else pixKeyType = 'CHAVE_ALEATORIA';
+    if(!pixKeyType){
+      const c=pixKey.replace(/[^0-9a-zA-Z@._-]/g,'');
+      if(/^\d{11}$/.test(c)) pixKeyType='CPF';
+      else if(/^\d{14}$/.test(c)) pixKeyType='CNPJ';
+      else if(/^\+?\d{10,13}$/.test(c)) pixKeyType='TELEFONE';
+      else if(c.includes('@')) pixKeyType='EMAIL';
+      else pixKeyType='CHAVE_ALEATORIA';
     }
-    const payRes = await fetch('https://api.misticpay.com/api/transactions/withdraw', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'ci': MISTIC_CLIENT_ID,
-        'cs': MISTIC_CLIENT_SECRET
-      },
-      body: JSON.stringify({
-        amount: amount,
-        pixKey: pixKey,
-        pixKeyType: pixKeyType,
-        description: 'Comissão de vendas - Achadinhos Digitais'
-      })
+    const res=await fetch('https://api.misticpay.com/api/transactions/withdraw',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','ci':MISTIC_CLIENT_ID,'cs':MISTIC_CLIENT_SECRET},
+      body:JSON.stringify({amount,pixKey,pixKeyType,description:'Comissão - Achadinhos Digitais'})
     });
-    const payData = await payRes.json();
-    if(payRes.ok && payData.data) {
-      return {success: true, txId: payData.data.transactionId||payData.data.jobId||null, raw: payData};
-    } else {
-      return {success: false, error: payData.message || 'Erro na API MisticPay', raw: payData};
-    }
-  } catch(e) {
-    console.error('MisticPay error:', e);
-    return {success: false, error: e.message};
-  }
+    const d=await res.json();
+    return res.ok&&d.data?{success:true,txId:d.data.transactionId||d.data.jobId||null}:{success:false,error:d.message||'Erro API'};
+  } catch(e){return{success:false,error:e.message};}
 }
 
 async function openWithdrawal() {
@@ -1718,7 +1618,13 @@ function renderAgentProfile() {
     +'<div style="font-size:12px;color:var(--text3);margin-bottom:12px">Informe sua chave Pix (CPF, telefone, e-mail ou chave aleatória)</div>'
     +'<div style="display:grid;grid-template-columns:1fr 130px;gap:8px;margin-bottom:8px">'
     +'<input id="pix-key-input" type="text" placeholder="Sua chave Pix..." value="'+(me.pixKey||'')+'" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:10px;font-size:13px;font-family:var(--font);outline:none"/>'
-    +'<select id="pix-key-type" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:10px;font-size:13px;font-family:var(--font);outline:none"><option value="CPF" '+(me.pixKeyType===\'CPF\'?'selected':'')+'>CPF</option><option value="EMAIL" '+(me.pixKeyType===\'EMAIL\'?'selected':'')+'>E-mail</option><option value="TELEFONE" '+(me.pixKeyType===\'TELEFONE\'?'selected':'')+'>Telefone</option><option value="CNPJ" '+(me.pixKeyType===\'CNPJ\'?'selected':'')+'>CNPJ</option><option value="CHAVE_ALEATORIA" '+(me.pixKeyType===\'CHAVE_ALEATORIA\'?'selected':'')+'>Aleatória</option></select>'
+    +'<select id="pix-key-type" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:10px;font-size:13px;font-family:var(--font);outline:none">'
+    +'<option value="CPF"'+(me.pixKeyType==="CPF"?' selected':'')+'>CPF</option>'
+    +'<option value="EMAIL"'+(me.pixKeyType==="EMAIL"?' selected':'')+'>E-mail</option>'
+    +'<option value="TELEFONE"'+(me.pixKeyType==="TELEFONE"?' selected':'')+'>Telefone</option>'
+    +'<option value="CNPJ"'+(me.pixKeyType==="CNPJ"?' selected':'')+'>CNPJ</option>'
+    +'<option value="CHAVE_ALEATORIA"'+(me.pixKeyType==="CHAVE_ALEATORIA"?' selected':'')+'>Aleatória</option>'
+    +'</select>'
     +'</div>'
     +'<button class="act-btn fill" onclick="savePixKey()" style="width:100%;padding:11px">Salvar Chave Pix</button>'
     +(me.pixKey?'<div style="margin-top:10px;font-size:12px;color:var(--green)">✅ Chave cadastrada: '+me.pixKey+'</div>':'')
@@ -1728,11 +1634,10 @@ function renderAgentProfile() {
 
 function savePixKey() {
   const me = getAgent(currentUser.id); if(!me) return;
-  const key = document.getElementById('pix-key-input').value.trim();
-  const type = document.getElementById('pix-key-type')?.value || 'CPF';
+  const key = document.getElementById('pix-key-input')?.value.trim();
+  const type = document.getElementById('pix-key-type')?.value||'CPF';
   if(!key) { toast('⚠️ Informe uma chave Pix!'); return; }
-  me.pixKey = key;
-  me.pixKeyType = type;
+  me.pixKey=key; me.pixKeyType=type;
   if(window._fbAddAgent) window._fbAddAgent();
   toast('✅ Chave Pix salva! ('+type+')');
   renderAgentProfile();
