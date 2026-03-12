@@ -437,6 +437,195 @@ hr.div{border:none;border-top:1px solid var(--border);margin:18px 0;}
 
 <div class="toast" id="toast"></div>
 
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBHbJfEVu6oeyOCg1fX7HecJXYTC11rQ3s",
+  authDomain: "achadinhos-suporte.firebaseapp.com",
+  projectId: "achadinhos-suporte",
+  storageBucket: "achadinhos-suporte.firebasestorage.app",
+  messagingSenderId: "719375717095",
+  appId: "1:719375717095:web:30f6e6a1ce0513ce5ac842"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+// ── Collections ──
+const ticketsCol = collection(db,'tickets');
+const agentsCol  = collection(db,'agents');
+const configDoc  = doc(db,'config','main');
+const paymentsDoc = doc(db,'config','payments');
+
+// ── Load agents, commissions, payments from Firestore on start ──
+async function loadConfig() {
+  try {
+    const snap = await getDoc(configDoc);
+    if(snap.exists()){
+      const d = snap.data();
+      if(d.commissions) COMMISSIONS = d.commissions;
+      if(d.agents) AGENTS = d.agents;
+    }
+  } catch(e){ console.warn('loadConfig error',e); }
+}
+
+async function loadPayments() {
+  try {
+    const snap = await getDoc(paymentsDoc);
+    if(snap.exists()) PAYMENTS = snap.data().payments || {};
+  } catch(e){ console.warn('loadPayments error',e); }
+}
+
+async function saveConfig() {
+  try { await setDoc(configDoc, { commissions: COMMISSIONS, agents: AGENTS }, {merge:true}); }
+  catch(e){ console.warn('saveConfig error',e); }
+}
+
+async function savePayments() {
+  try { await setDoc(paymentsDoc, { payments: PAYMENTS }); }
+  catch(e){ console.warn('savePayments error',e); }
+}
+
+// ── Real-time listener: tickets ──
+function startTicketListener() {
+  const q = query(ticketsCol, orderBy('createdAt','desc'));
+  onSnapshot(q, snap => {
+    TICKETS = snap.docs.map(d => ({...d.data(), id:d.id}));
+    // refresh current page if on dashboard
+    if(currentUser && currentPage) {
+      const renders = {
+        'admin-dash':renderAdminDash,'admin-tickets':renderAdminTickets,
+        'agent-queue':renderAgentQueue,'agent-mine':renderAgentMine,'agent-done':renderAgentDone,
+        'admin-ranking':()=>renderRanking('adm-rank-list'),'agent-ranking':()=>renderRanking('ag-rank-list'),
+        'agent-earnings':renderAgentEarnings,'admin-finance':renderAdminFinance,
+      };
+      if(renders[currentPage]) renders[currentPage]();
+      updateBadges();
+    }
+  }, err => console.warn('ticket listener error', err));
+}
+
+// ── Override submitTicket to also save to Firestore ──
+const _origFinish = window._fbFinish = async function(name,email,desc,attachment,fileInput) {
+  const ticketId = genId();
+  const ticketCode = genCode();
+  const ticket = {
+    id:ticketId, code:ticketCode, clientName:name, clientEmail:email,
+    products:[...selectedProducts], product:selectedProducts[0],
+    type:pendingType||'duvida', desc,
+    attachment:attachment||null, status:'open', agent:null,
+    createdAt:new Date().toISOString(), messages:[]
+  };
+  // Save to Firestore
+  try {
+    await setDoc(doc(db,'tickets',ticketId), ticket);
+  } catch(e) {
+    console.warn('Firestore save error',e);
+    TICKETS.unshift(ticket); // fallback local
+  }
+  closeOv('ov-ticket');
+  showTicketCode(ticketCode);
+  document.getElementById('tk-name').value='';
+  document.getElementById('tk-email').value='';
+  document.getElementById('tk-desc').value='';
+  if(fileInput)fileInput.value='';
+  selectedProducts=[];pendingType='';
+  document.querySelectorAll('.prod-card').forEach(c=>c.classList.remove('sel'));
+};
+
+// ── Override ticket actions to sync Firestore ──
+window._fbClaimTicket = async function(id) {
+  const t=TICKETS.find(t=>t.id===id);
+  if(!t||t.status!=='open'){toast('⚠️ Ticket já foi pego!');return;}
+  try {
+    await updateDoc(doc(db,'tickets',id),{status:'claimed',agent:currentUser.id});
+    toast(`⚡ Você pegou o ticket ${id}!`);
+    navTo('agent-queue');
+  } catch(e) {
+    t.status='claimed';t.agent=currentUser.id;
+    toast(`⚡ Você pegou o ticket ${id}!`);navTo('agent-queue');
+  }
+};
+
+window._fbAgentClose = async function(id) {
+  const t=TICKETS.find(t=>t.id===id);if(!t)return;
+  const comm=COMMISSIONS[t.product]||0;
+  const ag=getAgent(currentUser.id);
+  try {
+    await updateDoc(doc(db,'tickets',id),{status:'done',closedAt:new Date().toISOString()});
+    if(ag){ag.closed++;ag.earnings+=comm;await saveConfig();}
+    toast(`✅ Ticket ${id} finalizado! Você ganhou ${fmtMoney(comm)} 🎉`);
+    navTo('agent-mine');
+  } catch(e) {
+    t.status='done';t.closedAt=new Date().toISOString();
+    if(ag){ag.closed++;ag.earnings+=comm;}
+    toast(`✅ Ticket ${id} finalizado! Você ganhou ${fmtMoney(comm)} 🎉`);navTo('agent-mine');
+  }
+};
+
+window._fbAdminClose = async function(id) {
+  const t=TICKETS.find(t=>t.id===id);if(!t||t.status==='done')return;
+  const ag=getAgent(t.agent);
+  try {
+    await updateDoc(doc(db,'tickets',id),{status:'done',closedAt:new Date().toISOString()});
+    if(ag){ag.closed++;ag.earnings+=(COMMISSIONS[t.product]||0);await saveConfig();}
+    toast(`✅ Ticket ${id} encerrado.`);navTo(currentPage);
+  } catch(e) {
+    t.status='done';t.closedAt=new Date().toISOString();
+    if(ag){ag.closed++;ag.earnings+=(COMMISSIONS[t.product]||0);}
+    toast(`✅ Ticket ${id} encerrado.`);navTo(currentPage);
+  }
+};
+
+window._fbAdminDel = async function(id) {
+  try {
+    await deleteDoc(doc(db,'tickets',id));
+    toast('🗑 Ticket removido.');navTo(currentPage);
+  } catch(e) {
+    const idx=TICKETS.findIndex(t=>t.id===id);
+    if(idx>-1){TICKETS.splice(idx,1);toast('🗑 Ticket removido.');navTo(currentPage);}
+  }
+};
+
+window._fbSendMsg = async function(id, text, sender) {
+  const t=TICKETS.find(t=>t.id===id);if(!t)return;
+  const msg={from:sender,isAgent:true,text,ts:new Date().toISOString()};
+  const newMsgs=[...t.messages,msg];
+  try {
+    await updateDoc(doc(db,'tickets',id),{messages:newMsgs});
+  } catch(e) {
+    t.messages.push(msg);
+  }
+};
+
+window._fbAddAgent = async function() {
+  // called after agent added locally
+  await saveConfig();
+};
+
+window._fbRemoveAgent = async function() {
+  await saveConfig();
+};
+
+window._fbSaveCommissions = async function() {
+  await saveConfig();
+};
+
+window._fbSavePayments = async function() {
+  await savePayments();
+};
+
+// ── Bootstrap ──
+(async () => {
+  await loadConfig();
+  await loadPayments();
+  startTicketListener();
+})();
+
+</script>
 <script>
 const PRODUCTS=[{id:'gemini-m',name:'Gemini',plan:'Mensal',emoji:'🤖'},{id:'gemini-a',name:'Gemini',plan:'Anual',emoji:'🤖'},{id:'chatgpt-m',name:'ChatGPT',plan:'Mensal',emoji:'💬'},{id:'chatgpt-a',name:'ChatGPT',plan:'Anual',emoji:'💬'},{id:'capcut-m',name:'CapCut',plan:'Mensal',emoji:'🎬'},{id:'capcut-a',name:'CapCut',plan:'Anual',emoji:'🎬'},{id:'grok',name:'Super Grok',plan:'Único',emoji:'⚡'},{id:'perplexity',name:'Perplexity',plan:'Único',emoji:'🔍'}];
 let COMMISSIONS={'gemini-m':5,'gemini-a':15,'chatgpt-m':6,'chatgpt-a':18,'capcut-m':4,'capcut-a':12,'grok':10,'perplexity':8};
@@ -507,16 +696,16 @@ function renderAdminTickets(){
 function renderAdminAgents(){
   document.getElementById('adm-agents-grid').innerHTML=AGENTS.map(a=>{const extra=TICKETS.filter(t=>t.agent===a.id&&t.status==='done').reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0);const active=TICKETS.filter(t=>t.agent===a.id&&t.status==='claimed').length;return`<div class="agent-card"><div class="ag-top"><div class="ag-avatar">${initials(a.name)}</div><div><div class="ag-name">${a.name}</div><div class="ag-email"><a href="https://wa.me/55${(a.email||'').replace(/\D/g,'')}" target="_blank" style="color:var(--green);text-decoration:none">📱 ${a.email}</a></div><div class="ag-login-tag">@${a.login}</div></div></div><div class="ag-stats"><div class="ag-stat"><div class="label">Fechados</div><div class="val">${a.closed}</div></div><div class="ag-stat"><div class="label">Em Aberto</div><div class="val">${active}</div></div></div><div class="ag-prods">${a.products.map(pid=>{const p=getProd(pid);return`<span class="ag-prod-tag">${p?p.emoji+' '+p.name:pid}</span>`;}).join('')}</div><div class="ag-earnings"><div class="label">💰 Ganhos</div><div class="amount">${fmtMoney(a.earnings+extra)}</div></div><div class="ag-actions"><button class="act-btn red" onclick="removeAgent('${a.id}')">Remover</button></div></div>`;}).join('')||'<div class="empty-box"><div class="e-icon">👥</div><p>Nenhum atendente cadastrado.</p></div>';
 }
-function renderCommissions(){document.getElementById('adm-comm-list').innerHTML=PRODUCTS.map(p=>`<div class="comm-row"><div><div class="comm-prod-name">${p.emoji} ${p.name}</div><div class="comm-prod-plan">${p.plan}</div></div><div style="font-size:11px;color:var(--text3);font-family:var(--mono)">por ticket</div><div style="display:flex;align-items:center;gap:7px"><span style="color:var(--text3)">R$</span><input class="comm-input" type="number" min="0" step="0.5" value="${COMMISSIONS[p.id]||0}" oninput="COMMISSIONS['${p.id}']=parseFloat(this.value)||0;document.getElementById('cd-${p.id}').textContent=fmtMoney(COMMISSIONS['${p.id}'])"/></div><div class="comm-display" id="cd-${p.id}">${fmtMoney(COMMISSIONS[p.id]||0)}</div></div>`).join('');}
+function renderCommissions(){document.getElementById('adm-comm-list').innerHTML=PRODUCTS.map(p=>`<div class="comm-row"><div><div class="comm-prod-name">${p.emoji} ${p.name}</div><div class="comm-prod-plan">${p.plan}</div></div><div style="font-size:11px;color:var(--text3);font-family:var(--mono)">por ticket</div><div style="display:flex;align-items:center;gap:7px"><span style="color:var(--text3)">R$</span><input class="comm-input" type="number" min="0" step="0.5" value="${COMMISSIONS[p.id]||0}" oninput="COMMISSIONS['${p.id}']=parseFloat(this.value)||0;document.getElementById('cd-${p.id}').textContent=fmtMoney(COMMISSIONS['${p.id}']);if(window._fbSaveCommissions)window._fbSaveCommissions()"/></div><div class="comm-display" id="cd-${p.id}">${fmtMoney(COMMISSIONS[p.id]||0)}</div></div>`).join('');}
 function renderRanking(cid){const sorted=AGENTS.map(a=>{const extra=TICKETS.filter(t=>t.agent===a.id&&t.status==='done').reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0);return{...a,total:a.earnings+extra};}).sort((a,b)=>b.total-a.total);document.getElementById(cid).innerHTML=sorted.map((a,i)=>`<div class="rank-row ${i===0?'first':''}"><div class="rank-num ${i===0?'g':i===1?'s':i===2?'b':''}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</div><div class="ag-avatar" style="width:42px;height:42px;font-size:15px">${initials(a.name)}</div><div class="rank-info"><div class="rank-name">${a.name}</div><div class="rank-sub">${a.closed} tickets · @${a.login}</div></div><div class="rank-earn">${fmtMoney(a.total)}</div></div>`).join('')||'<div class="empty-box"><div class="e-icon">🏆</div><p>Nenhum dado ainda.</p></div>';}
 function renderAgentQueue(){const me=getAgent(currentUser.id),avail=me?TICKETS.filter(t=>t.status==='open'&&(t.products||[t.product]).some(p=>me.products.includes(p))):[];document.getElementById('ag-queue-tbl').innerHTML=avail.length===0?'<div class="empty-box"><div class="e-icon">🎉</div><p>Fila vazia!</p></div>':`<table><thead><tr><th>ID</th><th>Cliente</th><th>Produto</th><th>Tipo</th><th>Abertura</th><th>Comissão</th><th>Ação</th></tr></thead><tbody>${avail.map(t=>{const pr=getProd(t.product);return`<tr><td><span class="t-id">${t.id}</span></td><td>${t.clientName}</td><td>${(t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join(', ')}</td><td style="font-size:11px;color:var(--text3)">${t.type}</td><td style="font-size:11px;color:var(--text3)">${fmtDate(t.createdAt)}</td><td style="color:var(--yellow);font-weight:800">${fmtMoney(COMMISSIONS[t.product]||0)}</td><td><button class="act-btn yf" onclick="claimTicket('${t.id}')">⚡ Pegar</button></td></tr>`;}).join('')}</tbody></table>`;}
 function renderAgentMine(){const mine=TICKETS.filter(t=>t.agent===currentUser.id&&t.status==='claimed');document.getElementById('ag-mine-tbl').innerHTML=mine.length===0?'<div class="empty-box"><div class="e-icon">📭</div><p>Nenhum ticket em andamento.</p></div>':`<table><thead><tr><th>ID</th><th>Cliente</th><th>Produto</th><th>Status</th><th>Comissão</th><th>Ações</th></tr></thead><tbody>${mine.map(t=>{const pr=getProd(t.product);return`<tr><td><span class="t-id">${t.id}</span></td><td>${t.clientName}</td><td>${(t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join(', ')}</td><td>${badge(t.status)}</td><td style="color:var(--yellow);font-weight:800">${fmtMoney(COMMISSIONS[t.product]||0)}</td><td><button class="act-btn" onclick="openDetail('${t.id}')">💬 Atender</button><button class="act-btn green" onclick="agentClose('${t.id}')">✅ Finalizar</button></td></tr>`;}).join('')}</tbody></table>`;}
 function renderAgentDone(){const done=TICKETS.filter(t=>t.agent===currentUser.id&&t.status==='done');document.getElementById('ag-done-tbl').innerHTML=done.length===0?'<div class="empty-box"><div class="e-icon">📦</div><p>Nenhum finalizado ainda.</p></div>':`<table><thead><tr><th>ID</th><th>Cliente</th><th>Produto</th><th>Finalizado em</th><th>Comissão</th><th></th></tr></thead><tbody>${done.map(t=>{const pr=getProd(t.product);return`<tr><td><span class="t-id">${t.id}</span></td><td>${t.clientName}</td><td>${(t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join(', ')}</td><td style="font-size:11px;color:var(--text3)">${fmtDate(t.closedAt)}</td><td style="color:var(--green);font-weight:800">${fmtMoney(COMMISSIONS[t.product]||0)}</td><td><button class="act-btn" onclick="openDetail('${t.id}')">👁 Ver</button></td></tr>`;}).join('')}</tbody></table>`;}
 function renderAgentEarnings(){const me=getAgent(currentUser.id);if(!me)return;const extra=TICKETS.filter(t=>t.agent===me.id&&t.status==='done').reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0);const total=me.earnings+extra;document.getElementById('ag-earnings-content').innerHTML=`<div class="stats-row" style="grid-template-columns:repeat(3,1fr)"><div class="stat-box green"><div class="s-label">Total Acumulado</div><div class="s-val">${fmtMoney(total)}</div></div><div class="stat-box purple"><div class="s-label">Tickets Fechados</div><div class="s-val">${me.closed}</div></div><div class="stat-box gold"><div class="s-label">Média por Ticket</div><div class="s-val">${fmtMoney(total/Math.max(1,me.closed))}</div></div></div><div class="data-table" style="margin-top:20px"><div class="table-top"><h3>Comissões por Produto</h3></div><table><thead><tr><th>Produto</th><th>Comissão por Ticket</th></tr></thead><tbody>${me.products.map(pid=>{const p=getProd(pid);return`<tr><td>${p?p.emoji+' '+p.name+' '+p.plan:pid}</td><td style="color:var(--yellow);font-size:19px;font-weight:800">${fmtMoney(COMMISSIONS[pid]||0)}</td></tr>`;}).join('')}</tbody></table></div>`;}
-function claimTicket(id){const t=TICKETS.find(t=>t.id===id);if(!t||t.status!=='open'){toast('⚠️ Ticket já foi pego!');return;}t.status='claimed';t.agent=currentUser.id;toast(`⚡ Você pegou o ticket ${id}!`);navTo('agent-queue');}
-function agentClose(id){const t=TICKETS.find(t=>t.id===id);if(!t)return;t.status='done';t.closedAt=new Date().toISOString();const comm=COMMISSIONS[t.product]||0;const ag=getAgent(currentUser.id);if(ag){ag.closed++;ag.earnings+=comm;}toast(`✅ Ticket ${id} finalizado! Você ganhou ${fmtMoney(comm)} 🎉`);navTo('agent-mine');}
-function adminClose(id){const t=TICKETS.find(t=>t.id===id);if(!t||t.status==='done')return;t.status='done';t.closedAt=new Date().toISOString();const ag=getAgent(t.agent);if(ag){ag.closed++;ag.earnings+=(COMMISSIONS[t.product]||0);}toast(`✅ Ticket ${id} encerrado.`);navTo(currentPage);}
-function adminDel(id){const idx=TICKETS.findIndex(t=>t.id===id);if(idx>-1){TICKETS.splice(idx,1);toast('🗑 Ticket removido.');navTo(currentPage);}}
+function claimTicket(id){if(window._fbClaimTicket){window._fbClaimTicket(id);return;}const t=TICKETS.find(t=>t.id===id);if(!t||t.status!=='open'){toast('⚠️ Ticket já foi pego!');return;}t.status='claimed';t.agent=currentUser.id;toast(`⚡ Você pegou o ticket ${id}!`);navTo('agent-queue');}
+function agentClose(id){if(window._fbAgentClose){window._fbAgentClose(id);return;}const t=TICKETS.find(t=>t.id===id);if(!t)return;t.status='done';t.closedAt=new Date().toISOString();const comm=COMMISSIONS[t.product]||0;const ag=getAgent(currentUser.id);if(ag){ag.closed++;ag.earnings+=comm;}toast(`✅ Ticket ${id} finalizado! Você ganhou ${fmtMoney(comm)} 🎉`);navTo('agent-mine');}
+function adminClose(id){if(window._fbAdminClose){window._fbAdminClose(id);return;}const t=TICKETS.find(t=>t.id===id);if(!t||t.status==='done')return;t.status='done';t.closedAt=new Date().toISOString();const ag=getAgent(t.agent);if(ag){ag.closed++;ag.earnings+=(COMMISSIONS[t.product]||0);}toast(`✅ Ticket ${id} encerrado.`);navTo(currentPage);}
+function adminDel(id){if(window._fbAdminDel){window._fbAdminDel(id);return;}const idx=TICKETS.findIndex(t=>t.id===id);if(idx>-1){TICKETS.splice(idx,1);toast('🗑 Ticket removido.');navTo(currentPage);}}
 function setFilter(s){filterStatus=s;renderAdminTickets();}
 function openDetail(id){
   const t=TICKETS.find(t=>t.id===id);if(!t)return;
@@ -528,7 +717,7 @@ function openDetail(id){
     ${t.attachment?`<div style="margin-bottom:18px"><div style="font-size:9px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">📎 Anexo do Cliente</div>${t.attachment.type&&t.attachment.type.startsWith('image/')?`<img src="${t.attachment.data}" style="max-width:100%;border-radius:10px;border:1px solid var(--border);cursor:pointer" onclick="window.open(this.src)" title="Clique para abrir"/>`:''}<div style="font-size:12px;color:var(--text3);margin-top:6px">📄 ${t.attachment.name}</div></div>`:''}<div style="margin-bottom:7px;font-size:9px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em">Conversa (${t.messages.length} mensagens)</div><div class="chat-thread" id="chat-thread-${t.id}">${t.messages.length===0?'<div style="text-align:center;color:var(--text3);padding:18px;font-size:12px">Nenhuma mensagem ainda.</div>':t.messages.map(m=>`<div class="msg-bubble ${m.isAgent?'agent':''}"><div class="msg-from">${m.from} · ${fmtDate(m.ts)}</div><div class="msg-text">${m.text}</div></div>`).join('')}</div>${(isAdmin||isOwner)?`<div class="chat-input-row"><input id="chat-inp-${t.id}" placeholder="Digite uma mensagem..." onkeydown="if(event.key==='Enter')sendMsg('${t.id}')"/><button class="act-btn fill" onclick="sendMsg('${t.id}')">Enviar</button></div>`:''}<hr class="div"><div style="display:flex;gap:8px"><button class="act-btn" style="flex:1;padding:11px" onclick="closeOv('ov-detail')">Fechar</button>${canFinalize?`<button class="act-btn fill" style="flex:2;padding:11px" onclick="agentClose('${t.id}');closeOv('ov-detail')">✅ Finalizar · Ganhar ${fmtMoney(COMMISSIONS[t.product]||0)}</button>`:''} ${isAdmin&&t.status!=='done'?`<button class="act-btn green" style="flex:2;padding:11px" onclick="adminClose('${t.id}');closeOv('ov-detail')">✅ Encerrar (Admin)</button>`:''}</div>`;
   openOv('ov-detail');
 }
-function sendMsg(id){const inp=document.getElementById('chat-inp-'+id);if(!inp)return;const text=inp.value.trim();if(!text)return;const t=TICKETS.find(t=>t.id===id);if(!t)return;const sender=currentUser.role==='admin'?'Admin':getAgent(currentUser.id)?.name||'Atendente';t.messages.push({from:sender,isAgent:true,text,ts:new Date().toISOString()});const thread=document.getElementById('chat-thread-'+id);if(thread){const d=document.createElement('div');d.className='msg-bubble agent';d.innerHTML=`<div class="msg-from">${sender} · Agora</div><div class="msg-text">${text}</div>`;thread.appendChild(d);thread.scrollTop=thread.scrollHeight;}inp.value='';}
+function sendMsg(id){const inp=document.getElementById('chat-inp-'+id);if(!inp)return;const text=inp.value.trim();if(!text)return;const t=TICKETS.find(t=>t.id===id);if(!t)return;const sender=currentUser.role==='admin'?'Admin':getAgent(currentUser.id)?.name||'Atendente';if(window._fbSendMsg){window._fbSendMsg(id,text,sender);}else{t.messages.push({from:sender,isAgent:true,text,ts:new Date().toISOString()});}const thread=document.getElementById('chat-thread-'+id);if(thread){const d=document.createElement('div');d.className='msg-bubble agent';d.innerHTML=`<div class="msg-from">${sender} · Agora</div><div class="msg-text">${text}</div>`;thread.appendChild(d);thread.scrollTop=thread.scrollHeight;}inp.value='';}
 
 (function init(){
   document.getElementById('tk-prod-grid').innerHTML=PRODUCTS.map(p=>`<div class="prod-card" data-id="${p.id}" onclick="selProd('${p.id}')"><div class="p-check">✓</div><span class="p-emoji">${p.emoji}</span><div class="p-name">${p.name}</div><div class="p-plan">${p.plan}</div></div>`).join('');
@@ -549,17 +738,15 @@ function submitTicket(){
   const file=fileInput&&fileInput.files[0];
   if(file&&file.size>5*1024*1024){toast('⚠️ Arquivo muito grande! Máximo 5MB.');return;}
   function finish(attachment){
-    const ticketId=genId();
-    const ticketCode=genCode();
-    TICKETS.unshift({id:ticketId,code:ticketCode,clientName:name,clientEmail:email,products:[...selectedProducts],product:selectedProducts[0],type:pendingType||'duvida',desc,attachment:attachment||null,status:'open',agent:null,createdAt:new Date().toISOString(),messages:[]});
-    closeOv('ov-ticket');
-    showTicketCode(ticketCode);
-    document.getElementById('tk-name').value='';
-    document.getElementById('tk-email').value='';
-    document.getElementById('tk-desc').value='';
-    if(fileInput)fileInput.value='';
-    selectedProducts=[];pendingType='';
-    document.querySelectorAll('.prod-card').forEach(c=>c.classList.remove('sel'));
+    if(window._fbFinish) window._fbFinish(name,email,desc,attachment,fileInput);
+    else {
+      const ticketId=genId(),ticketCode=genCode();
+      TICKETS.unshift({id:ticketId,code:ticketCode,clientName:name,clientEmail:email,products:[...selectedProducts],product:selectedProducts[0],type:pendingType||'duvida',desc,attachment:attachment||null,status:'open',agent:null,createdAt:new Date().toISOString(),messages:[]});
+      closeOv('ov-ticket');showTicketCode(ticketCode);
+      document.getElementById('tk-name').value='';document.getElementById('tk-email').value='';document.getElementById('tk-desc').value='';
+      if(fileInput)fileInput.value='';selectedProducts=[];pendingType='';
+      document.querySelectorAll('.prod-card').forEach(c=>c.classList.remove('sel'));
+    }
   }
   if(file){
     const reader=new FileReader();
@@ -639,17 +826,19 @@ function addPayment(agId) {
   amtEl.value='';noteEl.value='';
   const ag=getAgent(agId);
   toast(`✅ Pagamento de ${fmtMoney(amt)} para ${ag?ag.name:agId} registrado!`);
+  if(window._fbSavePayments)window._fbSavePayments();
   renderAdminFinance();
 }
 
 function removePayment(agId,pid) {
   if(!PAYMENTS[agId])return;
   PAYMENTS[agId]=PAYMENTS[agId].filter(p=>p.id!==pid);
+  if(window._fbSavePayments)window._fbSavePayments();
   renderAdminFinance();
   toast('🗑 Pagamento removido.');
 }
 
-function addAgent(){const name=document.getElementById('ag-name').value.trim(),email=document.getElementById('ag-email').value.trim(),login=document.getElementById('ag-login').value.trim(),pass=document.getElementById('ag-pass').value,products=[...document.querySelectorAll('#ag-chk-grid input:checked')].map(i=>i.value);if(!name||!email||!login||!pass||products.length===0){toast('⚠️ Preencha tudo e selecione ao menos 1 produto!');return;}if(AGENTS.find(a=>a.login===login)){toast('⚠️ Login já em uso!');return;}if(login===ADMIN_CRED.login){toast('⚠️ Login reservado!');return;}AGENTS.push({id:'ag'+Date.now(),name,email,login,pass,products,closed:0,earnings:0});closeOv('ov-add-agent');['ag-name','ag-email','ag-login','ag-pass'].forEach(id=>document.getElementById(id).value='');document.querySelectorAll('#ag-chk-grid input').forEach(i=>i.checked=false);toast(`✅ Atendente ${name} cadastrado! Login: ${login}`);navTo('admin-agents');}
+function addAgent(){const name=document.getElementById('ag-name').value.trim(),email=document.getElementById('ag-email').value.trim(),login=document.getElementById('ag-login').value.trim(),pass=document.getElementById('ag-pass').value,products=[...document.querySelectorAll('#ag-chk-grid input:checked')].map(i=>i.value);if(!name||!email||!login||!pass||products.length===0){toast('⚠️ Preencha tudo e selecione ao menos 1 produto!');return;}if(AGENTS.find(a=>a.login===login)){toast('⚠️ Login já em uso!');return;}if(login===ADMIN_CRED.login){toast('⚠️ Login reservado!');return;}AGENTS.push({id:'ag'+Date.now(),name,email,login,pass,products,closed:0,earnings:0});closeOv('ov-add-agent');['ag-name','ag-email','ag-login','ag-pass'].forEach(id=>document.getElementById(id).value='');document.querySelectorAll('#ag-chk-grid input').forEach(i=>i.checked=false);toast(`✅ Atendente ${name} cadastrado! Login: ${login}`);if(window._fbAddAgent)window._fbAddAgent();navTo('admin-agents');}
 function lookupTicket(){
   const code=document.getElementById('lookup-code').value.trim().toUpperCase();
   const resEl=document.getElementById('lookup-result');
@@ -682,7 +871,7 @@ function lookupTicket(){
   `;
 }
 
-function removeAgent(id){const idx=AGENTS.findIndex(a=>a.id===id);if(idx>-1){AGENTS.splice(idx,1);toast('🗑 Atendente removido.');renderAdminAgents();}}
+function removeAgent(id){const idx=AGENTS.findIndex(a=>a.id===id);if(idx>-1){AGENTS.splice(idx,1);toast('🗑 Atendente removido.');if(window._fbRemoveAgent)window._fbRemoveAgent();renderAdminAgents();}}
 
 document.getElementById('screen-client').classList.add('active');
 </script>
