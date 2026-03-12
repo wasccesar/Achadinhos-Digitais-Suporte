@@ -1333,31 +1333,39 @@ let WITHDRAWALS = {}; // {agId: [{id,amount,pixKey,date,status,txId}]}
 const MISTIC_CLIENT_ID = 'ci_q9lq3ykoxai9ktq';
 const MISTIC_CLIENT_SECRET = 'cs_hz69fztetgpbi51tfad7c25fg';
 
-async function misticPayWithdraw(pixKey, amount, name) {
+async function misticPayWithdraw(pixKey, amount, name, pixKeyType) {
   try {
-    // Get token
-    const tokenRes = await fetch('https://api.misticpay.com/v1/oauth/token', {
-      method: 'POST',
-      headers: {'Content-Type':'application/x-www-form-urlencoded'},
-      body: new URLSearchParams({grant_type:'client_credentials',client_id:MISTIC_CLIENT_ID,client_secret:MISTIC_CLIENT_SECRET})
-    });
-    const tokenData = await tokenRes.json();
-    const token = tokenData.access_token;
-    if(!token) throw new Error('Token inválido');
+    // Detect pix key type if not provided
+    if(!pixKeyType) {
+      const cleaned = pixKey.replace(/[^0-9a-zA-Z@._\-]/g,'');
+      if(/^\d{11}$/.test(cleaned)) pixKeyType = 'CPF';
+      else if(/^\d{14}$/.test(cleaned)) pixKeyType = 'CNPJ';
+      else if(/^\+?\d{10,13}$/.test(cleaned)) pixKeyType = 'TELEFONE';
+      else if(cleaned.includes('@')) pixKeyType = 'EMAIL';
+      else pixKeyType = 'CHAVE_ALEATORIA';
+    }
 
-    // Create payout
-    const payRes = await fetch('https://api.misticpay.com/v1/payouts', {
+    // Use MisticPay v1 API - POST /api/transactions/withdraw
+    const payRes = await fetch('https://api.misticpay.com/api/transactions/withdraw', {
       method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
+      headers: {
+        'Content-Type': 'application/json',
+        'ci': MISTIC_CLIENT_ID,
+        'cs': MISTIC_CLIENT_SECRET
+      },
       body: JSON.stringify({
-        amount: Math.round(amount * 100), // centavos
-        pix_key: pixKey,
-        name: name,
-        description: 'Saque comissão - Achadinhos Digitais'
+        amount: amount,
+        pixKey: pixKey,
+        pixKeyType: pixKeyType,
+        description: 'Comissão de vendas - Achadinhos Digitais'
       })
     });
     const payData = await payRes.json();
-    return {success: payRes.ok, txId: payData.id||payData.transaction_id||null, raw: payData};
+    if(payRes.ok && payData.data) {
+      return {success: true, txId: payData.data.transactionId||payData.data.jobId||null, raw: payData};
+    } else {
+      return {success: false, error: payData.message || 'Erro na API MisticPay', raw: payData};
+    }
   } catch(e) {
     console.error('MisticPay error:', e);
     return {success: false, error: e.message};
@@ -1407,7 +1415,7 @@ async function confirmWithdrawal() {
   if(window._fbSaveWithdrawals) window._fbSaveWithdrawals();
 
   // Call MisticPay
-  const result = await misticPayWithdraw(me.pixKey, amount, me.name);
+  const result = await misticPayWithdraw(me.pixKey, amount, me.name, me.pixKeyType||null);
 
   if(result.success) {
     wdRecord.status = 'completed';
@@ -1470,27 +1478,45 @@ function renderAdminWithdrawals() {
 
 function renderAgentProfile() {
   const me = getAgent(currentUser.id); if(!me) return;
+  const allDone = TICKETS.filter(t=>t.agent===me.id&&t.status==='done');
+  const total = allDone.reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0) + me.earnings;
+  const withdrawn = (WITHDRAWALS[me.id]||[]).filter(w=>w.status==='completed').reduce((s,w)=>s+w.amount,0);
+  const pending = (WITHDRAWALS[me.id]||[]).filter(w=>w.status==='pending').reduce((s,w)=>s+w.amount,0);
+  const available = total - withdrawn - pending;
+
   document.getElementById('ag-profile-content').innerHTML =
-    '<div style="max-width:500px">'
+    '<div style="max-width:560px">'
     +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:26px;margin-bottom:16px">'
     +'<div style="display:flex;align-items:center;gap:16px;margin-bottom:22px">'
     +'<div class="ag-avatar" style="width:60px;height:60px;font-size:22px">'+initials(me.name)+'</div>'
-    +'<div><div style="font-size:18px;font-weight:800">'+me.name+'</div><div class="ag-login-tag" style="margin-top:4px">@'+me.login+'</div></div>'
+    +'<div><div style="font-size:18px;font-weight:800">'+me.name+'</div>'
+    +'<div class="ag-login-tag" style="margin-top:4px">@'+me.login+'</div></div>'
     +'</div>'
-    +'<div style="font-size:10px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px">Produtos que atendo</div>'
-    +'<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:22px">'
+    +'<div style="font-size:10px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px">Produtos que atendo</div>'
+    +'<div style="display:flex;flex-wrap:wrap;gap:6px">'
     +me.products.map(pid=>{const p=getProd(pid);return p?'<span class="ag-prod-tag">'+p.emoji+' '+p.name+' '+p.plan+'</span>':'';}).join('')
     +'</div>'
-    +'<button class="act-btn" onclick="openChangeSector()" style="width:100%;padding:11px">🔄 Alterar Setor</button>'
+    +'</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">'
+    +'<div class="stat-box gold"><div class="s-label">Disponível p/ Saque</div><div class="s-val">'+fmtMoney(available)+'</div></div>'
+    +'<div class="stat-box green"><div class="s-label">Total Ganho</div><div class="s-val">'+fmtMoney(total)+'</div></div>'
+    +'<div class="stat-box purple"><div class="s-label">Já Sacado</div><div class="s-val">'+fmtMoney(withdrawn)+'</div></div>'
     +'</div>'
     +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:26px">'
-    +'<div style="font-size:14px;font-weight:700;margin-bottom:16px">💳 Chave Pix para Saques</div>'
-    +'<div style="font-size:12px;color:var(--text3);margin-bottom:12px">Informe sua chave Pix (CPF, telefone, e-mail ou chave aleatória)</div>'
-    +'<div style="display:flex;gap:8px">'
-    +'<input id="pix-key-input" type="text" placeholder="Sua chave Pix..." value="'+(me.pixKey||'')+'" style="flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:10px;font-size:13px;font-family:var(--font);outline:none"/>'
-    +'<button class="act-btn fill" onclick="savePixKey()">Salvar</button>'
+    +'<div style="font-size:14px;font-weight:700;margin-bottom:6px">💳 Chave Pix para Saques</div>'
+    +'<div style="font-size:12px;color:var(--text3);margin-bottom:14px">Configure sua chave Pix para receber saques automáticos via MisticPay</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 140px;gap:8px;margin-bottom:8px">'
+    +'<input id="pix-key-input" type="text" placeholder="Sua chave Pix..." value="'+(me.pixKey||'')+'" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:10px;font-size:13px;font-family:var(--font);outline:none"/>'
+    +'<select id="pix-key-type" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:10px;font-size:13px;font-family:var(--font);outline:none">'
+    +'<option value="CPF" '+(me.pixKeyType==='CPF'?'selected':'')+'>CPF</option>'
+    +'<option value="EMAIL" '+(me.pixKeyType==='EMAIL'?'selected':'')+'>E-mail</option>'
+    +'<option value="TELEFONE" '+(me.pixKeyType==='TELEFONE'?'selected':'')+'>Telefone</option>'
+    +'<option value="CNPJ" '+(me.pixKeyType==='CNPJ'?'selected':'')+'>CNPJ</option>'
+    +'<option value="CHAVE_ALEATORIA" '+(me.pixKeyType==='CHAVE_ALEATORIA'?'selected':'')+'>Aleatória</option>'
+    +'</select>'
     +'</div>'
-    +(me.pixKey?'<div style="margin-top:10px;font-size:12px;color:var(--green)">✅ Chave cadastrada: '+me.pixKey+'</div>':'')
+    +'<button class="act-btn fill" onclick="savePixKey()" style="width:100%;padding:11px">Salvar Chave Pix</button>'
+    +(me.pixKey?'<div style="margin-top:10px;font-size:12px;color:var(--green)">✅ Chave cadastrada: <strong>'+me.pixKey+'</strong> ('+( me.pixKeyType||'auto')+')</div>':'')
     +'</div>'
     +'</div>';
 }
@@ -1498,10 +1524,12 @@ function renderAgentProfile() {
 function savePixKey() {
   const me = getAgent(currentUser.id); if(!me) return;
   const key = document.getElementById('pix-key-input').value.trim();
+  const type = document.getElementById('pix-key-type')?.value || 'CPF';
   if(!key) { toast('⚠️ Informe uma chave Pix!'); return; }
   me.pixKey = key;
+  me.pixKeyType = type;
   if(window._fbAddAgent) window._fbAddAgent();
-  toast('✅ Chave Pix salva!');
+  toast('✅ Chave Pix salva! (' + type + ')');
   renderAgentProfile();
 }
 
