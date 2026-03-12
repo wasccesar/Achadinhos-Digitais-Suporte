@@ -3,1252 +3,1599 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SupportArena — Sistema de Suporte</title>
+<title>Suporte — Achadinhos Digitais</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
+:root {
+  --bg:       #08080f;
+  --bg2:      #0e0e1a;
+  --surface:  #13131f;
+  --surface2: #1c1c2e;
+  --border:   #2a2a42;
+  --border2:  #3d3d60;
+  --purple:   #7c3aed;
+  --purple2:  #9f67ff;
+  --purple3:  #c4a3ff;
+  --purple-glow: rgba(124,58,237,.35);
+  --gold:     #d4a853;
+  --green:    #34d399;
+  --red:      #f87171;
+  --text:     #e8e8f8;
+  --text2:    #a0a0c0;
+  --text3:    #6060a0;
+  --font-display: 'Playfair Display', serif;
+  --font-body:    'Outfit', sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+}
 
-  :root {
-    --bg: #0a0a0f;
-    --surface: #111118;
-    --surface2: #1a1a24;
-    --border: #2a2a3a;
-    --accent: #ff6b35;
-    --accent2: #7c3aed;
-    --accent3: #10b981;
-    --gold: #f59e0b;
-    --text: #e8e8f0;
-    --muted: #6b6b80;
-    --danger: #ef4444;
-  }
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
-  * { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-weight: 400;
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
 
-  /* ── GRID NOISE BG ── */
-  body::before {
-    content:'';
-    position:fixed; inset:0;
-    background-image:
-      linear-gradient(rgba(124,58,237,.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(124,58,237,.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events:none; z-index:0;
-  }
+/* ── Grain overlay ── */
+body::after {
+  content:'';
+  position:fixed; inset:0; pointer-events:none; z-index:9999;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity: .4;
+}
 
-  /* ── VIEWS ── */
-  .view { display:none; position:relative; z-index:1; }
-  .view.active { display:block; }
+/* ── Purple ambient glow ── */
+body::before {
+  content:'';
+  position:fixed; top:-30%; left:50%; transform:translateX(-50%);
+  width:80vw; height:80vh;
+  background: radial-gradient(ellipse, rgba(124,58,237,.12) 0%, transparent 70%);
+  pointer-events:none; z-index:0;
+}
 
-  /* ── NAV ── */
-  nav {
-    position: fixed; top:0; left:0; right:0; z-index:100;
-    display:flex; align-items:center; justify-content:space-between;
-    padding: 16px 32px;
-    background: rgba(10,10,15,.9);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--border);
-  }
-  .logo {
-    font-family:'Syne',sans-serif; font-weight:800; font-size:20px;
-    display:flex; align-items:center; gap:8px;
-  }
-  .logo-dot { width:10px; height:10px; border-radius:50%; background:var(--accent); box-shadow:0 0 10px var(--accent); }
-  nav .nav-links { display:flex; gap:8px; }
-  .nav-btn {
-    background:none; border:1px solid var(--border); color:var(--muted);
-    padding:7px 16px; border-radius:8px; cursor:pointer; font-size:13px;
-    font-family:'DM Sans',sans-serif; transition:all .2s;
-  }
-  .nav-btn:hover, .nav-btn.active { border-color:var(--accent); color:var(--accent); }
-  .nav-btn.primary {
-    background: var(--accent); border-color:var(--accent); color:#fff;
-  }
-  .nav-btn.primary:hover { opacity:.85; }
+/* ═══════════════ SCREENS ═══════════════ */
+.screen { display:none; position:relative; z-index:1; min-height:100vh; }
+.screen.active { display:flex; flex-direction:column; }
+/* Client is default on load - set via JS below */
 
-  /* ── HERO / CLIENT PORTAL ── */
-  .hero {
-    min-height:100vh; display:flex; align-items:center; justify-content:center;
-    flex-direction:column; text-align:center; padding: 100px 24px 60px;
-  }
-  .hero-badge {
-    display:inline-flex; align-items:center; gap:6px;
-    background: rgba(255,107,53,.1); border:1px solid rgba(255,107,53,.3);
-    padding:6px 14px; border-radius:100px; font-size:12px;
-    color:var(--accent); font-family:'DM Mono',monospace; margin-bottom:28px;
-  }
-  .hero h1 {
-    font-family:'Syne',sans-serif; font-size:clamp(36px,7vw,80px);
-    font-weight:800; line-height:1.05; margin-bottom:16px;
-  }
-  .hero h1 span { color:var(--accent); }
-  .hero p { color:var(--muted); font-size:18px; max-width:500px; line-height:1.6; margin-bottom:40px; }
+/* ═══════════════ LOGIN SCREEN ═══════════════ */
+#screen-login {
+  align-items:center; justify-content:center;
+  background: var(--bg);
+}
 
-  .ticket-open-btn {
-    background: var(--accent);
-    border:none; color:#fff; padding:18px 42px;
-    border-radius:12px; font-size:18px; font-weight:600;
-    font-family:'Syne',sans-serif; cursor:pointer;
-    transition: all .3s; position:relative; overflow:hidden;
-    box-shadow: 0 0 40px rgba(255,107,53,.3);
-  }
-  .ticket-open-btn::before {
-    content:''; position:absolute; inset:0;
-    background: linear-gradient(135deg, rgba(255,255,255,.15), transparent);
-  }
-  .ticket-open-btn:hover { transform:translateY(-2px); box-shadow:0 0 60px rgba(255,107,53,.5); }
+.login-card {
+  width: 100%; max-width: 420px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 48px 40px;
+  position: relative;
+  box-shadow: 0 0 80px rgba(124,58,237,.15), 0 40px 80px rgba(0,0,0,.6);
+  animation: fadeUp .5s ease;
+}
 
-  /* ── MODAL ── */
-  .modal-overlay {
-    position:fixed; inset:0; background:rgba(0,0,0,.85);
-    backdrop-filter:blur(8px); z-index:200;
-    display:none; align-items:center; justify-content:center; padding:20px;
-  }
-  .modal-overlay.open { display:flex; }
-  .modal {
-    background: var(--surface);
-    border:1px solid var(--border);
-    border-radius:20px; width:100%; max-width:560px;
-    max-height:90vh; overflow-y:auto;
-    animation: slideUp .3s ease;
-  }
-  @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
-  .modal-header {
-    padding:28px 28px 0;
-    display:flex; justify-content:space-between; align-items:flex-start;
-  }
-  .modal-title { font-family:'Syne',sans-serif; font-size:22px; font-weight:700; }
-  .modal-close {
-    background:none; border:none; color:var(--muted); font-size:24px;
-    cursor:pointer; padding:0; line-height:1; transition:.2s;
-  }
-  .modal-close:hover { color:var(--text); }
-  .modal-body { padding:24px 28px 28px; }
+.login-card::before {
+  content:'';
+  position:absolute; top:0; left:50%; transform:translateX(-50%);
+  width:60%; height:1px;
+  background: linear-gradient(90deg, transparent, var(--purple2), transparent);
+}
 
-  /* ── FORM ELEMENTS ── */
-  .form-group { margin-bottom:20px; }
-  .form-group label {
-    display:block; font-size:13px; font-weight:500;
-    color:var(--muted); margin-bottom:8px; text-transform:uppercase;
-    letter-spacing:.05em; font-family:'DM Mono',monospace;
-  }
-  .form-group input, .form-group textarea, .form-group select {
-    width:100%; background:var(--bg); border:1px solid var(--border);
-    color:var(--text); padding:12px 16px; border-radius:10px;
-    font-size:15px; font-family:'DM Sans',sans-serif;
-    transition:border-color .2s; outline:none;
-  }
-  .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
-    border-color:var(--accent);
-  }
-  .form-group textarea { resize:vertical; min-height:90px; }
-  .form-group select option { background:var(--surface); }
+.login-logo {
+  text-align:center; margin-bottom:36px;
+}
+.login-logo .brand {
+  font-family: var(--font-display);
+  font-size: 26px; font-weight: 700;
+  color: var(--text);
+  line-height:1.2;
+}
+.login-logo .brand span { color: var(--purple2); }
+.login-logo .sub {
+  font-size: 12px; color: var(--text3);
+  font-family: var(--font-mono);
+  margin-top: 6px; letter-spacing:.08em;
+}
 
-  /* Product grid selector */
-  .product-grid {
-    display:grid; grid-template-columns:repeat(2,1fr); gap:10px;
-  }
-  .product-card {
-    border:1px solid var(--border); border-radius:12px;
-    padding:14px; cursor:pointer; transition:all .2s;
-    background:var(--bg);
-  }
-  .product-card:hover { border-color:var(--accent2); }
-  .product-card.selected { border-color:var(--accent); background:rgba(255,107,53,.08); }
-  .product-card .prod-name { font-weight:600; font-size:14px; margin-bottom:2px; }
-  .product-card .prod-plan { font-size:12px; color:var(--muted); }
-  .product-card .prod-emoji { font-size:22px; margin-bottom:6px; display:block; }
+.login-tabs {
+  display:flex; background: var(--bg2);
+  border:1px solid var(--border); border-radius:12px;
+  padding:4px; margin-bottom:28px; gap:4px;
+}
+.login-tab {
+  flex:1; padding:9px; border-radius:9px; border:none;
+  background:none; color:var(--text2); font-family:var(--font-body);
+  font-size:13px; font-weight:500; cursor:pointer; transition:.25s;
+}
+.login-tab.active {
+  background: var(--purple); color:#fff;
+  box-shadow: 0 0 20px var(--purple-glow);
+}
 
-  .btn-submit {
-    width:100%; background:var(--accent); border:none; color:#fff;
-    padding:15px; border-radius:12px; font-size:16px; font-weight:600;
-    font-family:'Syne',sans-serif; cursor:pointer; transition:.2s;
-  }
-  .btn-submit:hover { opacity:.85; }
+.form-field { margin-bottom:16px; }
+.form-field label {
+  display:block; font-size:11px; font-weight:500;
+  color:var(--text3); margin-bottom:8px;
+  font-family:var(--font-mono); letter-spacing:.1em; text-transform:uppercase;
+}
+.form-field input {
+  width:100%; background:var(--bg2); border:1px solid var(--border);
+  color:var(--text); padding:13px 16px; border-radius:10px;
+  font-size:15px; font-family:var(--font-body); outline:none;
+  transition:border-color .2s, box-shadow .2s;
+}
+.form-field input:focus {
+  border-color: var(--purple2);
+  box-shadow: 0 0 0 3px rgba(159,103,255,.12);
+}
 
-  /* ── ADMIN PANEL ── */
-  .admin-wrap {
-    padding-top:80px; min-height:100vh;
-    display:grid; grid-template-columns:260px 1fr;
-  }
+.btn-primary {
+  width:100%; background: linear-gradient(135deg, var(--purple), #5b21b6);
+  border:none; color:#fff; padding:14px;
+  border-radius:12px; font-size:15px; font-weight:600;
+  font-family:var(--font-body); cursor:pointer;
+  transition:.3s; position:relative; overflow:hidden;
+  box-shadow: 0 4px 30px var(--purple-glow);
+  margin-top:8px;
+}
+.btn-primary:hover { transform:translateY(-1px); box-shadow:0 8px 40px var(--purple-glow); }
+.btn-primary:active { transform:translateY(0); }
 
-  .sidebar {
-    background:var(--surface); border-right:1px solid var(--border);
-    padding:24px 16px; position:sticky; top:80px;
-    height:calc(100vh - 80px); overflow-y:auto;
-  }
-  .sidebar-section { margin-bottom:24px; }
-  .sidebar-label {
-    font-size:10px; text-transform:uppercase; letter-spacing:.1em;
-    color:var(--muted); font-family:'DM Mono',monospace;
-    padding:0 12px 8px;
-  }
-  .sidebar-item {
-    display:flex; align-items:center; gap:10px;
-    padding:10px 12px; border-radius:8px; cursor:pointer;
-    transition:.2s; font-size:14px; color:var(--muted); border:none;
-    background:none; width:100%; text-align:left;
-  }
-  .sidebar-item:hover { background:var(--surface2); color:var(--text); }
-  .sidebar-item.active { background:rgba(255,107,53,.12); color:var(--accent); }
-  .sidebar-item .icon { font-size:16px; }
+.login-error {
+  background: rgba(248,113,113,.1); border:1px solid rgba(248,113,113,.3);
+  color:var(--red); padding:10px 14px; border-radius:8px;
+  font-size:13px; margin-bottom:16px; display:none;
+}
+.login-error.show { display:block; }
 
-  .main-content { padding:32px; }
-  .page-header { margin-bottom:32px; }
-  .page-header h2 { font-family:'Syne',sans-serif; font-size:28px; font-weight:700; }
-  .page-header p { color:var(--muted); margin-top:4px; }
+/* ─── CLIENT access link ─── */
+.client-link {
+  text-align:center; margin-top:20px;
+  font-size:13px; color:var(--text3);
+}
+.client-link a {
+  color:var(--purple3); text-decoration:none; font-weight:500;
+}
+.client-link a:hover { text-decoration:underline; }
 
-  /* Stats cards */
-  .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:32px; }
-  .stat-card {
-    background:var(--surface); border:1px solid var(--border);
-    border-radius:14px; padding:20px;
-  }
-  .stat-card .stat-label { font-size:12px; color:var(--muted); margin-bottom:8px; font-family:'DM Mono',monospace; }
-  .stat-card .stat-value { font-family:'Syne',sans-serif; font-size:32px; font-weight:800; }
-  .stat-card .stat-sub { font-size:12px; color:var(--muted); margin-top:4px; }
-  .stat-card.highlight { border-color:var(--accent); background:rgba(255,107,53,.06); }
-  .stat-card.green { border-color:var(--accent3); background:rgba(16,185,129,.06); }
-  .stat-card.purple { border-color:var(--accent2); background:rgba(124,58,237,.06); }
+/* ═══════════════ CLIENT PORTAL ═══════════════ */
+#screen-client {
+  background: var(--bg);
+}
 
-  /* Tickets table */
-  .tickets-table {
-    background:var(--surface); border:1px solid var(--border);
-    border-radius:16px; overflow:hidden;
-  }
-  .table-header {
-    padding:20px 24px;
-    display:flex; justify-content:space-between; align-items:center;
-    border-bottom:1px solid var(--border);
-  }
-  .table-header h3 { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; }
-  .filters { display:flex; gap:8px; }
-  .filter-btn {
-    background:none; border:1px solid var(--border); color:var(--muted);
-    padding:6px 14px; border-radius:8px; font-size:12px; cursor:pointer;
-    transition:.2s; font-family:'DM Mono',monospace;
-  }
-  .filter-btn:hover, .filter-btn.active { border-color:var(--accent); color:var(--accent); }
-  table { width:100%; border-collapse:collapse; }
-  thead th {
-    padding:12px 20px; text-align:left; font-size:11px;
-    text-transform:uppercase; letter-spacing:.08em; color:var(--muted);
-    font-family:'DM Mono',monospace; border-bottom:1px solid var(--border);
-  }
-  tbody tr { border-bottom:1px solid rgba(42,42,58,.5); transition:.15s; }
-  tbody tr:hover { background:var(--surface2); }
-  tbody tr:last-child { border:none; }
-  td { padding:16px 20px; font-size:14px; }
+.client-nav {
+  padding: 20px 40px;
+  display:flex; align-items:center; justify-content:space-between;
+  border-bottom:1px solid var(--border);
+  background: rgba(8,8,15,.8); backdrop-filter:blur(20px);
+  position:sticky; top:0; z-index:50;
+}
+.brand-mark {
+  font-family:var(--font-display); font-size:18px; font-weight:700;
+}
+.brand-mark span { color:var(--purple2); }
 
-  .badge {
-    display:inline-flex; align-items:center; gap:4px;
-    padding:4px 10px; border-radius:100px; font-size:11px; font-weight:500;
-    font-family:'DM Mono',monospace;
-  }
-  .badge.open { background:rgba(255,107,53,.15); color:var(--accent); }
-  .badge.claimed { background:rgba(124,58,237,.15); color:#a78bfa; }
-  .badge.done { background:rgba(16,185,129,.15); color:var(--accent3); }
-  .badge.waiting { background:rgba(245,158,11,.15); color:var(--gold); }
-  .badge::before { content:'●'; font-size:8px; }
+.hero-section {
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:80px 24px 60px; text-align:center;
+}
 
-  .action-btn {
-    background:none; border:1px solid var(--border); color:var(--text);
-    padding:6px 12px; border-radius:7px; font-size:12px; cursor:pointer;
-    transition:.2s; font-family:'DM Mono',monospace;
-  }
-  .action-btn:hover { border-color:var(--accent3); color:var(--accent3); }
-  .action-btn.danger:hover { border-color:var(--danger); color:var(--danger); }
-  .action-btn.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+.hero-eyebrow {
+  display:inline-flex; align-items:center; gap:8px;
+  font-family:var(--font-mono); font-size:11px; letter-spacing:.15em;
+  color:var(--purple3); text-transform:uppercase;
+  padding:6px 16px; border-radius:100px;
+  border:1px solid rgba(196,163,255,.2);
+  background:rgba(124,58,237,.08);
+  margin-bottom:32px;
+}
+.hero-eyebrow::before { content:'◆'; font-size:8px; }
 
-  /* ── AGENTS PANEL ── */
-  .agents-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
-  .agent-card {
-    background:var(--surface); border:1px solid var(--border);
-    border-radius:16px; padding:24px;
-  }
-  .agent-top { display:flex; align-items:center; gap:14px; margin-bottom:16px; }
-  .agent-avatar {
-    width:48px; height:48px; border-radius:50%;
-    display:flex; align-items:center; justify-content:center;
-    font-size:20px; font-weight:800; font-family:'Syne',sans-serif;
-    flex-shrink:0;
-  }
-  .agent-name { font-weight:700; font-size:16px; }
-  .agent-email { font-size:12px; color:var(--muted); }
-  .agent-stats { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
-  .agent-stat { background:var(--bg); border-radius:8px; padding:10px 12px; }
-  .agent-stat .label { font-size:10px; color:var(--muted); font-family:'DM Mono',monospace; }
-  .agent-stat .val { font-size:18px; font-weight:700; font-family:'Syne',sans-serif; }
-  .agent-products { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px; }
-  .prod-tag {
-    background:var(--surface2); border:1px solid var(--border);
-    padding:3px 8px; border-radius:6px; font-size:11px;
-    font-family:'DM Mono',monospace; color:var(--muted);
-  }
-  .agent-earnings {
-    background: linear-gradient(135deg, rgba(245,158,11,.1), rgba(255,107,53,.08));
-    border:1px solid rgba(245,158,11,.3);
-    border-radius:10px; padding:12px;
-    display:flex; justify-content:space-between; align-items:center;
-  }
-  .agent-earnings .label { font-size:12px; color:var(--gold); }
-  .agent-earnings .amount { font-size:20px; font-weight:800; font-family:'Syne',sans-serif; color:var(--gold); }
+.hero-title {
+  font-family:var(--font-display);
+  font-size: clamp(42px, 7vw, 88px);
+  font-weight:900; line-height:1.0;
+  margin-bottom:20px;
+  letter-spacing:-1px;
+}
+.hero-title em {
+  font-style:normal;
+  background: linear-gradient(135deg, var(--purple2), var(--purple3));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
 
-  /* Ranking */
-  .ranking-list { display:flex; flex-direction:column; gap:10px; }
-  .rank-item {
-    background:var(--surface); border:1px solid var(--border);
-    border-radius:12px; padding:16px 20px;
-    display:flex; align-items:center; gap:16px;
-  }
-  .rank-pos { font-size:24px; font-weight:800; font-family:'Syne',sans-serif; width:36px; }
-  .rank-pos.gold { color:var(--gold); }
-  .rank-pos.silver { color:#94a3b8; }
-  .rank-pos.bronze { color:#b45309; }
-  .rank-info { flex:1; }
-  .rank-name { font-weight:700; }
-  .rank-sub { font-size:12px; color:var(--muted); }
-  .rank-earnings { font-size:22px; font-weight:800; font-family:'Syne',sans-serif; color:var(--accent3); }
+.hero-sub {
+  font-size:18px; color:var(--text2); max-width:460px;
+  line-height:1.7; margin-bottom:48px; font-weight:300;
+}
 
-  /* Commissions table */
-  .commissions-grid { display:grid; gap:12px; }
-  .commission-row {
-    background:var(--surface); border:1px solid var(--border);
-    border-radius:12px; padding:16px 20px;
-    display:grid; grid-template-columns:1fr auto auto auto auto;
-    align-items:center; gap:20px;
-  }
-  .prod-info .prod-title { font-weight:700; }
-  .prod-info .prod-plan { font-size:12px; color:var(--muted); }
-  .commission-input {
-    background:var(--bg); border:1px solid var(--border);
-    color:var(--text); padding:8px 12px; border-radius:8px;
-    font-size:14px; font-family:'DM Mono',monospace; width:100px;
-    text-align:center; outline:none;
-  }
-  .commission-input:focus { border-color:var(--gold); }
+.cta-button {
+  background: linear-gradient(135deg, var(--purple) 0%, #4c1d95 100%);
+  border:none; color:#fff; padding:20px 52px;
+  border-radius:14px; font-size:17px; font-weight:600;
+  font-family:var(--font-body); cursor:pointer;
+  box-shadow: 0 0 60px rgba(124,58,237,.4);
+  transition:.3s; position:relative; overflow:hidden;
+  letter-spacing:.01em;
+}
+.cta-button::after {
+  content:'';
+  position:absolute; inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.15),transparent 60%);
+}
+.cta-button:hover {
+  transform:translateY(-3px);
+  box-shadow:0 0 90px rgba(124,58,237,.6);
+}
 
-  /* Add agent form */
-  .add-agent-form {
-    background:var(--surface); border:1px solid var(--border);
-    border-radius:16px; padding:28px; margin-bottom:28px;
-  }
-  .add-agent-form h3 { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; margin-bottom:20px; }
-  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+/* products strip */
+.products-strip {
+  display:flex; gap:12px; flex-wrap:wrap; justify-content:center;
+  margin-top:48px; padding:0 24px;
+}
+.prod-pill {
+  background:var(--surface); border:1px solid var(--border);
+  padding:8px 18px; border-radius:100px; font-size:13px; color:var(--text2);
+  transition:.2s;
+}
+.prod-pill:hover { border-color:var(--purple); color:var(--purple3); }
 
-  .checkbox-group { display:flex; flex-wrap:wrap; gap:8px; }
-  .checkbox-item {
-    display:flex; align-items:center; gap:6px;
-    background:var(--bg); border:1px solid var(--border);
-    padding:6px 12px; border-radius:8px; cursor:pointer; transition:.2s;
-  }
-  .checkbox-item input { accent-color:var(--accent); }
-  .checkbox-item:has(input:checked) { border-color:var(--accent); background:rgba(255,107,53,.08); }
-  .checkbox-item label { font-size:13px; cursor:pointer; }
+/* ═══════════════ MODAL ═══════════════ */
+.overlay {
+  position:fixed; inset:0; z-index:200;
+  background:rgba(0,0,0,.85); backdrop-filter:blur(10px);
+  display:none; align-items:center; justify-content:center; padding:20px;
+}
+.overlay.open { display:flex; }
 
-  /* Notifications */
-  .toast {
-    position:fixed; bottom:24px; right:24px; z-index:999;
-    background:var(--surface2); border:1px solid var(--accent3);
-    color:var(--text); padding:14px 20px; border-radius:12px;
-    font-size:14px; display:none; animation:slideUp .3s;
-    max-width:300px;
-  }
-  .toast.show { display:block; }
-  .toast .t-icon { font-size:18px; margin-right:8px; }
+.modal {
+  background:var(--surface); border:1px solid var(--border2);
+  border-radius:24px; width:100%; max-width:580px;
+  max-height:92vh; overflow-y:auto;
+  box-shadow:0 0 100px rgba(124,58,237,.2), 0 60px 120px rgba(0,0,0,.8);
+  animation:fadeUp .3s ease;
+  position:relative;
+}
+.modal::before {
+  content:'';
+  position:absolute; top:0; left:50%; transform:translateX(-50%);
+  width:50%; height:1px;
+  background:linear-gradient(90deg,transparent,var(--purple2),transparent);
+}
+@keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:none} }
 
-  /* Arena Live indicator */
-  .live-badge {
-    display:inline-flex; align-items:center; gap:6px;
-    background:rgba(239,68,68,.1); border:1px solid rgba(239,68,68,.3);
-    color:#f87171; padding:4px 12px; border-radius:100px; font-size:11px;
-    font-family:'DM Mono',monospace;
-  }
-  .live-badge::before {
-    content:'●'; animation:pulse 1s infinite;
-  }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+.modal-head {
+  padding:32px 32px 0;
+  display:flex; justify-content:space-between; align-items:flex-start;
+}
+.modal-head-title {
+  font-family:var(--font-display); font-size:24px; font-weight:700;
+}
+.modal-head-sub { font-size:13px; color:var(--text3); margin-top:4px; }
+.modal-close {
+  background:var(--surface2); border:1px solid var(--border);
+  color:var(--text2); width:36px; height:36px; border-radius:50%;
+  font-size:18px; cursor:pointer; display:flex; align-items:center;
+  justify-content:center; transition:.2s; flex-shrink:0;
+}
+.modal-close:hover { background:var(--border); color:var(--text); }
+.modal-body { padding:24px 32px 32px; }
 
-  /* Panel tabs */
-  .panel-tabs { display:flex; gap:4px; margin-bottom:28px; }
-  .panel-tab {
-    background:none; border:1px solid var(--border); color:var(--muted);
-    padding:9px 20px; border-radius:10px; cursor:pointer; font-size:13px;
-    font-family:'Syne',sans-serif; font-weight:600; transition:.2s;
-  }
-  .panel-tab.active { background:var(--accent); border-color:var(--accent); color:#fff; }
-  .panel-tab:hover:not(.active) { border-color:var(--muted); color:var(--text); }
+/* form elements */
+.fgroup { margin-bottom:18px; }
+.fgroup label {
+  display:block; font-size:11px; font-weight:500;
+  color:var(--text3); margin-bottom:8px;
+  font-family:var(--font-mono); letter-spacing:.1em; text-transform:uppercase;
+}
+.fgroup input, .fgroup textarea, .fgroup select {
+  width:100%; background:var(--bg2); border:1px solid var(--border);
+  color:var(--text); padding:13px 16px; border-radius:12px;
+  font-size:14px; font-family:var(--font-body); outline:none;
+  transition:.2s; appearance:none;
+}
+.fgroup input:focus, .fgroup textarea:focus, .fgroup select:focus {
+  border-color:var(--purple2); box-shadow:0 0 0 3px rgba(159,103,255,.1);
+}
+.fgroup textarea { resize:vertical; min-height:90px; line-height:1.6; }
+.fgroup select option { background:var(--surface); }
 
-  .tab-content { display:none; }
-  .tab-content.active { display:block; }
+/* product selector grid */
+.prod-grid {
+  display:grid; grid-template-columns:repeat(2,1fr); gap:10px;
+}
+.prod-card {
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:14px; padding:16px; cursor:pointer; transition:.25s;
+  position:relative; overflow:hidden;
+}
+.prod-card::before {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(135deg,rgba(124,58,237,0),rgba(124,58,237,.08));
+  opacity:0; transition:.25s;
+}
+.prod-card:hover { border-color:var(--border2); }
+.prod-card:hover::before { opacity:1; }
+.prod-card.sel { border-color:var(--purple2); background:rgba(124,58,237,.1); }
+.prod-card.sel::before { opacity:1; }
+.prod-card .p-emoji { font-size:26px; display:block; margin-bottom:8px; }
+.prod-card .p-name { font-weight:600; font-size:14px; }
+.prod-card .p-plan { font-size:12px; color:var(--text3); margin-top:2px; }
+.prod-card .p-check {
+  position:absolute; top:10px; right:10px;
+  width:20px; height:20px; border-radius:50%;
+  background:var(--purple); display:none; align-items:center;
+  justify-content:center; font-size:11px;
+}
+.prod-card.sel .p-check { display:flex; }
 
-  /* Sub-panel (admin areas) */
-  .admin-page { display:none; }
-  .admin-page.active { display:block; }
+.submit-btn {
+  width:100%; background:linear-gradient(135deg,var(--purple),#4c1d95);
+  border:none; color:#fff; padding:15px;
+  border-radius:12px; font-size:15px; font-weight:600;
+  font-family:var(--font-body); cursor:pointer; transition:.3s;
+  box-shadow:0 4px 30px var(--purple-glow); margin-top:8px;
+}
+.submit-btn:hover { opacity:.88; transform:translateY(-1px); }
 
-  /* Ticket detail expanded */
-  .ticket-detail-modal .modal { max-width:700px; }
-  .detail-section { margin-bottom:20px; }
-  .detail-section h4 {
-    font-size:11px; text-transform:uppercase; letter-spacing:.1em;
-    color:var(--muted); font-family:'DM Mono',monospace; margin-bottom:10px;
-  }
-  .detail-meta { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-  .meta-item { background:var(--bg); border-radius:8px; padding:12px; }
-  .meta-item .label { font-size:11px; color:var(--muted); margin-bottom:4px; }
-  .meta-item .val { font-weight:600; }
-  .messages-thread { display:flex; flex-direction:column; gap:12px; max-height:220px; overflow-y:auto; }
-  .msg {
-    background:var(--bg); border-radius:10px; padding:12px;
-    font-size:13px; position:relative;
-  }
-  .msg .msg-from { font-size:11px; color:var(--muted); margin-bottom:4px; font-family:'DM Mono',monospace; }
-  .msg.agent-msg { background:rgba(124,58,237,.1); border:1px solid rgba(124,58,237,.2); }
-  .msg-input-area { display:flex; gap:10px; margin-top:12px; }
-  .msg-input-area input {
-    flex:1; background:var(--bg); border:1px solid var(--border);
-    color:var(--text); padding:10px 14px; border-radius:8px;
-    font-family:'DM Sans',sans-serif; font-size:14px; outline:none;
-  }
-  .msg-input-area input:focus { border-color:var(--accent2); }
+/* ═══════════════ DASHBOARD SHELL ═══════════════ */
+#screen-dashboard {
+  flex-direction:row; background:var(--bg);
+}
 
-  .section-divider {
-    border:none; border-top:1px solid var(--border); margin:24px 0;
-  }
+.sidebar {
+  width:260px; flex-shrink:0;
+  background:var(--surface); border-right:1px solid var(--border);
+  display:flex; flex-direction:column;
+  position:sticky; top:0; height:100vh; overflow-y:auto;
+}
 
-  /* Responsive tweaks */
-  @media(max-width:900px) {
-    .admin-wrap { grid-template-columns:1fr; }
-    .sidebar { display:none; }
-    .stats-grid { grid-template-columns:1fr 1fr; }
-    .agents-grid { grid-template-columns:1fr; }
-  }
-  @media(max-width:600px) {
-    .stats-grid { grid-template-columns:1fr; }
-    .product-grid { grid-template-columns:1fr; }
-    nav { padding:14px 16px; }
-    .main-content { padding:20px 16px; }
-  }
+.sidebar-brand {
+  padding:28px 24px 20px;
+  border-bottom:1px solid var(--border);
+}
+.sidebar-brand .name {
+  font-family:var(--font-display); font-size:15px; font-weight:700;
+  line-height:1.3;
+}
+.sidebar-brand .name span { color:var(--purple2); }
+.sidebar-brand .role-pill {
+  display:inline-block; margin-top:8px;
+  background:rgba(124,58,237,.15); border:1px solid rgba(124,58,237,.3);
+  color:var(--purple3); padding:3px 10px; border-radius:100px;
+  font-size:11px; font-family:var(--font-mono);
+}
 
-  /* Color helpers for agent avatars */
-  .av1{background:rgba(255,107,53,.2);color:var(--accent);}
-  .av2{background:rgba(124,58,237,.2);color:#a78bfa;}
-  .av3{background:rgba(16,185,129,.2);color:var(--accent3);}
-  .av4{background:rgba(245,158,11,.2);color:var(--gold);}
-  .av5{background:rgba(239,68,68,.2);color:#f87171;}
+.sidebar-nav { padding:16px 12px; flex:1; }
+.nav-section { margin-bottom:24px; }
+.nav-section-label {
+  font-size:9px; text-transform:uppercase; letter-spacing:.15em;
+  color:var(--text3); font-family:var(--font-mono);
+  padding:0 12px 10px; display:block;
+}
+.nav-item {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 12px; border-radius:10px; cursor:pointer;
+  transition:.2s; font-size:13px; color:var(--text2);
+  border:none; background:none; width:100%; text-align:left;
+  font-family:var(--font-body); position:relative;
+}
+.nav-item:hover { background:var(--surface2); color:var(--text); }
+.nav-item.active {
+  background:rgba(124,58,237,.15); color:var(--purple3);
+}
+.nav-item.active::before {
+  content:''; position:absolute; left:0; top:50%; transform:translateY(-50%);
+  width:3px; height:60%; background:var(--purple2); border-radius:0 2px 2px 0;
+}
+.nav-item .ni { font-size:15px; width:20px; text-align:center; }
+.nav-badge {
+  margin-left:auto; background:var(--purple); color:#fff;
+  font-size:10px; font-family:var(--font-mono);
+  padding:2px 7px; border-radius:100px; min-width:20px; text-align:center;
+}
 
-  select { appearance:none; }
+.sidebar-footer {
+  padding:16px; border-top:1px solid var(--border);
+}
+.logout-btn {
+  width:100%; background:none; border:1px solid var(--border);
+  color:var(--text3); padding:10px; border-radius:10px;
+  font-size:13px; cursor:pointer; font-family:var(--font-body);
+  transition:.2s;
+}
+.logout-btn:hover { border-color:var(--red); color:var(--red); }
 
-  .empty-state {
-    text-align:center; padding:60px 20px; color:var(--muted);
-  }
-  .empty-state .e-icon { font-size:48px; margin-bottom:12px; }
-  .empty-state p { font-size:15px; }
+/* ── Main content ── */
+.dash-main { flex:1; overflow-y:auto; }
+
+.dash-page { display:none; padding:36px; }
+.dash-page.active { display:block; }
+
+.page-title {
+  font-family:var(--font-display); font-size:30px; font-weight:700;
+  margin-bottom:6px;
+}
+.page-sub { color:var(--text3); font-size:14px; margin-bottom:32px; }
+
+/* stats */
+.stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:32px; }
+.stat-box {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:16px; padding:22px;
+  position:relative; overflow:hidden; transition:.2s;
+}
+.stat-box:hover { border-color:var(--border2); }
+.stat-box::after {
+  content:''; position:absolute; top:0; right:0;
+  width:60px; height:60px; border-radius:50%;
+  background: radial-gradient(circle, rgba(124,58,237,.15), transparent 70%);
+  transform:translate(20px,-20px);
+}
+.stat-box .s-label {
+  font-size:10px; text-transform:uppercase; letter-spacing:.1em;
+  color:var(--text3); font-family:var(--font-mono); margin-bottom:10px;
+}
+.stat-box .s-val {
+  font-family:var(--font-display); font-size:36px; font-weight:900;
+  line-height:1;
+}
+.stat-box .s-sub { font-size:12px; color:var(--text3); margin-top:6px; }
+.stat-box.purple { border-color:rgba(124,58,237,.4); }
+.stat-box.purple .s-val { color:var(--purple2); }
+.stat-box.green { border-color:rgba(52,211,153,.3); }
+.stat-box.green .s-val { color:var(--green); }
+.stat-box.gold { border-color:rgba(212,168,83,.3); }
+.stat-box.gold .s-val { color:var(--gold); }
+
+/* table */
+.data-table {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:18px; overflow:hidden;
+}
+.table-top {
+  padding:20px 24px; display:flex; justify-content:space-between;
+  align-items:center; border-bottom:1px solid var(--border);
+}
+.table-top h3 { font-family:var(--font-display); font-size:17px; font-weight:700; }
+.filter-row { display:flex; gap:6px; }
+.f-btn {
+  background:none; border:1px solid var(--border); color:var(--text3);
+  padding:5px 13px; border-radius:8px; font-size:11px; cursor:pointer;
+  font-family:var(--font-mono); transition:.2s; letter-spacing:.05em;
+}
+.f-btn:hover, .f-btn.on { border-color:var(--purple); color:var(--purple3); }
+
+table { width:100%; border-collapse:collapse; }
+thead th {
+  padding:12px 20px; text-align:left;
+  font-size:10px; text-transform:uppercase; letter-spacing:.1em;
+  color:var(--text3); font-family:var(--font-mono);
+  border-bottom:1px solid var(--border);
+}
+tbody tr {
+  border-bottom:1px solid rgba(42,42,66,.5); transition:.15s; cursor:pointer;
+}
+tbody tr:hover { background:var(--surface2); }
+tbody tr:last-child { border:none; }
+td { padding:15px 20px; font-size:13px; }
+td .t-id { font-family:var(--font-mono); font-size:12px; color:var(--text3); }
+td .t-client { font-weight:500; }
+td .t-email { font-size:11px; color:var(--text3); }
+
+/* badges */
+.badge {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:4px 10px; border-radius:100px;
+  font-size:10px; font-family:var(--font-mono); font-weight:500;
+  letter-spacing:.05em;
+}
+.badge::before { content:'●'; font-size:7px; }
+.b-open   { background:rgba(212,168,83,.12); color:var(--gold); border:1px solid rgba(212,168,83,.25); }
+.b-claimed{ background:rgba(124,58,237,.12); color:var(--purple3); border:1px solid rgba(124,58,237,.25); }
+.b-done   { background:rgba(52,211,153,.1); color:var(--green); border:1px solid rgba(52,211,153,.2); }
+
+/* action btns */
+.act-btn {
+  background:none; border:1px solid var(--border); color:var(--text2);
+  padding:6px 12px; border-radius:8px; font-size:11px; cursor:pointer;
+  font-family:var(--font-mono); transition:.2s; margin-right:4px;
+}
+.act-btn:hover { border-color:var(--purple); color:var(--purple3); }
+.act-btn.green:hover { border-color:var(--green); color:var(--green); }
+.act-btn.red:hover { border-color:var(--red); color:var(--red); }
+.act-btn.fill {
+  background:linear-gradient(135deg,var(--purple),#4c1d95);
+  border-color:transparent; color:#fff;
+}
+.act-btn.fill:hover { opacity:.85; }
+
+/* agent cards */
+.agents-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+.agent-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:18px; padding:24px; transition:.2s;
+  position:relative; overflow:hidden;
+}
+.agent-card:hover { border-color:var(--border2); }
+.agent-card::before {
+  content:''; position:absolute; top:-40px; right:-40px;
+  width:100px; height:100px; border-radius:50%;
+  background:radial-gradient(circle,rgba(124,58,237,.08),transparent);
+}
+.ag-top { display:flex; align-items:center; gap:14px; margin-bottom:18px; }
+.ag-avatar {
+  width:50px; height:50px; border-radius:14px;
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-display); font-size:18px; font-weight:900;
+  flex-shrink:0;
+  background:linear-gradient(135deg,rgba(124,58,237,.3),rgba(76,29,149,.3));
+  border:1px solid rgba(124,58,237,.3); color:var(--purple3);
+}
+.ag-name { font-weight:600; font-size:15px; }
+.ag-email { font-size:11px; color:var(--text3); margin-top:2px; }
+.ag-stats { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+.ag-stat { background:var(--bg2); border-radius:10px; padding:10px 14px; }
+.ag-stat .label { font-size:10px; color:var(--text3); font-family:var(--font-mono); }
+.ag-stat .val { font-family:var(--font-display); font-size:22px; font-weight:700; margin-top:2px; }
+.ag-prods { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px; }
+.ag-prod-tag {
+  background:var(--surface2); border:1px solid var(--border);
+  padding:3px 9px; border-radius:6px; font-size:10px;
+  font-family:var(--font-mono); color:var(--text3);
+}
+.ag-earnings {
+  background:linear-gradient(135deg,rgba(212,168,83,.1),rgba(124,58,237,.08));
+  border:1px solid rgba(212,168,83,.2); border-radius:12px;
+  padding:12px 16px; display:flex; justify-content:space-between; align-items:center;
+}
+.ag-earnings .label { font-size:11px; color:var(--gold); font-family:var(--font-mono); }
+.ag-earnings .amount { font-family:var(--font-display); font-size:22px; font-weight:700; color:var(--gold); }
+.ag-actions { display:flex; gap:8px; margin-top:12px; }
+.ag-actions .act-btn { flex:1; text-align:center; padding:9px; }
+
+/* commissions */
+.comm-list { display:flex; flex-direction:column; gap:10px; }
+.comm-row {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:14px; padding:16px 24px;
+  display:grid; grid-template-columns:1fr auto auto;
+  align-items:center; gap:24px; transition:.2s;
+}
+.comm-row:hover { border-color:var(--border2); }
+.comm-prod-name { font-weight:600; font-size:14px; }
+.comm-prod-plan { font-size:11px; color:var(--text3); font-family:var(--font-mono); margin-top:2px; }
+.comm-input {
+  background:var(--bg2); border:1px solid var(--border); color:var(--text);
+  padding:9px 14px; border-radius:10px; font-size:15px; font-weight:600;
+  font-family:var(--font-display); width:110px; text-align:center; outline:none;
+  transition:.2s;
+}
+.comm-input:focus { border-color:var(--gold); box-shadow:0 0 0 3px rgba(212,168,83,.1); }
+.comm-display { font-family:var(--font-display); font-size:22px; font-weight:700; color:var(--gold); min-width:80px; text-align:right; }
+
+/* ranking */
+.rank-list { display:flex; flex-direction:column; gap:10px; }
+.rank-row {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:14px; padding:18px 24px;
+  display:flex; align-items:center; gap:18px; transition:.2s;
+}
+.rank-row:hover { border-color:var(--border2); }
+.rank-row.first { border-color:rgba(212,168,83,.4); background:rgba(212,168,83,.04); }
+.rank-num { font-family:var(--font-display); font-size:28px; font-weight:900; min-width:40px; }
+.rank-num.g { color:var(--gold); }
+.rank-num.s { color:#94a3b8; }
+.rank-num.b { color:#92400e; }
+.rank-info { flex:1; }
+.rank-name { font-weight:600; font-size:15px; }
+.rank-sub { font-size:12px; color:var(--text3); margin-top:2px; }
+.rank-earn { font-family:var(--font-display); font-size:26px; font-weight:900; color:var(--green); }
+
+/* ticket detail */
+.detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
+.detail-item { background:var(--bg2); border-radius:10px; padding:14px; }
+.detail-item .label { font-size:10px; color:var(--text3); font-family:var(--font-mono); text-transform:uppercase; letter-spacing:.1em; margin-bottom:5px; }
+.detail-item .val { font-size:14px; font-weight:500; }
+
+.chat-thread { display:flex; flex-direction:column; gap:10px; max-height:240px; overflow-y:auto; padding-right:4px; }
+.chat-thread::-webkit-scrollbar { width:4px; }
+.chat-thread::-webkit-scrollbar-track { background:transparent; }
+.chat-thread::-webkit-scrollbar-thumb { background:var(--border2); border-radius:4px; }
+.msg-bubble { background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:12px 14px; }
+.msg-bubble.agent { background:rgba(124,58,237,.1); border-color:rgba(124,58,237,.25); }
+.msg-from { font-size:10px; color:var(--text3); font-family:var(--font-mono); margin-bottom:5px; }
+.msg-text { font-size:13px; line-height:1.6; }
+
+.chat-input-row { display:flex; gap:10px; margin-top:12px; }
+.chat-input-row input {
+  flex:1; background:var(--bg2); border:1px solid var(--border);
+  color:var(--text); padding:11px 15px; border-radius:10px;
+  font-family:var(--font-body); font-size:14px; outline:none;
+}
+.chat-input-row input:focus { border-color:var(--purple2); }
+
+/* queue live indicator */
+.live-pill {
+  display:inline-flex; align-items:center; gap:6px;
+  background:rgba(248,113,113,.1); border:1px solid rgba(248,113,113,.25);
+  color:#f87171; padding:4px 12px; border-radius:100px;
+  font-size:10px; font-family:var(--font-mono); letter-spacing:.1em;
+}
+.live-dot { width:6px; height:6px; border-radius:50%; background:#f87171; animation:blink 1.2s infinite; }
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:.2} }
+
+/* empty state */
+.empty-box { text-align:center; padding:64px 24px; }
+.empty-box .e-icon { font-size:52px; margin-bottom:14px; opacity:.5; }
+.empty-box p { color:var(--text3); font-size:15px; }
+
+/* add agent checkbox grid */
+.chk-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.chk-item {
+  display:flex; align-items:center; gap:8px;
+  background:var(--bg2); border:1px solid var(--border);
+  padding:9px 12px; border-radius:10px; cursor:pointer; transition:.2s;
+}
+.chk-item input { accent-color:var(--purple2); width:15px; height:15px; }
+.chk-item label { font-size:12px; cursor:pointer; }
+.chk-item:has(input:checked) { border-color:var(--purple2); background:rgba(124,58,237,.08); }
+
+/* toast */
+.toast {
+  position:fixed; bottom:28px; right:28px; z-index:9000;
+  background:var(--surface2); border:1px solid var(--purple);
+  color:var(--text); padding:14px 20px; border-radius:14px;
+  font-size:14px; display:none; animation:fadeUp .3s;
+  box-shadow:0 0 30px var(--purple-glow);
+  max-width:320px; line-height:1.4;
+}
+.toast.show { display:block; }
+
+/* form row */
+.frow { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+
+/* scrollbar global */
+::-webkit-scrollbar { width:5px; height:5px; }
+::-webkit-scrollbar-track { background:var(--bg); }
+::-webkit-scrollbar-thumb { background:var(--border2); border-radius:3px; }
+
+/* divider */
+hr.div { border:none; border-top:1px solid var(--border); margin:20px 0; }
+
+@media(max-width:960px){
+  .stats-row{grid-template-columns:1fr 1fr;}
+  .agents-grid{grid-template-columns:1fr;}
+  #screen-dashboard{flex-direction:column;}
+  .sidebar{width:100%;height:auto;position:relative;}
+}
+@media(max-width:600px){
+  .stats-row{grid-template-columns:1fr;}
+  .prod-grid{grid-template-columns:1fr;}
+  .frow{grid-template-columns:1fr;}
+  .dash-page{padding:20px 16px;}
+  .comm-row{grid-template-columns:1fr auto;}
+}
 </style>
 </head>
 <body>
 
-<!-- ── NAVIGATION ── -->
-<nav>
-  <div class="logo"><div class="logo-dot"></div>SupportArena</div>
-  <div class="nav-links">
-    <button class="nav-btn active" onclick="showView('client')">🎫 Abrir Ticket</button>
-    <button class="nav-btn" onclick="showView('agent')">🎮 Área do Atendente</button>
-    <button class="nav-btn primary" onclick="showView('admin')">⚙️ Painel Admin</button>
-  </div>
-</nav>
+<!-- ════════════════════════════════════════
+     SCREEN 1 — LOGIN
+════════════════════════════════════════ -->
+<div id="screen-login" class="screen active">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="brand">Achadinhos<br><span>Digitais</span></div>
+      <div class="sub">Sistema de Suporte</div>
+    </div>
 
-<!-- ═══════════════════════════════════════════
-     VIEW 1 — CLIENT PORTAL
-════════════════════════════════════════════ -->
-<div id="view-client" class="view active">
-  <div class="hero">
-    <div class="hero-badge">⚡ Suporte em tempo real</div>
-    <h1>Precisa de ajuda com<br>seu <span>produto?</span></h1>
-    <p>Abra um ticket e um de nossos atendentes especializados vai te atender rapidinho.</p>
-    <button class="ticket-open-btn" onclick="openModal('ticket-modal')">
-      + Abrir Novo Ticket
-    </button>
-  </div>
-</div>
+    <div class="login-tabs">
+      <button class="login-tab active" onclick="setLoginTab('admin')">Admin</button>
+      <button class="login-tab" onclick="setLoginTab('agent')">Atendente</button>
+    </div>
 
-<!-- ═══════════════════════════════════════════
-     VIEW 2 — AGENT AREA
-════════════════════════════════════════════ -->
-<div id="view-agent" class="view">
-  <div class="admin-wrap">
-    <aside class="sidebar">
-      <div class="sidebar-section">
-        <div class="sidebar-label">Atendente</div>
-        <button class="sidebar-item active" onclick="agentTab('queue')">
-          <span class="icon">🎯</span> Fila de Tickets
-        </button>
-        <button class="sidebar-item" onclick="agentTab('my')">
-          <span class="icon">📋</span> Meus Tickets
-        </button>
-        <button class="sidebar-item" onclick="agentTab('done')">
-          <span class="icon">✅</span> Finalizados
-        </button>
-      </div>
-      <div class="sidebar-section">
-        <div class="sidebar-label">Meu Desempenho</div>
-        <button class="sidebar-item" onclick="agentTab('earnings')">
-          <span class="icon">💰</span> Meus Ganhos
-        </button>
-        <button class="sidebar-item" onclick="agentTab('ranking')">
-          <span class="icon">🏆</span> Ranking Geral
-        </button>
-      </div>
-    </aside>
-    <main class="main-content" id="agent-main">
-      <!-- filled by JS -->
-    </main>
+    <div id="login-error" class="login-error">Usuário ou senha incorretos.</div>
+
+    <div class="fgroup">
+      <label>Login</label>
+      <input type="text" id="login-user" placeholder="Seu usuário" autocomplete="off" />
+    </div>
+    <div class="fgroup">
+      <label>Senha</label>
+      <input type="password" id="login-pass" placeholder="••••••••"
+        onkeydown="if(event.key==='Enter')doLogin()" />
+    </div>
+    <button class="btn-primary" onclick="doLogin()">Entrar →</button>
+
+    <div class="client-link">
+      Precisa de suporte? <a href="#" onclick="goClient()">Abrir um ticket</a>
+    </div>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════
-     VIEW 3 — ADMIN PANEL
-════════════════════════════════════════════ -->
-<div id="view-admin" class="view">
-  <div class="admin-wrap">
-    <aside class="sidebar">
-      <div class="sidebar-section">
-        <div class="sidebar-label">Gestão</div>
-        <button class="sidebar-item active" onclick="adminTab('dashboard')">
-          <span class="icon">📊</span> Dashboard
-        </button>
-        <button class="sidebar-item" onclick="adminTab('tickets')">
-          <span class="icon">🎫</span> Todos os Tickets
-        </button>
-        <button class="sidebar-item" onclick="adminTab('agents')">
-          <span class="icon">👥</span> Atendentes
-        </button>
-        <button class="sidebar-item" onclick="adminTab('commissions')">
-          <span class="icon">💸</span> Comissões
-        </button>
-        <button class="sidebar-item" onclick="adminTab('ranking')">
-          <span class="icon">🏆</span> Ranking
-        </button>
+<!-- ════════════════════════════════════════
+     SCREEN 2 — CLIENT PORTAL
+════════════════════════════════════════ -->
+<div id="screen-client" class="screen" style="background:var(--bg);align-items:center;justify-content:center;padding:24px;">
+
+  <!-- tiny internal link, tucked away -->
+  <div style="position:fixed;bottom:16px;right:20px;z-index:10">
+    <button onclick="goLogin()" style="background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;font-family:var(--font-mono)">área interna</button>
+  </div>
+
+  <div style="width:100%;max-width:480px">
+
+    <!-- Logo -->
+    <div style="text-align:center;margin-bottom:36px">
+      <div style="font-family:var(--font-display);font-size:28px;font-weight:700;line-height:1.2">
+        Achadinhos <span style="color:var(--purple2)">Digitais</span>
       </div>
-    </aside>
-    <main class="main-content" id="admin-main">
-      <!-- filled by JS -->
-    </main>
+      <div style="font-size:14px;color:var(--text3);margin-top:6px">Central de Suporte ao Cliente</div>
+    </div>
+
+    <!-- BIG friendly card -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:28px;overflow:hidden;box-shadow:0 0 80px rgba(124,58,237,.12),0 40px 80px rgba(0,0,0,.5)">
+
+      <!-- top strip -->
+      <div style="background:linear-gradient(135deg,var(--purple),#4c1d95);padding:28px 32px;text-align:center">
+        <div style="font-size:52px;margin-bottom:10px">🎧</div>
+        <div style="font-family:var(--font-display);font-size:22px;font-weight:700;color:#fff">Olá! Como podemos te ajudar?</div>
+        <div style="font-size:14px;color:rgba(255,255,255,.7);margin-top:6px">Nossa equipe está pronta para te atender</div>
+      </div>
+
+      <!-- main action -->
+      <div style="padding:32px">
+
+        <button onclick="openOv('ov-ticket')"
+          style="width:100%;background:linear-gradient(135deg,var(--purple),#4c1d95);border:none;color:#fff;
+                 padding:22px 24px;border-radius:18px;cursor:pointer;transition:.3s;
+                 box-shadow:0 8px 40px rgba(124,58,237,.4);display:flex;align-items:center;gap:16px;
+                 text-align:left;margin-bottom:16px"
+          onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 50px rgba(124,58,237,.55)'"
+          onmouseout="this.style.transform='none';this.style.boxShadow='0 8px 40px rgba(124,58,237,.4)'">
+          <div style="font-size:36px;flex-shrink:0">📩</div>
+          <div>
+            <div style="font-size:18px;font-weight:700;font-family:var(--font-display)">Abrir Chamado de Suporte</div>
+            <div style="font-size:13px;color:rgba(255,255,255,.7);margin-top:3px">Clique aqui para falar com um atendente</div>
+          </div>
+          <div style="margin-left:auto;font-size:24px;opacity:.7">→</div>
+        </button>
+
+        <!-- what we support -->
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:20px">
+          <div style="font-size:12px;color:var(--text3);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px">Produtos com suporte disponível</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px">
+              <span style="font-size:20px">🤖</span><span style="font-size:13px;font-weight:500">Gemini</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px">
+              <span style="font-size:20px">💬</span><span style="font-size:13px;font-weight:500">ChatGPT</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px">
+              <span style="font-size:20px">🎬</span><span style="font-size:13px;font-weight:500">CapCut</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px">
+              <span style="font-size:20px">⚡</span><span style="font-size:13px;font-weight:500">Super Grok</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;grid-column:1/-1">
+              <span style="font-size:20px">🔍</span><span style="font-size:13px;font-weight:500">Perplexity</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- reassurance -->
+        <div style="display:flex;justify-content:center;gap:24px;margin-top:20px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text3)">
+            <span>✅</span> Resposta rápida
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text3)">
+            <span>🔒</span> 100% seguro
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text3)">
+            <span>💜</span> Atendimento humanizado
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════
-     MODAL — TICKET CREATION
-════════════════════════════════════════════ -->
-<div class="modal-overlay" id="ticket-modal">
+<!-- ════════════════════════════════════════
+     SCREEN 3 — DASHBOARD
+════════════════════════════════════════ -->
+<div id="screen-dashboard" class="screen">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="name">Achadinhos<br><span>Digitais</span></div>
+      <div class="role-pill" id="sb-role">—</div>
+    </div>
+    <nav class="sidebar-nav" id="sb-nav"><!-- built by JS --></nav>
+    <div class="sidebar-footer">
+      <button class="logout-btn" onclick="doLogout()">↩ Sair</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="dash-main">
+
+    <!-- ── ADMIN PAGES ── -->
+    <div id="page-admin-dash" class="dash-page">
+      <div class="page-title">Dashboard</div>
+      <div class="page-sub">Visão geral em tempo real</div>
+      <div class="stats-row" id="adm-stats"></div>
+      <div class="data-table" id="adm-recent"></div>
+    </div>
+
+    <div id="page-admin-tickets" class="dash-page">
+      <div class="page-title">Todos os Tickets</div>
+      <div class="page-sub">Gerencie e acompanhe cada atendimento</div>
+      <div class="data-table" id="adm-tickets-tbl"></div>
+    </div>
+
+    <div id="page-admin-agents" class="dash-page">
+      <div class="page-title">Atendentes</div>
+      <div class="page-sub">Gerencie sua equipe</div>
+      <div style="margin-bottom:20px">
+        <button class="act-btn fill" onclick="openOv('ov-add-agent')">+ Adicionar Atendente</button>
+      </div>
+      <div class="agents-grid" id="adm-agents-grid"></div>
+    </div>
+
+    <div id="page-admin-commissions" class="dash-page">
+      <div class="page-title">Comissões</div>
+      <div class="page-sub">Defina quanto cada ticket vale por produto</div>
+      <div class="comm-list" id="adm-comm-list"></div>
+    </div>
+
+    <div id="page-admin-ranking" class="dash-page">
+      <div class="page-title">Ranking</div>
+      <div class="page-sub">Disputa em tempo real entre atendentes</div>
+      <div class="rank-list" id="adm-rank-list"></div>
+    </div>
+
+    <!-- ── AGENT PAGES ── -->
+    <div id="page-agent-queue" class="dash-page">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+        <div class="page-title" style="margin:0">Fila de Tickets</div>
+        <div class="live-pill"><div class="live-dot"></div>AO VIVO</div>
+      </div>
+      <div class="page-sub">Seja o primeiro a pegar — quem finalizar ganha a comissão!</div>
+      <div class="data-table" id="ag-queue-tbl"></div>
+    </div>
+
+    <div id="page-agent-mine" class="dash-page">
+      <div class="page-title">Meus Tickets</div>
+      <div class="page-sub">Atendimentos em andamento</div>
+      <div class="data-table" id="ag-mine-tbl"></div>
+    </div>
+
+    <div id="page-agent-done" class="dash-page">
+      <div class="page-title">Finalizados</div>
+      <div class="page-sub">Seu histórico de atendimentos</div>
+      <div class="data-table" id="ag-done-tbl"></div>
+    </div>
+
+    <div id="page-agent-earnings" class="dash-page">
+      <div class="page-title">Meus Ganhos</div>
+      <div class="page-sub">Sua performance financeira</div>
+      <div id="ag-earnings-content"></div>
+    </div>
+
+    <div id="page-agent-ranking" class="dash-page">
+      <div class="page-title">Ranking Geral</div>
+      <div class="page-sub">Sua posição na disputa</div>
+      <div class="rank-list" id="ag-rank-list"></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ════════════════════ OVERLAYS ════════════════════ -->
+
+<!-- Ticket creation -->
+<div class="overlay" id="ov-ticket">
   <div class="modal">
-    <div class="modal-header">
+    <div class="modal-head">
       <div>
-        <div class="modal-title">Novo Ticket de Suporte</div>
-        <div style="color:var(--muted);font-size:13px;margin-top:4px;">Preencha os dados abaixo</div>
+        <div class="modal-head-title">📩 Abrir Chamado</div>
+        <div class="modal-head-sub">Preencha os campos abaixo — é rápido e fácil!</div>
       </div>
-      <button class="modal-close" onclick="closeModal('ticket-modal')">×</button>
+      <button class="modal-close" onclick="closeOv('ov-ticket')">×</button>
     </div>
     <div class="modal-body">
-      <div class="form-group">
-        <label>Seu Nome</label>
-        <input type="text" id="client-name" placeholder="Ex: João Silva" />
+      <div class="fgroup">
+        <label>👤 Qual é o seu nome?</label>
+        <input id="tk-name" placeholder="Ex: Maria Silva" style="font-size:16px;padding:15px 16px" />
       </div>
-      <div class="form-group">
-        <label>Seu Email</label>
-        <input type="email" id="client-email" placeholder="joao@email.com" />
+      <div class="fgroup">
+        <label>📧 Seu melhor e-mail para contato</label>
+        <input type="email" id="tk-email" placeholder="Ex: maria@gmail.com" style="font-size:16px;padding:15px 16px" />
       </div>
-      <div class="form-group">
-        <label>Tipo de Suporte</label>
-        <select id="support-type">
-          <option value="">Selecione o tipo...</option>
-          <option value="suporte">🛠️ Suporte Técnico</option>
-          <option value="resgatar">🎁 Resgatar Produto</option>
-          <option value="cancelamento">❌ Cancelamento</option>
-          <option value="renovacao">🔄 Renovação</option>
-          <option value="duvida">❓ Dúvida Geral</option>
+      <div class="fgroup">
+        <label>🙋 O que você precisa?</label>
+        <select id="tk-type" style="font-size:15px;padding:14px 16px">
+          <option value="">Toque aqui para escolher...</option>
+          <option value="suporte">🛠️ Estou com um problema técnico</option>
+          <option value="resgatar">🎁 Quero resgatar meu produto</option>
+          <option value="cancelamento">❌ Quero cancelar</option>
+          <option value="renovacao">🔄 Quero renovar minha assinatura</option>
+          <option value="duvida">❓ Tenho uma dúvida</option>
         </select>
       </div>
-      <div class="form-group">
-        <label>Produto</label>
-        <div class="product-grid" id="product-grid">
-          <!-- filled by JS -->
-        </div>
+      <div class="fgroup">
+        <label>📦 Qual produto é o seu?</label>
+        <div class="prod-grid" id="tk-prod-grid"></div>
       </div>
-      <div class="form-group">
-        <label>Descreva o Problema</label>
-        <textarea id="ticket-desc" placeholder="Explique sua dúvida ou problema em detalhes..."></textarea>
+      <div class="fgroup">
+        <label>💬 Conta pra gente o que aconteceu</label>
+        <textarea id="tk-desc" placeholder="Escreva aqui o seu problema ou dúvida. Quanto mais detalhes, mais rápido te ajudamos! 😊" style="font-size:14px;padding:14px 16px;min-height:100px"></textarea>
       </div>
-      <button class="btn-submit" onclick="submitTicket()">🚀 Abrir Ticket</button>
+      <button class="submit-btn" onclick="submitTicket()" style="font-size:17px;padding:18px;border-radius:16px">
+        📩 Enviar Pedido de Suporte
+      </button>
+      <div style="text-align:center;font-size:12px;color:var(--text3);margin-top:12px">
+        ✅ Você receberá uma resposta em breve. Não precisa criar conta!
+      </div>
     </div>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════
-     MODAL — TICKET DETAIL
-════════════════════════════════════════════ -->
-<div class="modal-overlay ticket-detail-modal" id="detail-modal">
+<!-- Ticket detail -->
+<div class="overlay" id="ov-detail">
   <div class="modal">
-    <div class="modal-header">
+    <div class="modal-head">
       <div>
-        <div class="modal-title" id="detail-title">Ticket #0000</div>
-        <div style="color:var(--muted);font-size:13px;margin-top:4px;" id="detail-subtitle"></div>
+        <div class="modal-head-title" id="dt-title">Ticket</div>
+        <div class="modal-head-sub" id="dt-sub"></div>
       </div>
-      <button class="modal-close" onclick="closeModal('detail-modal')">×</button>
+      <button class="modal-close" onclick="closeOv('ov-detail')">×</button>
     </div>
-    <div class="modal-body" id="detail-body">
-      <!-- filled by JS -->
-    </div>
+    <div class="modal-body" id="dt-body"></div>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════
-     MODAL — ADD AGENT
-════════════════════════════════════════════ -->
-<div class="modal-overlay" id="add-agent-modal">
+<!-- Add agent -->
+<div class="overlay" id="ov-add-agent">
   <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">Adicionar Atendente</div>
-      <button class="modal-close" onclick="closeModal('add-agent-modal')">×</button>
+    <div class="modal-head">
+      <div class="modal-head-title">Cadastrar Atendente</div>
+      <button class="modal-close" onclick="closeOv('ov-add-agent')">×</button>
     </div>
     <div class="modal-body">
-      <div class="form-row">
-        <div class="form-group">
-          <label>Nome</label>
-          <input type="text" id="ag-name" placeholder="Nome completo" />
-        </div>
-        <div class="form-group">
-          <label>Email</label>
-          <input type="email" id="ag-email" placeholder="email@..." />
-        </div>
+      <div class="frow">
+        <div class="fgroup"><label>Nome Completo</label><input id="ag-name" placeholder="Nome..." /></div>
+        <div class="fgroup"><label>Email</label><input id="ag-email" placeholder="email@..." /></div>
       </div>
-      <div class="form-group">
+      <div class="frow">
+        <div class="fgroup"><label>Login (usuário)</label><input id="ag-login" placeholder="ex: carlos" autocomplete="off" /></div>
+        <div class="fgroup"><label>Senha</label><input type="password" id="ag-pass" placeholder="Mínimo 4 caracteres" /></div>
+      </div>
+      <div class="fgroup">
         <label>Produtos que pode atender</label>
-        <div class="checkbox-group" id="ag-products-check">
-          <!-- filled by JS -->
-        </div>
+        <div class="chk-grid" id="ag-chk-grid"></div>
       </div>
-      <button class="btn-submit" onclick="addAgent()">✅ Cadastrar Atendente</button>
+      <button class="submit-btn" onclick="addAgent()">Cadastrar Atendente →</button>
     </div>
   </div>
 </div>
 
-<div class="toast" id="toast"><span class="t-icon">✅</span><span id="toast-msg"></span></div>
+<div class="toast" id="toast"></div>
 
 <!-- ════════════════════ SCRIPT ════════════════════ -->
 <script>
-/* ─────────────────────────── DATA ─────────────────────────── */
+/* ─── DATA ─── */
 const PRODUCTS = [
-  { id:'gemini-m', name:'Gemini', plan:'Mensal', emoji:'🤖' },
-  { id:'gemini-a', name:'Gemini', plan:'Anual', emoji:'🤖' },
-  { id:'chatgpt-m', name:'ChatGPT', plan:'Mensal', emoji:'💬' },
-  { id:'chatgpt-a', name:'ChatGPT', plan:'Anual', emoji:'💬' },
-  { id:'capcut-m', name:'CapCut', plan:'Mensal', emoji:'🎬' },
-  { id:'capcut-a', name:'CapCut', plan:'Anual', emoji:'🎬' },
-  { id:'grok', name:'Super Grok', plan:'Único', emoji:'⚡' },
-  { id:'perplexity', name:'Perplexity', plan:'Único', emoji:'🔍' },
+  {id:'gemini-m',  name:'Gemini',     plan:'Mensal', emoji:'🤖'},
+  {id:'gemini-a',  name:'Gemini',     plan:'Anual',  emoji:'🤖'},
+  {id:'chatgpt-m', name:'ChatGPT',    plan:'Mensal', emoji:'💬'},
+  {id:'chatgpt-a', name:'ChatGPT',    plan:'Anual',  emoji:'💬'},
+  {id:'capcut-m',  name:'CapCut',     plan:'Mensal', emoji:'🎬'},
+  {id:'capcut-a',  name:'CapCut',     plan:'Anual',  emoji:'🎬'},
+  {id:'grok',      name:'Super Grok', plan:'Único',  emoji:'⚡'},
+  {id:'perplexity',name:'Perplexity', plan:'Único',  emoji:'🔍'},
 ];
 
-// Comissões padrão por produto (R$)
 let COMMISSIONS = {
-  'gemini-m': 5, 'gemini-a': 15,
-  'chatgpt-m': 6, 'chatgpt-a': 18,
-  'capcut-m': 4, 'capcut-a': 12,
-  'grok': 10, 'perplexity': 8
+  'gemini-m':5,'gemini-a':15,'chatgpt-m':6,'chatgpt-a':18,
+  'capcut-m':4,'capcut-a':12,'grok':10,'perplexity':8
 };
 
+// Admin credentials (hardcoded, only admin can access admin panel)
+const ADMIN_CRED = { login:'admin', pass:'admin123', name:'Admin Principal', role:'admin' };
+
 let AGENTS = [
-  { id:'ag1', name:'Carlos Henrique', email:'carlos@arena.com', products:['gemini-m','gemini-a','chatgpt-m','chatgpt-a'], color:'av1', closed:12, earnings:187 },
-  { id:'ag2', name:'Ana Beatriz', email:'ana@arena.com', products:['capcut-m','capcut-a','grok'], color:'av2', closed:9, earnings:134 },
-  { id:'ag3', name:'Rafael Souza', email:'rafael@arena.com', products:['chatgpt-m','chatgpt-a','perplexity','grok'], color:'av3', closed:7, earnings:98 },
+  {id:'ag1', name:'Carlos Henrique', email:'carlos@suporte.com', login:'carlos', pass:'1234',
+   products:['gemini-m','gemini-a','chatgpt-m','chatgpt-a'], closed:12, earnings:187},
+  {id:'ag2', name:'Ana Beatriz', email:'ana@suporte.com', login:'ana', pass:'1234',
+   products:['capcut-m','capcut-a','grok'], closed:9, earnings:134},
+  {id:'ag3', name:'Rafael Souza', email:'rafael@suporte.com', login:'rafael', pass:'1234',
+   products:['chatgpt-m','chatgpt-a','perplexity','grok'], closed:7, earnings:98},
 ];
 
 let TICKETS = [
-  { id:'T001', clientName:'Maria Santos', clientEmail:'maria@gmail.com', product:'gemini-m', type:'suporte', desc:'Não consigo fazer login no Gemini. Aparece erro 403.', status:'open', agent:null, createdAt: new Date(Date.now()-3600000).toISOString(), messages:[] },
-  { id:'T002', clientName:'João Pedro', clientEmail:'joao@gmail.com', product:'chatgpt-a', type:'resgatar', desc:'Quero resgatar meu acesso ao ChatGPT Plus anual.', status:'claimed', agent:'ag1', createdAt: new Date(Date.now()-7200000).toISOString(), messages:[{from:'Carlos Henrique (Atendente)',text:'Olá João! Vou te ajudar com o resgate. Pode me passar seu login?',ts:new Date(Date.now()-3000000).toISOString()}] },
-  { id:'T003', clientName:'Fernanda Lima', clientEmail:'fer@gmail.com', product:'capcut-m', type:'cancelamento', desc:'Quero cancelar minha assinatura mensal do CapCut.', status:'done', agent:'ag2', createdAt: new Date(Date.now()-86400000).toISOString(), messages:[], closedAt: new Date(Date.now()-3600000).toISOString() },
+  {id:'T001', clientName:'Maria Santos', clientEmail:'maria@gmail.com', product:'gemini-m',
+   type:'suporte', desc:'Não consigo fazer login no Gemini. Erro 403.',
+   status:'open', agent:null, createdAt:new Date(Date.now()-3600000).toISOString(), messages:[]},
+  {id:'T002', clientName:'João Pedro', clientEmail:'joao@gmail.com', product:'chatgpt-a',
+   type:'resgatar', desc:'Quero resgatar meu acesso ChatGPT Plus anual.',
+   status:'claimed', agent:'ag1', createdAt:new Date(Date.now()-7200000).toISOString(),
+   messages:[{from:'Carlos Henrique',isAgent:true,text:'Olá João! Vou te ajudar. Pode me passar seu login?',ts:new Date(Date.now()-3000000).toISOString()}]},
+  {id:'T003', clientName:'Fernanda Lima', clientEmail:'fer@gmail.com', product:'capcut-m',
+   type:'cancelamento', desc:'Quero cancelar minha assinatura mensal.',
+   status:'done', agent:'ag2', createdAt:new Date(Date.now()-86400000).toISOString(),
+   closedAt:new Date(Date.now()-3600000).toISOString(), messages:[
+     {from:'Ana Beatriz',isAgent:true,text:'Olá Fernanda! Vou processar o cancelamento.',ts:new Date(Date.now()-80000000).toISOString()},
+     {from:'Cliente',isAgent:false,text:'Obrigada!',ts:new Date(Date.now()-79000000).toISOString()}
+   ]},
 ];
 
-let ticketCounter = 4;
-let currentAgentId = 'ag1'; // simulated logged-in agent
-let currentAdminPage = 'dashboard';
-let currentAgentPage = 'queue';
+let tkCounter = 4;
+let currentUser = null; // {role:'admin'|'agent', id, name}
+let currentPage = '';
+let loginTab = 'admin';
+let selectedProduct = null;
 let filterStatus = 'all';
 
-/* ─────────────────────────── HELPERS ─────────────────────────── */
-function genId() { return 'T' + String(ticketCounter++).padStart(3,'0'); }
+/* ─── HELPERS ─── */
+function genId() { return 'T' + String(tkCounter++).padStart(3,'0'); }
 function getAgent(id) { return AGENTS.find(a=>a.id===id); }
-function getProduct(id) { return PRODUCTS.find(p=>p.id===id); }
+function getProd(id) { return PRODUCTS.find(p=>p.id===id); }
 function fmtDate(iso) {
-  const d = new Date(iso);
-  return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  if(!iso) return '—';
+  const d=new Date(iso);
+  return d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
 }
-function fmtMoney(v) { return 'R$ ' + Number(v).toFixed(2).replace('.',','); }
-function agentInitials(name) { return name.split(' ').map(w=>w[0]).slice(0,2).join(''); }
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  document.getElementById('toast-msg').textContent = msg;
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 3000);
+function fmtMoney(v) { return 'R$ '+Number(v).toFixed(2).replace('.',','); }
+function initials(n) { return n.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase(); }
+function badge(s) {
+  const map={open:'Aberto',claimed:'Em Atendimento',done:'Finalizado'};
+  const cls={open:'b-open',claimed:'b-claimed',done:'b-done'};
+  return `<span class="badge ${cls[s]||'b-open'}">${map[s]||s}</span>`;
 }
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-function statusBadge(s) {
-  const map = { open:'🟠 Aberto', claimed:'🟣 Em Atendimento', done:'🟢 Finalizado', waiting:'🟡 Aguardando' };
-  const cls = { open:'open', claimed:'claimed', done:'done', waiting:'waiting' };
-  return `<span class="badge ${cls[s]||'open'}">${map[s]||s}</span>`;
+function toast(msg) {
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  clearTimeout(el._t);
+  el._t=setTimeout(()=>el.classList.remove('show'),3200);
 }
+function openOv(id) { document.getElementById(id).classList.add('open'); }
+function closeOv(id) { document.getElementById(id).classList.remove('open'); }
 
-/* ─────────────────────────── VIEWS ─────────────────────────── */
-function showView(v) {
-  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
-  document.getElementById('view-'+v).classList.add('active');
-  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-  event.target.classList.add('active');
-  if(v==='admin') renderAdmin();
-  if(v==='agent') renderAgent();
+/* ─── NAV BETWEEN SCREENS ─── */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
 }
+function goClient() { showScreen('client'); }
+function goLogin() { showScreen('login'); }
 
-/* ─────────────────────────── CLIENT ─────────────────────────── */
-(function buildProductGrid(){
-  const g = document.getElementById('product-grid');
-  let selected = null;
-  g.innerHTML = PRODUCTS.map(p=>`
-    <div class="product-card" data-id="${p.id}" onclick="selectProduct('${p.id}')">
-      <span class="prod-emoji">${p.emoji}</span>
-      <div class="prod-name">${p.name}</div>
-      <div class="prod-plan">${p.plan}</div>
-    </div>
-  `).join('');
-
-  const agChk = document.getElementById('ag-products-check');
-  agChk.innerHTML = PRODUCTS.map(p=>`
-    <div class="checkbox-item">
-      <input type="checkbox" id="chk-${p.id}" value="${p.id}">
-      <label for="chk-${p.id}">${p.emoji} ${p.name} ${p.plan}</label>
-    </div>
-  `).join('');
-})();
-
-let selectedProduct = null;
-function selectProduct(id) {
-  selectedProduct = id;
-  document.querySelectorAll('.product-card').forEach(c=>{
-    c.classList.toggle('selected', c.dataset.id===id);
+/* ─── LOGIN ─── */
+function setLoginTab(t) {
+  loginTab = t;
+  document.querySelectorAll('.login-tab').forEach((b,i)=>{
+    b.classList.toggle('active', (i===0&&t==='admin')||(i===1&&t==='agent'));
   });
 }
 
-function submitTicket() {
-  const name = document.getElementById('client-name').value.trim();
-  const email = document.getElementById('client-email').value.trim();
-  const type = document.getElementById('support-type').value;
-  const desc = document.getElementById('ticket-desc').value.trim();
-  if(!name||!email||!type||!selectedProduct||!desc) {
-    showToast('⚠️ Preencha todos os campos!'); return;
+function doLogin() {
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-error');
+  errEl.classList.remove('show');
+
+  if(loginTab==='admin') {
+    if(u===ADMIN_CRED.login && p===ADMIN_CRED.pass) {
+      currentUser = {role:'admin', name:'Admin Principal'};
+      enterDashboard();
+    } else { errEl.classList.add('show'); }
+  } else {
+    const ag = AGENTS.find(a=>a.login===u && a.pass===p);
+    if(ag) {
+      currentUser = {role:'agent', id:ag.id, name:ag.name};
+      enterDashboard();
+    } else { errEl.classList.add('show'); }
   }
-  const ticket = {
-    id: genId(), clientName:name, clientEmail:email,
-    product: selectedProduct, type, desc,
-    status:'open', agent:null,
-    createdAt: new Date().toISOString(), messages:[]
+}
+
+function doLogout() {
+  currentUser = null;
+  document.getElementById('login-user').value='';
+  document.getElementById('login-pass').value='';
+  showScreen('login');
+}
+
+/* ─── DASHBOARD ─── */
+function enterDashboard() {
+  buildSidebar();
+  showScreen('dashboard');
+  if(currentUser.role==='admin') navTo('admin-dash');
+  else navTo('agent-queue');
+}
+
+function buildSidebar() {
+  const roleEl = document.getElementById('sb-role');
+  const navEl = document.getElementById('sb-nav');
+
+  if(currentUser.role==='admin') {
+    roleEl.textContent = '👑 Admin Principal';
+    navEl.innerHTML = `
+      <div class="nav-section">
+        <span class="nav-section-label">Painel</span>
+        <button class="nav-item" onclick="navTo('admin-dash')"><span class="ni">📊</span>Dashboard</button>
+        <button class="nav-item" onclick="navTo('admin-tickets')"><span class="ni">🎫</span>Todos os Tickets<span class="nav-badge" id="nb-open">0</span></button>
+        <button class="nav-item" onclick="navTo('admin-agents')"><span class="ni">👥</span>Atendentes</button>
+        <button class="nav-item" onclick="navTo('admin-commissions')"><span class="ni">💸</span>Comissões</button>
+        <button class="nav-item" onclick="navTo('admin-ranking')"><span class="ni">🏆</span>Ranking</button>
+      </div>
+    `;
+  } else {
+    roleEl.textContent = '🎧 Atendente';
+    navEl.innerHTML = `
+      <div class="nav-section">
+        <span class="nav-section-label">Atendimento</span>
+        <button class="nav-item" onclick="navTo('agent-queue')"><span class="ni">🎯</span>Fila de Tickets<span class="nav-badge" id="nb-queue">0</span></button>
+        <button class="nav-item" onclick="navTo('agent-mine')"><span class="ni">📋</span>Meus Tickets</button>
+        <button class="nav-item" onclick="navTo('agent-done')"><span class="ni">✅</span>Finalizados</button>
+      </div>
+      <div class="nav-section">
+        <span class="nav-section-label">Performance</span>
+        <button class="nav-item" onclick="navTo('agent-earnings')"><span class="ni">💰</span>Meus Ganhos</button>
+        <button class="nav-item" onclick="navTo('agent-ranking')"><span class="ni">🏆</span>Ranking</button>
+      </div>
+    `;
+  }
+  updateBadges();
+}
+
+function updateBadges() {
+  const openCount = TICKETS.filter(t=>t.status==='open').length;
+  const nb = document.getElementById('nb-open');
+  if(nb) nb.textContent = openCount;
+
+  if(currentUser && currentUser.role==='agent') {
+    const ag = getAgent(currentUser.id);
+    if(ag) {
+      const queueCount = TICKETS.filter(t=>t.status==='open'&&ag.products.includes(t.product)).length;
+      const nq = document.getElementById('nb-queue');
+      if(nq) nq.textContent = queueCount;
+    }
+  }
+}
+
+function navTo(page) {
+  currentPage = page;
+  document.querySelectorAll('.dash-page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  const pageEl = document.getElementById('page-'+page);
+  if(pageEl) pageEl.classList.add('active');
+
+  // highlight sidebar item
+  document.querySelectorAll('.nav-item').forEach(b=>{
+    if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes(`'${page}'`))
+      b.classList.add('active');
+  });
+
+  // render content
+  const renders = {
+    'admin-dash':    renderAdminDash,
+    'admin-tickets': renderAdminTickets,
+    'admin-agents':  renderAdminAgents,
+    'admin-commissions': renderCommissions,
+    'admin-ranking': ()=>renderRanking('adm-rank-list'),
+    'agent-queue':   renderAgentQueue,
+    'agent-mine':    renderAgentMine,
+    'agent-done':    renderAgentDone,
+    'agent-earnings':renderAgentEarnings,
+    'agent-ranking': ()=>renderRanking('ag-rank-list'),
   };
-  TICKETS.unshift(ticket);
-  closeModal('ticket-modal');
-  showToast(`✅ Ticket ${ticket.id} aberto com sucesso! Em breve um atendente irá te ajudar.`);
-  // reset
-  document.getElementById('client-name').value='';
-  document.getElementById('client-email').value='';
-  document.getElementById('support-type').value='';
-  document.getElementById('ticket-desc').value='';
-  selectedProduct=null;
-  document.querySelectorAll('.product-card').forEach(c=>c.classList.remove('selected'));
+  if(renders[page]) renders[page]();
+  updateBadges();
 }
 
-/* ─────────────────────────── AGENT ─────────────────────────── */
-function agentTab(page) {
-  currentAgentPage = page;
-  document.querySelectorAll('#view-agent .sidebar-item').forEach(b=>b.classList.remove('active'));
-  event.target.closest('.sidebar-item').classList.add('active');
-  renderAgent();
-}
-
-function renderAgent() {
-  const el = document.getElementById('agent-main');
-  const me = getAgent(currentAgentId);
-  if(!me) { el.innerHTML='<p style="color:var(--muted)">Atendente não encontrado.</p>'; return; }
-
-  if(currentAgentPage==='queue') {
-    // Tickets available for this agent's products, still open
-    const avail = TICKETS.filter(t=>t.status==='open' && me.products.includes(t.product));
-    el.innerHTML = `
-      <div class="page-header">
-        <h2>🎯 Fila de Tickets</h2>
-        <p>Tickets disponíveis para você atender. Seja o primeiro! <span class="live-badge">AO VIVO</span></p>
-      </div>
-      ${avail.length===0 ? `<div class="empty-state"><div class="e-icon">🎉</div><p>Nenhum ticket na fila. Tudo em dia!</p></div>` : `
-      <div class="tickets-table">
-        <div class="table-header"><h3>Disponíveis (${avail.length})</h3></div>
-        <table>
-          <thead><tr>
-            <th>ID</th><th>Cliente</th><th>Produto</th><th>Tipo</th>
-            <th>Abertura</th><th>Comissão</th><th>Ação</th>
-          </tr></thead>
-          <tbody>
-            ${avail.map(t=>{
-              const prod = getProduct(t.product);
-              const comm = COMMISSIONS[t.product]||0;
-              return `<tr>
-                <td><span style="font-family:var(--dm-mono);font-size:13px;color:var(--muted)">${t.id}</span></td>
-                <td>${t.clientName}</td>
-                <td>${prod?prod.emoji+' '+prod.name+' '+prod.plan:t.product}</td>
-                <td>${t.type}</td>
-                <td style="font-size:12px;color:var(--muted)">${fmtDate(t.createdAt)}</td>
-                <td><span style="color:var(--gold);font-weight:700;font-family:'Syne',sans-serif">${fmtMoney(comm)}</span></td>
-                <td><button class="action-btn primary" onclick="claimTicket('${t.id}')">⚡ Pegar</button></td>
-              </tr>`;
-            }).join('')}
-          </tbody>
-        </table>
-      </div>`}
-    `;
-  } else if(currentAgentPage==='my') {
-    const mine = TICKETS.filter(t=>t.agent===currentAgentId && t.status==='claimed');
-    el.innerHTML = `
-      <div class="page-header"><h2>📋 Meus Tickets em Aberto</h2></div>
-      ${mine.length===0?`<div class="empty-state"><div class="e-icon">📭</div><p>Nenhum ticket ativo.</p></div>`:`
-      <div class="tickets-table">
-        <div class="table-header"><h3>Em Atendimento (${mine.length})</h3></div>
-        <table>
-          <thead><tr><th>ID</th><th>Cliente</th><th>Produto</th><th>Status</th><th>Comissão</th><th>Ações</th></tr></thead>
-          <tbody>
-            ${mine.map(t=>{
-              const prod=getProduct(t.product);
-              return `<tr>
-                <td style="font-family:'DM Mono';font-size:13px;color:var(--muted)">${t.id}</td>
-                <td>${t.clientName}</td>
-                <td>${prod?prod.emoji+' '+prod.name:t.product}</td>
-                <td>${statusBadge(t.status)}</td>
-                <td><span style="color:var(--gold);font-weight:700">${fmtMoney(COMMISSIONS[t.product]||0)}</span></td>
-                <td>
-                  <button class="action-btn" onclick="openDetail('${t.id}')">💬 Atender</button>
-                  <button class="action-btn" style="margin-left:6px;border-color:var(--accent3);color:var(--accent3)" onclick="closeTicketAgent('${t.id}')">✅ Finalizar</button>
-                </td>
-              </tr>`;
-            }).join('')}
-          </tbody>
-        </table>
-      </div>`}
-    `;
-  } else if(currentAgentPage==='done') {
-    const done = TICKETS.filter(t=>t.agent===currentAgentId && t.status==='done');
-    el.innerHTML = `
-      <div class="page-header"><h2>✅ Tickets Finalizados</h2></div>
-      ${done.length===0?`<div class="empty-state"><div class="e-icon">📦</div><p>Nenhum ticket finalizado ainda.</p></div>`:`
-      <div class="tickets-table">
-        <table>
-          <thead><tr><th>ID</th><th>Cliente</th><th>Produto</th><th>Finalizado em</th><th>Comissão Recebida</th></tr></thead>
-          <tbody>
-            ${done.map(t=>{
-              const prod=getProduct(t.product);
-              return `<tr>
-                <td style="font-family:'DM Mono';font-size:13px;color:var(--muted)">${t.id}</td>
-                <td>${t.clientName}</td>
-                <td>${prod?prod.emoji+' '+prod.name:t.product}</td>
-                <td style="font-size:12px;color:var(--muted)">${t.closedAt?fmtDate(t.closedAt):'-'}</td>
-                <td><span style="color:var(--accent3);font-weight:700">${fmtMoney(COMMISSIONS[t.product]||0)}</span></td>
-              </tr>`;
-            }).join('')}
-          </tbody>
-        </table>
-      </div>`}
-    `;
-  } else if(currentAgentPage==='earnings') {
-    const done = TICKETS.filter(t=>t.agent===currentAgentId && t.status==='done');
-    const total = done.reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0) + me.earnings;
-    el.innerHTML = `
-      <div class="page-header"><h2>💰 Meus Ganhos</h2></div>
-      <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
-        <div class="stat-card green">
-          <div class="stat-label">Total Acumulado</div>
-          <div class="stat-value" style="color:var(--accent3)">${fmtMoney(total)}</div>
-        </div>
-        <div class="stat-card highlight">
-          <div class="stat-label">Tickets Fechados</div>
-          <div class="stat-value">${me.closed + done.length}</div>
-        </div>
-        <div class="stat-card purple">
-          <div class="stat-label">Ticket Médio</div>
-          <div class="stat-value" style="color:#a78bfa">${fmtMoney(total / Math.max(1, me.closed+done.length))}</div>
-        </div>
-      </div>
-      <div style="margin-top:24px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px">
-        <h3 style="font-family:'Syne',sans-serif;margin-bottom:16px">💸 Comissões por Produto</h3>
-        <table style="width:100%;border-collapse:collapse">
-          <thead><tr>
-            <th style="text-align:left;padding:10px 0;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;border-bottom:1px solid var(--border)">Produto</th>
-            <th style="text-align:right;padding:10px 0;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;border-bottom:1px solid var(--border)">Comissão</th>
-          </tr></thead>
-          <tbody>
-            ${me.products.map(pid=>{
-              const p=getProduct(pid);
-              return `<tr style="border-bottom:1px solid rgba(42,42,58,.4)">
-                <td style="padding:12px 0">${p?p.emoji+' '+p.name+' '+p.plan:pid}</td>
-                <td style="text-align:right;color:var(--gold);font-weight:700;font-family:'Syne',sans-serif;font-size:18px">${fmtMoney(COMMISSIONS[pid]||0)}</td>
-              </tr>`;
-            }).join('')}
-          </tbody>
-        </table>
-      </div>
-    `;
-  } else if(currentAgentPage==='ranking') {
-    renderRankingPage(el);
-  }
-}
-
-function claimTicket(id) {
-  const t = TICKETS.find(t=>t.id===id);
-  if(!t || t.status!=='open') { showToast('⚠️ Ticket já foi pego!'); return; }
-  t.status='claimed'; t.agent=currentAgentId;
-  showToast(`⚡ Você pegou o ticket ${id}! Vá para "Meus Tickets".`);
-  renderAgent();
-}
-
-function closeTicketAgent(id) {
-  const t = TICKETS.find(t=>t.id===id);
-  if(!t) return;
-  t.status='done'; t.closedAt=new Date().toISOString();
-  const comm = COMMISSIONS[t.product]||0;
-  const ag = getAgent(currentAgentId);
-  if(ag) { ag.closed++; ag.earnings+=comm; }
-  showToast(`✅ Ticket ${id} finalizado! Você ganhou ${fmtMoney(comm)} 🎉`);
-  renderAgent();
-}
-
-/* ─────────────────────────── TICKET DETAIL ─────────────────────────── */
-function openDetail(id) {
-  const t = TICKETS.find(t=>t.id===id);
-  if(!t) return;
-  const prod = getProduct(t.product);
-  document.getElementById('detail-title').textContent = `Ticket ${t.id}`;
-  document.getElementById('detail-subtitle').textContent = `${t.clientName} · ${prod?prod.name+' '+prod.plan:t.product}`;
-
-  document.getElementById('detail-body').innerHTML = `
-    <div class="detail-section">
-      <h4>Informações</h4>
-      <div class="detail-meta">
-        <div class="meta-item"><div class="label">Cliente</div><div class="val">${t.clientName}</div></div>
-        <div class="meta-item"><div class="label">Email</div><div class="val">${t.clientEmail}</div></div>
-        <div class="meta-item"><div class="label">Produto</div><div class="val">${prod?prod.emoji+' '+prod.name+' '+prod.plan:t.product}</div></div>
-        <div class="meta-item"><div class="label">Tipo</div><div class="val">${t.type}</div></div>
-      </div>
-    </div>
-    <div class="detail-section">
-      <h4>Descrição do Problema</h4>
-      <div style="background:var(--bg);border-radius:10px;padding:14px;font-size:14px;line-height:1.6">${t.desc}</div>
-    </div>
-    <div class="detail-section">
-      <h4>Chat de Atendimento</h4>
-      <div class="messages-thread" id="msg-thread">
-        ${t.messages.length===0?'<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px">Nenhuma mensagem ainda.</div>':
-          t.messages.map(m=>`<div class="msg ${m.isAgent?'agent-msg':''}"><div class="msg-from">${m.from} · ${fmtDate(m.ts)}</div>${m.text}</div>`).join('')
-        }
-      </div>
-      <div class="msg-input-area">
-        <input type="text" id="msg-input" placeholder="Digite uma mensagem..." onkeydown="if(event.key==='Enter')sendMsg('${t.id}')" />
-        <button class="action-btn primary" onclick="sendMsg('${t.id}')">Enviar</button>
-      </div>
-    </div>
-    <hr class="section-divider">
-    <div style="display:flex;gap:10px">
-      <button class="action-btn" style="flex:1;padding:12px;border-color:var(--danger);color:var(--danger)" onclick="closeModal('detail-modal')">Fechar</button>
-      <button class="action-btn primary" style="flex:2;padding:12px" onclick="closeTicketAgent('${t.id}');closeModal('detail-modal')">✅ Finalizar e Ganhar ${fmtMoney(COMMISSIONS[t.product]||0)}</button>
-    </div>
+/* ─── ADMIN RENDERS ─── */
+function renderAdminDash() {
+  const open   = TICKETS.filter(t=>t.status==='open').length;
+  const claimed= TICKETS.filter(t=>t.status==='claimed').length;
+  const done   = TICKETS.filter(t=>t.status==='done').length;
+  const paid   = TICKETS.filter(t=>t.status==='done').reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0);
+  document.getElementById('adm-stats').innerHTML = `
+    <div class="stat-box"><div class="s-label">Tickets Abertos</div><div class="s-val">${open}</div><div class="s-sub">Aguardando atendente</div></div>
+    <div class="stat-box purple"><div class="s-label">Em Atendimento</div><div class="s-val">${claimed}</div><div class="s-sub">Em progresso</div></div>
+    <div class="stat-box green"><div class="s-label">Finalizados</div><div class="s-val">${done}</div><div class="s-sub">Total histórico</div></div>
+    <div class="stat-box gold"><div class="s-label">Comissões Pagas</div><div class="s-val">${fmtMoney(paid)}</div><div class="s-sub">Distribuído</div></div>
   `;
-  openModal('detail-modal');
+  document.getElementById('adm-recent').innerHTML = `
+    <div class="table-top"><h3>Tickets Recentes</h3><div class="live-pill"><div class="live-dot"></div>AO VIVO</div></div>
+    <table><thead><tr><th>ID</th><th>Cliente</th><th>Produto</th><th>Status</th><th>Atendente</th><th>Abertura</th></tr></thead>
+    <tbody>${TICKETS.slice(0,8).map(t=>{
+      const pr=getProd(t.product); const ag=getAgent(t.agent);
+      return `<tr onclick="openDetail('${t.id}')">
+        <td><span class="t-id">${t.id}</span></td>
+        <td><div class="t-client">${t.clientName}</div><div class="t-email">${t.clientEmail}</div></td>
+        <td>${pr?pr.emoji+' '+pr.name+' '+pr.plan:t.product}</td>
+        <td>${badge(t.status)}</td>
+        <td>${ag?ag.name:'<span style="color:var(--text3)">—</span>'}</td>
+        <td style="color:var(--text3);font-size:12px">${fmtDate(t.createdAt)}</td>
+      </tr>`;
+    }).join('')}</tbody></table>
+  `;
 }
 
-function sendMsg(ticketId) {
-  const input = document.getElementById('msg-input');
-  const text = input.value.trim();
-  if(!text) return;
-  const t = TICKETS.find(t=>t.id===ticketId);
-  if(!t) return;
-  const me = getAgent(currentAgentId);
-  t.messages.push({ from: me?me.name+' (Atendente)':'Atendente', text, ts:new Date().toISOString(), isAgent:true });
-  const thread = document.getElementById('msg-thread');
-  if(thread) {
-    const d=document.createElement('div');
-    d.className='msg agent-msg';
-    d.innerHTML=`<div class="msg-from">${me?me.name:'Atendente'} · Agora</div>${text}`;
-    thread.appendChild(d);
-    thread.scrollTop=thread.scrollHeight;
-  }
-  input.value='';
+function renderAdminTickets() {
+  const list = filterStatus==='all' ? TICKETS : TICKETS.filter(t=>t.status===filterStatus);
+  document.getElementById('adm-tickets-tbl').innerHTML = `
+    <div class="table-top">
+      <h3>Tickets (${list.length})</h3>
+      <div class="filter-row">
+        ${['all','open','claimed','done'].map(s=>`
+          <button class="f-btn ${filterStatus===s?'on':''}" onclick="setFilter('${s}')">${
+            s==='all'?'Todos':s==='open'?'Abertos':s==='claimed'?'Em Atend.':'Finalizados'
+          }</button>`).join('')}
+      </div>
+    </div>
+    <table><thead><tr><th>ID</th><th>Cliente</th><th>Produto</th><th>Tipo</th><th>Status</th><th>Atendente</th><th>Abertura</th><th>Ações</th></tr></thead>
+    <tbody>${list.map(t=>{
+      const pr=getProd(t.product); const ag=getAgent(t.agent);
+      return `<tr>
+        <td><span class="t-id">${t.id}</span></td>
+        <td><div class="t-client">${t.clientName}</div><div class="t-email">${t.clientEmail}</div></td>
+        <td>${pr?pr.emoji+' '+pr.name+' '+pr.plan:t.product}</td>
+        <td style="font-size:12px;color:var(--text3)">${t.type}</td>
+        <td>${badge(t.status)}</td>
+        <td>${ag?ag.name:'<span style="color:var(--text3)">—</span>'}</td>
+        <td style="color:var(--text3);font-size:12px">${fmtDate(t.createdAt)}</td>
+        <td>
+          <button class="act-btn" onclick="openDetail('${t.id}')">👁 Ver</button>
+          ${t.status!=='done'?`<button class="act-btn green" onclick="adminClose('${t.id}')">✅</button>`:''}
+          <button class="act-btn red" onclick="adminDel('${t.id}')">🗑</button>
+        </td>
+      </tr>`;
+    }).join('')}</tbody></table>
+  `;
 }
 
-/* ─────────────────────────── ADMIN ─────────────────────────── */
-function adminTab(page) {
-  currentAdminPage = page;
-  document.querySelectorAll('#view-admin .sidebar-item').forEach(b=>b.classList.remove('active'));
-  event.target.closest('.sidebar-item').classList.add('active');
-  renderAdmin();
-}
-
-function renderAdmin() {
-  const el = document.getElementById('admin-main');
-  const openT = TICKETS.filter(t=>t.status==='open').length;
-  const claimedT = TICKETS.filter(t=>t.status==='claimed').length;
-  const doneT = TICKETS.filter(t=>t.status==='done').length;
-  const totalPaid = TICKETS.filter(t=>t.status==='done')
-    .reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0);
-
-  if(currentAdminPage==='dashboard') {
-    el.innerHTML = `
-      <div class="page-header">
-        <h2>📊 Dashboard</h2>
-        <p>Visão geral em tempo real do sistema</p>
-      </div>
-      <div class="stats-grid">
-        <div class="stat-card highlight">
-          <div class="stat-label">Tickets Abertos</div>
-          <div class="stat-value" style="color:var(--accent)">${openT}</div>
-          <div class="stat-sub">Aguardando atendente</div>
-        </div>
-        <div class="stat-card purple">
-          <div class="stat-label">Em Atendimento</div>
-          <div class="stat-value" style="color:#a78bfa">${claimedT}</div>
-          <div class="stat-sub">Em progresso</div>
-        </div>
-        <div class="stat-card green">
-          <div class="stat-label">Finalizados</div>
-          <div class="stat-value" style="color:var(--accent3)">${doneT}</div>
-          <div class="stat-sub">Total histórico</div>
-        </div>
-        <div class="stat-card" style="border-color:var(--gold);background:rgba(245,158,11,.06)">
-          <div class="stat-label">Comissões Pagas</div>
-          <div class="stat-value" style="color:var(--gold)">${fmtMoney(totalPaid)}</div>
-          <div class="stat-sub">Total distribuído</div>
-        </div>
-      </div>
-      <div class="tickets-table">
-        <div class="table-header">
-          <h3>Tickets Recentes</h3>
-          <span class="live-badge">AO VIVO</span>
-        </div>
-        <table>
-          <thead><tr><th>ID</th><th>Cliente</th><th>Produto</th><th>Status</th><th>Atendente</th><th>Abertura</th></tr></thead>
-          <tbody>
-            ${TICKETS.slice(0,6).map(t=>{
-              const prod=getProduct(t.product);
-              const ag=getAgent(t.agent);
-              return `<tr>
-                <td style="font-family:'DM Mono';font-size:13px;color:var(--muted)">${t.id}</td>
-                <td>${t.clientName}</td>
-                <td>${prod?prod.emoji+' '+prod.name+' '+prod.plan:t.product}</td>
-                <td>${statusBadge(t.status)}</td>
-                <td>${ag?ag.name:'<span style="color:var(--muted)">—</span>'}</td>
-                <td style="font-size:12px;color:var(--muted)">${fmtDate(t.createdAt)}</td>
-              </tr>`;
-            }).join('')}
-          </tbody>
-        </table>
-      </div>
-    `;
-  } else if(currentAdminPage==='tickets') {
-    const filtered = filterStatus==='all' ? TICKETS : TICKETS.filter(t=>t.status===filterStatus);
-    el.innerHTML = `
-      <div class="page-header"><h2>🎫 Todos os Tickets</h2></div>
-      <div class="tickets-table">
-        <div class="table-header">
-          <h3>Tickets (${filtered.length})</h3>
-          <div class="filters">
-            ${['all','open','claimed','done'].map(s=>`
-              <button class="filter-btn ${filterStatus===s?'active':''}" onclick="setFilter('${s}')">${s==='all'?'Todos':s==='open'?'Abertos':s==='claimed'?'Em Atend.':'Finalizados'}</button>
-            `).join('')}
-          </div>
-        </div>
-        <table>
-          <thead><tr><th>ID</th><th>Cliente</th><th>Produto</th><th>Tipo</th><th>Status</th><th>Atendente</th><th>Abertura</th><th>Ações</th></tr></thead>
-          <tbody>
-            ${filtered.map(t=>{
-              const prod=getProduct(t.product);
-              const ag=getAgent(t.agent);
-              return `<tr>
-                <td style="font-family:'DM Mono';font-size:13px;color:var(--muted)">${t.id}</td>
-                <td>${t.clientName}<br><span style="font-size:11px;color:var(--muted)">${t.clientEmail}</span></td>
-                <td>${prod?prod.emoji+' '+prod.name+' '+prod.plan:t.product}</td>
-                <td>${t.type}</td>
-                <td>${statusBadge(t.status)}</td>
-                <td>${ag?ag.name:'<span style="color:var(--muted)">Aguardando</span>'}</td>
-                <td style="font-size:12px;color:var(--muted)">${fmtDate(t.createdAt)}</td>
-                <td>
-                  ${t.status!=='done'?`<button class="action-btn danger" onclick="adminCloseTicket('${t.id}')">✅ Fechar</button>`:''}
-                  <button class="action-btn" style="margin-left:4px" onclick="adminDeleteTicket('${t.id}')">🗑️</button>
-                </td>
-              </tr>`;
-            }).join('')}
-          </tbody>
-        </table>
-      </div>
-    `;
-  } else if(currentAdminPage==='agents') {
-    el.innerHTML = `
-      <div class="page-header">
-        <h2>👥 Atendentes</h2>
-        <p>Gerencie sua equipe de suporte</p>
-      </div>
-      <div style="margin-bottom:20px">
-        <button class="nav-btn primary" onclick="openModal('add-agent-modal')">+ Adicionar Atendente</button>
-      </div>
-      <div class="agents-grid">
-        ${AGENTS.map(a=>`
-          <div class="agent-card">
-            <div class="agent-top">
-              <div class="agent-avatar ${a.color}">${agentInitials(a.name)}</div>
-              <div>
-                <div class="agent-name">${a.name}</div>
-                <div class="agent-email">${a.email}</div>
-              </div>
-            </div>
-            <div class="agent-stats">
-              <div class="agent-stat">
-                <div class="label">Finalizados</div>
-                <div class="val">${a.closed}</div>
-              </div>
-              <div class="agent-stat">
-                <div class="label">Em Aberto</div>
-                <div class="val">${TICKETS.filter(t=>t.agent===a.id&&t.status==='claimed').length}</div>
-              </div>
-            </div>
-            <div class="agent-products">
-              ${a.products.map(pid=>{const p=getProduct(pid);return`<span class="prod-tag">${p?p.emoji+' '+p.name:pid}</span>`;}).join('')}
-            </div>
-            <div class="agent-earnings">
-              <div class="label">💰 Ganhos Totais</div>
-              <div class="amount">${fmtMoney(a.earnings + TICKETS.filter(t=>t.agent===a.id&&t.status==='done').reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0))}</div>
-            </div>
-            <div style="display:flex;gap:8px;margin-top:12px">
-              <button class="action-btn" style="flex:1" onclick="switchAgent('${a.id}');showView('agent')">👤 Entrar como</button>
-              <button class="action-btn danger" style="flex:1" onclick="removeAgent('${a.id}')">🗑️ Remover</button>
-            </div>
-          </div>
-        `).join('')}
-      </div>
-    `;
-  } else if(currentAdminPage==='commissions') {
-    el.innerHTML = `
-      <div class="page-header">
-        <h2>💸 Comissões por Produto</h2>
-        <p>Defina quanto cada atendente ganha por ticket finalizado</p>
-      </div>
-      <div class="commissions-grid">
-        ${PRODUCTS.map(p=>`
-          <div class="commission-row">
-            <div class="prod-info">
-              <div class="prod-title">${p.emoji} ${p.name}</div>
-              <div class="prod-plan">${p.plan}</div>
-            </div>
-            <div style="font-size:13px;color:var(--muted);font-family:'DM Mono',monospace">Comissão por ticket</div>
-            <div style="display:flex;align-items:center;gap:6px">
-              <span style="color:var(--muted);font-family:'DM Mono',monospace">R$</span>
-              <input class="commission-input" type="number" min="0" step="0.5"
-                value="${COMMISSIONS[p.id]||0}"
-                onchange="COMMISSIONS['${p.id}']=parseFloat(this.value)||0;showToast('✅ Comissão atualizada!')"
-              />
-            </div>
-            <div style="color:var(--gold);font-family:'Syne',sans-serif;font-weight:700;font-size:20px">
-              ${fmtMoney(COMMISSIONS[p.id]||0)}
-            </div>
-          </div>
-        `).join('')}
-      </div>
-    `;
-  } else if(currentAdminPage==='ranking') {
-    renderRankingPage(el);
-  }
-}
-
-function renderRankingPage(el) {
-  const agentScores = AGENTS.map(a=>{
+function renderAdminAgents() {
+  document.getElementById('adm-agents-grid').innerHTML = AGENTS.map(a=>{
     const extra = TICKETS.filter(t=>t.agent===a.id&&t.status==='done').reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0);
-    return { ...a, totalEarnings: a.earnings+extra, totalClosed: a.closed };
-  }).sort((a,b)=>b.totalEarnings-a.totalEarnings);
+    const active = TICKETS.filter(t=>t.agent===a.id&&t.status==='claimed').length;
+    return `<div class="agent-card">
+      <div class="ag-top">
+        <div class="ag-avatar">${initials(a.name)}</div>
+        <div>
+          <div class="ag-name">${a.name}</div>
+          <div class="ag-email">${a.email}</div>
+          <div style="font-size:10px;color:var(--purple3);font-family:var(--font-mono);margin-top:3px">@${a.login}</div>
+        </div>
+      </div>
+      <div class="ag-stats">
+        <div class="ag-stat"><div class="label">Fechados</div><div class="val">${a.closed}</div></div>
+        <div class="ag-stat"><div class="label">Em Aberto</div><div class="val">${active}</div></div>
+      </div>
+      <div class="ag-prods">${a.products.map(pid=>{const p=getProd(pid);return`<span class="ag-prod-tag">${p?p.emoji+' '+p.name:pid}</span>`;}).join('')}</div>
+      <div class="ag-earnings">
+        <div class="label">💰 Ganhos</div>
+        <div class="amount">${fmtMoney(a.earnings+extra)}</div>
+      </div>
+      <div class="ag-actions">
+        <button class="act-btn red" onclick="removeAgent('${a.id}')">Remover</button>
+      </div>
+    </div>`;
+  }).join('') || '<div class="empty-box"><div class="e-icon">👥</div><p>Nenhum atendente cadastrado.</p></div>';
+}
 
-  el.innerHTML = `
-    <div class="page-header">
-      <h2>🏆 Ranking de Atendentes</h2>
-      <p>Disputa em tempo real — quem atender mais, ganha mais!</p>
+function renderCommissions() {
+  document.getElementById('adm-comm-list').innerHTML = PRODUCTS.map(p=>`
+    <div class="comm-row">
+      <div><div class="comm-prod-name">${p.emoji} ${p.name}</div><div class="comm-prod-plan">${p.plan}</div></div>
+      <div style="font-size:11px;color:var(--text3);font-family:var(--font-mono)">Comissão por ticket</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="color:var(--text3)">R$</span>
+        <input class="comm-input" type="number" min="0" step="0.5" value="${COMMISSIONS[p.id]||0}"
+          oninput="COMMISSIONS['${p.id}']=parseFloat(this.value)||0;document.getElementById('cd-${p.id}').textContent=fmtMoney(COMMISSIONS['${p.id}'])" />
+      </div>
+      <div class="comm-display" id="cd-${p.id}">${fmtMoney(COMMISSIONS[p.id]||0)}</div>
     </div>
-    <div class="ranking-list">
-      ${agentScores.map((a,i)=>{
-        const posClass = i===0?'gold':i===1?'silver':i===2?'bronze':'';
-        const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
-        return `<div class="rank-item" style="${i===0?'border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.05)':''}">
-          <div class="rank-pos ${posClass}">${medal||('#'+(i+1))}</div>
-          <div class="agent-avatar ${a.color}" style="width:40px;height:40px;font-size:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-family:'Syne',sans-serif">${agentInitials(a.name)}</div>
-          <div class="rank-info">
-            <div class="rank-name">${a.name}</div>
-            <div class="rank-sub">${a.totalClosed} tickets finalizados</div>
-          </div>
-          <div class="rank-earnings">${fmtMoney(a.totalEarnings)}</div>
-        </div>`;
-      }).join('')}
+  `).join('');
+}
+
+function renderRanking(containerId) {
+  const sorted = AGENTS.map(a=>{
+    const extra=TICKETS.filter(t=>t.agent===a.id&&t.status==='done').reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0);
+    return {...a, total:a.earnings+extra};
+  }).sort((a,b)=>b.total-a.total);
+
+  document.getElementById(containerId).innerHTML = sorted.map((a,i)=>`
+    <div class="rank-row ${i===0?'first':''}">
+      <div class="rank-num ${i===0?'g':i===1?'s':i===2?'b':''}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</div>
+      <div class="ag-avatar" style="width:44px;height:44px;font-size:16px">${initials(a.name)}</div>
+      <div class="rank-info">
+        <div class="rank-name">${a.name}</div>
+        <div class="rank-sub">${a.closed} tickets finalizados · @${a.login}</div>
+      </div>
+      <div class="rank-earn">${fmtMoney(a.total)}</div>
+    </div>
+  `).join('') || '<div class="empty-box"><div class="e-icon">🏆</div><p>Nenhum dado ainda.</p></div>';
+}
+
+/* ─── AGENT RENDERS ─── */
+function renderAgentQueue() {
+  const me = getAgent(currentUser.id);
+  const avail = me ? TICKETS.filter(t=>t.status==='open'&&me.products.includes(t.product)) : [];
+  document.getElementById('ag-queue-tbl').innerHTML = avail.length===0
+    ? `<div class="empty-box"><div class="e-icon">🎉</div><p>Fila vazia! Nenhum ticket disponível agora.</p></div>`
+    : `<table><thead><tr><th>ID</th><th>Cliente</th><th>Produto</th><th>Tipo</th><th>Abertura</th><th>Comissão</th><th>Ação</th></tr></thead>
+       <tbody>${avail.map(t=>{
+         const pr=getProd(t.product);
+         return `<tr>
+           <td><span class="t-id">${t.id}</span></td>
+           <td>${t.clientName}</td>
+           <td>${pr?pr.emoji+' '+pr.name+' '+pr.plan:t.product}</td>
+           <td style="font-size:12px;color:var(--text3)">${t.type}</td>
+           <td style="font-size:12px;color:var(--text3)">${fmtDate(t.createdAt)}</td>
+           <td style="font-family:var(--font-display);color:var(--gold);font-weight:700">${fmtMoney(COMMISSIONS[t.product]||0)}</td>
+           <td><button class="act-btn fill" onclick="claimTicket('${t.id}')">⚡ Pegar</button></td>
+         </tr>`;
+       }).join('')}</tbody></table>`;
+}
+
+function renderAgentMine() {
+  const mine = TICKETS.filter(t=>t.agent===currentUser.id&&t.status==='claimed');
+  document.getElementById('ag-mine-tbl').innerHTML = mine.length===0
+    ? `<div class="empty-box"><div class="e-icon">📭</div><p>Nenhum ticket em andamento.</p></div>`
+    : `<table><thead><tr><th>ID</th><th>Cliente</th><th>Produto</th><th>Status</th><th>Comissão</th><th>Ações</th></tr></thead>
+       <tbody>${mine.map(t=>{
+         const pr=getProd(t.product);
+         return `<tr>
+           <td><span class="t-id">${t.id}</span></td>
+           <td>${t.clientName}</td>
+           <td>${pr?pr.emoji+' '+pr.name:t.product}</td>
+           <td>${badge(t.status)}</td>
+           <td style="font-family:var(--font-display);color:var(--gold);font-weight:700">${fmtMoney(COMMISSIONS[t.product]||0)}</td>
+           <td>
+             <button class="act-btn" onclick="openDetail('${t.id}')">💬 Atender</button>
+             <button class="act-btn green" onclick="agentClose('${t.id}')">✅ Finalizar</button>
+           </td>
+         </tr>`;
+       }).join('')}</tbody></table>`;
+}
+
+function renderAgentDone() {
+  const done = TICKETS.filter(t=>t.agent===currentUser.id&&t.status==='done');
+  document.getElementById('ag-done-tbl').innerHTML = done.length===0
+    ? `<div class="empty-box"><div class="e-icon">📦</div><p>Nenhum ticket finalizado ainda.</p></div>`
+    : `<table><thead><tr><th>ID</th><th>Cliente</th><th>Produto</th><th>Finalizado em</th><th>Comissão</th><th></th></tr></thead>
+       <tbody>${done.map(t=>{
+         const pr=getProd(t.product);
+         return `<tr>
+           <td><span class="t-id">${t.id}</span></td>
+           <td>${t.clientName}</td>
+           <td>${pr?pr.emoji+' '+pr.name:t.product}</td>
+           <td style="font-size:12px;color:var(--text3)">${fmtDate(t.closedAt)}</td>
+           <td style="font-family:var(--font-display);color:var(--green);font-weight:700">${fmtMoney(COMMISSIONS[t.product]||0)}</td>
+           <td><button class="act-btn" onclick="openDetail('${t.id}')">👁 Ver</button></td>
+         </tr>`;
+       }).join('')}</tbody></table>`;
+}
+
+function renderAgentEarnings() {
+  const me = getAgent(currentUser.id);
+  if(!me) return;
+  const extra = TICKETS.filter(t=>t.agent===me.id&&t.status==='done').reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0);
+  const total = me.earnings + extra;
+  const totalClosed = me.closed;
+  document.getElementById('ag-earnings-content').innerHTML = `
+    <div class="stats-row" style="grid-template-columns:repeat(3,1fr)">
+      <div class="stat-box green"><div class="s-label">Total Acumulado</div><div class="s-val">${fmtMoney(total)}</div></div>
+      <div class="stat-box purple"><div class="s-label">Tickets Fechados</div><div class="s-val">${totalClosed}</div></div>
+      <div class="stat-box gold"><div class="s-label">Média por Ticket</div><div class="s-val">${fmtMoney(total/Math.max(1,totalClosed))}</div></div>
+    </div>
+    <div class="data-table" style="margin-top:24px">
+      <div class="table-top"><h3>Minhas Comissões por Produto</h3></div>
+      <table><thead><tr><th>Produto</th><th>Comissão por Ticket</th></tr></thead>
+      <tbody>${me.products.map(pid=>{
+        const p=getProd(pid);
+        return `<tr><td>${p?p.emoji+' '+p.name+' '+p.plan:pid}</td>
+          <td style="font-family:var(--font-display);color:var(--gold);font-size:20px;font-weight:700">${fmtMoney(COMMISSIONS[pid]||0)}</td></tr>`;
+      }).join('')}</tbody></table>
     </div>
   `;
 }
 
-function setFilter(s) {
-  filterStatus=s;
-  renderAdmin();
+/* ─── TICKET ACTIONS ─── */
+function claimTicket(id) {
+  const t=TICKETS.find(t=>t.id===id);
+  if(!t||t.status!=='open'){toast('⚠️ Ticket já foi pego por outro atendente!');return;}
+  t.status='claimed'; t.agent=currentUser.id;
+  toast(`⚡ Você pegou o ticket ${id}! Vá para "Meus Tickets".`);
+  navTo('agent-queue');
 }
 
-function adminCloseTicket(id) {
-  const t = TICKETS.find(t=>t.id===id);
-  if(!t||t.status==='done') return;
+function agentClose(id) {
+  const t=TICKETS.find(t=>t.id===id); if(!t) return;
   t.status='done'; t.closedAt=new Date().toISOString();
-  const ag = getAgent(t.agent);
-  if(ag) { ag.closed++; ag.earnings+=(COMMISSIONS[t.product]||0); }
-  showToast(`✅ Ticket ${id} encerrado pelo admin.`);
-  renderAdmin();
+  const comm=COMMISSIONS[t.product]||0;
+  const ag=getAgent(currentUser.id);
+  if(ag){ag.closed++;ag.earnings+=comm;}
+  toast(`✅ Ticket ${id} finalizado! Você ganhou ${fmtMoney(comm)} 🎉`);
+  navTo('agent-mine');
 }
 
-function adminDeleteTicket(id) {
-  const idx = TICKETS.findIndex(t=>t.id===id);
-  if(idx>-1) { TICKETS.splice(idx,1); renderAdmin(); showToast('🗑️ Ticket removido.'); }
+function adminClose(id) {
+  const t=TICKETS.find(t=>t.id===id); if(!t||t.status==='done') return;
+  t.status='done'; t.closedAt=new Date().toISOString();
+  const ag=getAgent(t.agent);
+  if(ag){ag.closed++;ag.earnings+=(COMMISSIONS[t.product]||0);}
+  toast(`✅ Ticket ${id} encerrado.`);
+  navTo(currentPage);
 }
 
+function adminDel(id) {
+  const idx=TICKETS.findIndex(t=>t.id===id);
+  if(idx>-1){TICKETS.splice(idx,1);toast('🗑 Ticket removido.');navTo(currentPage);}
+}
+
+function setFilter(s) { filterStatus=s; renderAdminTickets(); }
+
+/* ─── TICKET DETAIL (admin vê tudo, agente vê os seus) ─── */
+function openDetail(id) {
+  const t=TICKETS.find(t=>t.id===id); if(!t) return;
+  const pr=getProd(t.product); const ag=getAgent(t.agent);
+  const isAdmin = currentUser.role==='admin';
+  const isOwner = currentUser.role==='agent' && t.agent===currentUser.id;
+  const canReply = isAdmin || isOwner;
+  const canFinalize = isOwner && t.status==='claimed';
+
+  document.getElementById('dt-title').textContent = `Ticket ${t.id}`;
+  document.getElementById('dt-sub').textContent = `${t.clientName} · ${pr?pr.name+' '+pr.plan:t.product}`;
+
+  document.getElementById('dt-body').innerHTML = `
+    <div class="detail-grid">
+      <div class="detail-item"><div class="label">Cliente</div><div class="val">${t.clientName}</div></div>
+      <div class="detail-item"><div class="label">Email</div><div class="val">${t.clientEmail}</div></div>
+      <div class="detail-item"><div class="label">Produto</div><div class="val">${pr?pr.emoji+' '+pr.name+' '+pr.plan:t.product}</div></div>
+      <div class="detail-item"><div class="label">Tipo</div><div class="val">${t.type}</div></div>
+      <div class="detail-item"><div class="label">Status</div><div class="val">${badge(t.status)}</div></div>
+      <div class="detail-item"><div class="label">Atendente</div><div class="val">${ag?ag.name:'<span style="color:var(--text3)">Aguardando</span>'}</div></div>
+    </div>
+    <div style="background:var(--bg2);border-radius:12px;padding:16px;margin-bottom:20px;font-size:14px;line-height:1.7">
+      <div style="font-size:10px;color:var(--text3);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Descrição</div>
+      ${t.desc}
+    </div>
+    <div style="margin-bottom:8px;font-size:10px;color:var(--text3);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.1em">Conversa (${t.messages.length} mensagens)</div>
+    <div class="chat-thread" id="chat-thread-${t.id}">
+      ${t.messages.length===0
+        ? '<div style="text-align:center;color:var(--text3);padding:20px;font-size:13px">Nenhuma mensagem ainda.</div>'
+        : t.messages.map(m=>`
+          <div class="msg-bubble ${m.isAgent?'agent':''}">
+            <div class="msg-from">${m.from} · ${fmtDate(m.ts)}</div>
+            <div class="msg-text">${m.text}</div>
+          </div>`).join('')}
+    </div>
+    ${canReply ? `
+      <div class="chat-input-row">
+        <input id="chat-inp-${t.id}" placeholder="Digite uma mensagem..." onkeydown="if(event.key==='Enter')sendMsg('${t.id}')" />
+        <button class="act-btn fill" onclick="sendMsg('${t.id}')">Enviar</button>
+      </div>` : ''}
+    <hr class="div">
+    <div style="display:flex;gap:10px">
+      <button class="act-btn" style="flex:1;padding:12px" onclick="closeOv('ov-detail')">Fechar</button>
+      ${canFinalize ? `<button class="act-btn fill" style="flex:2;padding:12px" onclick="agentClose('${t.id}');closeOv('ov-detail')">✅ Finalizar e Ganhar ${fmtMoney(COMMISSIONS[t.product]||0)}</button>` : ''}
+      ${isAdmin && t.status!=='done' ? `<button class="act-btn green" style="flex:2;padding:12px" onclick="adminClose('${t.id}');closeOv('ov-detail')">✅ Encerrar (Admin)</button>` : ''}
+    </div>
+  `;
+  openOv('ov-detail');
+}
+
+function sendMsg(id) {
+  const inp=document.getElementById('chat-inp-'+id); if(!inp) return;
+  const text=inp.value.trim(); if(!text) return;
+  const t=TICKETS.find(t=>t.id===id); if(!t) return;
+  const senderName = currentUser.role==='admin'?'Admin':getAgent(currentUser.id)?.name||'Atendente';
+  const msg={from:senderName, isAgent:true, text, ts:new Date().toISOString()};
+  t.messages.push(msg);
+  const thread=document.getElementById('chat-thread-'+id);
+  if(thread){
+    const d=document.createElement('div');
+    d.className='msg-bubble agent';
+    d.innerHTML=`<div class="msg-from">${senderName} · Agora</div><div class="msg-text">${text}</div>`;
+    thread.appendChild(d); thread.scrollTop=thread.scrollHeight;
+  }
+  inp.value='';
+}
+
+/* ─── TICKET CREATION (client) ─── */
+(function buildProdGrid(){
+  const g=document.getElementById('tk-prod-grid');
+  g.innerHTML=PRODUCTS.map(p=>`
+    <div class="prod-card" data-id="${p.id}" onclick="selProd('${p.id}')">
+      <div class="p-check">✓</div>
+      <span class="p-emoji">${p.emoji}</span>
+      <div class="p-name">${p.name}</div>
+      <div class="p-plan">${p.plan}</div>
+    </div>`).join('');
+
+  // Add agent product checkboxes
+  const cg=document.getElementById('ag-chk-grid');
+  cg.innerHTML=PRODUCTS.map(p=>`
+    <div class="chk-item">
+      <input type="checkbox" id="chk-${p.id}" value="${p.id}">
+      <label for="chk-${p.id}">${p.emoji} ${p.name} ${p.plan}</label>
+    </div>`).join('');
+})();
+
+function selProd(id) {
+  selectedProduct=id;
+  document.querySelectorAll('.prod-card').forEach(c=>c.classList.toggle('sel',c.dataset.id===id));
+}
+
+function submitTicket() {
+  const name=document.getElementById('tk-name').value.trim();
+  const email=document.getElementById('tk-email').value.trim();
+  const type=document.getElementById('tk-type').value;
+  const desc=document.getElementById('tk-desc').value.trim();
+  if(!name||!email||!type||!selectedProduct||!desc){toast('⚠️ Preencha todos os campos!');return;}
+  TICKETS.unshift({
+    id:genId(), clientName:name, clientEmail:email,
+    product:selectedProduct, type, desc,
+    status:'open', agent:null,
+    createdAt:new Date().toISOString(), messages:[]
+  });
+  closeOv('ov-ticket');
+  toast(`✅ Ticket aberto! Em breve um especialista irá te contatar.`);
+  document.getElementById('tk-name').value='';
+  document.getElementById('tk-email').value='';
+  document.getElementById('tk-type').value='';
+  document.getElementById('tk-desc').value='';
+  selectedProduct=null;
+  document.querySelectorAll('.prod-card').forEach(c=>c.classList.remove('sel'));
+}
+
+/* ─── ADD AGENT ─── */
 function addAgent() {
-  const name = document.getElementById('ag-name').value.trim();
-  const email = document.getElementById('ag-email').value.trim();
-  const products = [...document.querySelectorAll('#ag-products-check input:checked')].map(i=>i.value);
-  if(!name||!email||products.length===0) { showToast('⚠️ Preencha tudo e selecione ao menos 1 produto!'); return; }
-  const colors = ['av1','av2','av3','av4','av5'];
-  AGENTS.push({ id:'ag'+Date.now(), name, email, products, color:colors[AGENTS.length%colors.length], closed:0, earnings:0 });
-  closeModal('add-agent-modal');
+  const name=document.getElementById('ag-name').value.trim();
+  const email=document.getElementById('ag-email').value.trim();
+  const login=document.getElementById('ag-login').value.trim();
+  const pass=document.getElementById('ag-pass').value;
+  const products=[...document.querySelectorAll('#ag-chk-grid input:checked')].map(i=>i.value);
+  if(!name||!email||!login||!pass||products.length===0){
+    toast('⚠️ Preencha tudo e selecione ao menos 1 produto!');return;
+  }
+  if(AGENTS.find(a=>a.login===login)){toast('⚠️ Este login já está em uso!');return;}
+  if(login===ADMIN_CRED.login){toast('⚠️ Este login é reservado!');return;}
+  AGENTS.push({id:'ag'+Date.now(),name,email,login,pass,products,closed:0,earnings:0});
+  closeOv('ov-add-agent');
   document.getElementById('ag-name').value='';
   document.getElementById('ag-email').value='';
-  document.querySelectorAll('#ag-products-check input').forEach(i=>i.checked=false);
-  showToast(`✅ Atendente ${name} cadastrado!`);
-  renderAdmin();
+  document.getElementById('ag-login').value='';
+  document.getElementById('ag-pass').value='';
+  document.querySelectorAll('#ag-chk-grid input').forEach(i=>i.checked=false);
+  toast(`✅ Atendente ${name} cadastrado! Login: ${login}`);
+  navTo('admin-agents');
 }
 
 function removeAgent(id) {
-  const idx = AGENTS.findIndex(a=>a.id===id);
-  if(idx>-1) { AGENTS.splice(idx,1); renderAdmin(); showToast('🗑️ Atendente removido.'); }
+  const idx=AGENTS.findIndex(a=>a.id===id);
+  if(idx>-1){AGENTS.splice(idx,1);toast('🗑 Atendente removido.');renderAdminAgents();}
 }
 
-function switchAgent(id) {
-  currentAgentId=id;
-  currentAgentPage='queue';
-  renderAgent();
-  showToast(`👤 Agora você é ${getAgent(id).name}`);
-}
+// Init: show client portal by default
+document.getElementById('screen-client').classList.add('active');
+document.getElementById('screen-client').addEventListener('click',()=>{});
 </script>
 </body>
 </html>
