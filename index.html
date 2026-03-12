@@ -516,7 +516,7 @@ hr.div{border:none;border-top:1px solid var(--border);margin:18px 0;}
     <div class="sidebar-footer"><button class="logout-btn" onclick="doLogout()">↩ Sair</button></div>
   </aside>
   <main class="dash-main">
-    <div id="page-admin-dash" class="dash-page"><div class="page-title">Dashboard</div><div class="page-sub">Visão geral em tempo real</div><div class="stats-row" id="adm-stats"></div><div class="data-table" id="adm-recent"></div></div>
+    <div id="page-admin-dash" class="dash-page"><div class="page-title">Dashboard</div><div class="page-sub">Visão geral em tempo real</div><div class="stats-row" id="adm-stats"></div><div id="adm-charts" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0"></div><div class="data-table" id="adm-recent"></div></div>
     <div id="page-admin-tickets" class="dash-page"><div class="page-title">Todos os Tickets</div><div class="page-sub">Gerencie cada atendimento</div><div class="data-table" id="adm-tickets-tbl"></div></div>
     <div id="page-admin-agents" class="dash-page"><div class="page-title">Atendentes</div><div class="page-sub">Gerencie sua equipe</div><div style="margin-bottom:18px"><button class="act-btn fill" onclick="openOv('ov-add-agent')">+ Adicionar Atendente</button></div><div class="agents-grid" id="adm-agents-grid"></div></div>
     <div id="page-admin-commissions" class="dash-page"><div class="page-title">Comissões</div><div class="page-sub">Valor por ticket finalizado</div><div class="comm-list" id="adm-comm-list"></div></div>
@@ -941,8 +941,14 @@ window.signInWithGoogle = async function() {
     showGoogleDashboard(user);
   } catch(e) {
     console.warn('Google sign-in error', e);
-    if(e.code !== 'auth/popup-closed-by-user')
-      toast('❌ Erro ao entrar com Google. Tente novamente.');
+    if(e.code === 'auth/popup-closed-by-user') return;
+    if(e.code === 'auth/unauthorized-domain') {
+      toast('❌ Domínio não autorizado no Firebase. Acesse via achadinhos-suporte.firebaseapp.com');
+    } else if(e.code === 'auth/popup-blocked') {
+      toast('⚠️ Popup bloqueado! Permita popups para este site e tente novamente.');
+    } else {
+      toast('❌ Erro Google: ' + (e.message||e.code||'desconhecido'));
+    }
   }
 };
 
@@ -1140,13 +1146,21 @@ function doLogin(){
   const u=document.getElementById('login-user').value.trim(),p=document.getElementById('login-pass').value,err=document.getElementById('login-error');
   err.classList.remove('show');
   if(loginTab==='admin'){if(u===ADMIN_CRED.login&&p===ADMIN_CRED.pass){currentUser={role:'admin',name:'Admin Principal'};enterDashboard();}else err.classList.add('show');}
-  else{const ag=AGENTS.find(a=>a.login===u&&a.pass===p);if(ag){currentUser={role:'agent',id:ag.id,name:ag.name};enterDashboard();}else err.classList.add('show');}
+  else{
+    const ag=AGENTS.find(a=>a.login===u&&a.pass===p);
+    if(ag){currentUser={role:'agent',id:ag.id,name:ag.name};enterDashboard();}
+    else{
+      err.classList.add('show');
+      // Debug: show available logins if AGENTS is empty
+      if(AGENTS.length===0) err.textContent='⚠️ Dados dos atendentes ainda carregando. Aguarde 2s e tente novamente.';
+    }
+  }
 }
 function doLogout(){currentUser=null;document.getElementById('login-user').value='';document.getElementById('login-pass').value='';location.hash='';showScreen('client');}
 function enterDashboard(){buildSidebar();showScreen('dashboard');location.hash='#dashboard';if(currentUser.role==='admin')navTo('admin-dash');else navTo('agent-queue');}
 function buildSidebar(){
   document.getElementById('sb-role').textContent=currentUser.role==='admin'?'👑 Admin Principal':'🎧 Atendente';
-  document.getElementById('sb-nav').innerHTML=currentUser.role==='admin'?`<div class="nav-section"><span class="nav-section-label">Painel</span><button class="nav-item" onclick="navTo('admin-dash')"><span class="ni">📊</span>Dashboard</button><button class="nav-item" onclick="navTo('admin-tickets')"><span class="ni">🎫</span>Todos os Tickets<span class="nav-badge" id="nb-open">0</span></button><button class="nav-item" onclick="navTo('admin-agents')"><span class="ni">👥</span>Atendentes</button><button class="nav-item" onclick="navTo('admin-commissions')"><span class="ni">💸</span>Comissões</button><button class="nav-item" onclick="navTo('admin-ranking')"><span class="ni">🏆</span>Ranking</button><button class="nav-item" onclick="navTo('admin-finance')"><span class="ni">💰</span>Acerto de Contas</button><button class="nav-item" onclick="navTo('admin-withdrawals')"><span class="ni">💸</span>Saques<span class="nav-badge" id="nb-withdrawals" style="display:none">!</span></button></div>`:`<div class="nav-section"><span class="nav-section-label">Atendimento</span><button class="nav-item" onclick="navTo('agent-queue')"><span class="ni">🎯</span>Fila de Tickets<span class="nav-badge" id="nb-queue">0</span></button><button class="nav-item" onclick="navTo('agent-mine')"><span class="ni">📋</span>Meus Tickets</button><button class="nav-item" onclick="navTo('agent-done')"><span class="ni">✅</span>Finalizados</button></div><div class="nav-section"><span class="nav-section-label">Performance</span><button class="nav-item" onclick="navTo('agent-earnings')"><span class="ni">💰</span>Meus Ganhos</button><button class="nav-item" onclick="navTo('agent-ranking')"><span class="ni">🏆</span>Ranking</button></div><div class="nav-section"><span class="nav-section-label">Conta</span><button class="nav-item" onclick="navTo('agent-profile')"><span class="ni">👤</span>Meu Perfil</button></div>`;
+  document.getElementById('sb-nav').innerHTML=currentUser.role==='admin'?`<div class="nav-section"><span class="nav-section-label">Painel</span><button class="nav-item" onclick="navTo('admin-dash')"><span class="ni">📊</span>Dashboard</button><button class="nav-item" onclick="navTo('admin-tickets')"><span class="ni">🎫</span>Todos os Tickets<span class="nav-badge" id="nb-open">0</span></button><button class="nav-item" onclick="navTo('admin-agents')"><span class="ni">👥</span>Atendentes</button><button class="nav-item" onclick="navTo('admin-commissions')"><span class="ni">💸</span>Comissões</button><button class="nav-item" onclick="navTo('admin-ranking')"><span class="ni">🏆</span>Ranking</button><button class="nav-item" onclick="navTo('admin-finance')"><span class="ni">💰</span>Acerto de Contas</button><button class="nav-item" onclick="navTo('admin-withdrawals')"><span class="ni">💸</span>Saques<span class="nav-badge" id="nb-withdrawals" style="display:none">!</span></button><button class=\"nav-item\" onclick=\"exportarDados()\"><span class=\"ni\">💾</span>Exportar Dados</button></div>`:`<div class="nav-section"><span class="nav-section-label">Atendimento</span><button class="nav-item" onclick="navTo('agent-queue')"><span class="ni">🎯</span>Fila de Tickets<span class="nav-badge" id="nb-queue">0</span></button><button class="nav-item" onclick="navTo('agent-mine')"><span class="ni">📋</span>Meus Tickets</button><button class="nav-item" onclick="navTo('agent-done')"><span class="ni">✅</span>Finalizados</button></div><div class="nav-section"><span class="nav-section-label">Performance</span><button class="nav-item" onclick="navTo('agent-earnings')"><span class="ni">💰</span>Meus Ganhos</button><button class="nav-item" onclick="navTo('agent-ranking')"><span class="ni">🏆</span>Ranking</button></div><div class="nav-section"><span class="nav-section-label">Conta</span><button class="nav-item" onclick="navTo('agent-profile')"><span class="ni">👤</span>Meu Perfil</button></div>`;
   updateBadges();
 }
 function updateBadges(){const o=TICKETS.filter(t=>t.status==='open').length;const nb=document.getElementById('nb-open');if(nb)nb.textContent=o;if(currentUser&&currentUser.role==='agent'){const ag=getAgent(currentUser.id);if(ag){const nq=document.getElementById('nb-queue');if(nq)nq.textContent=TICKETS.filter(t=>t.status==='open'&&ag.products.includes(t.product)).length;}}}
@@ -1161,7 +1175,98 @@ function navTo(page){
 }
 function renderAdminDash(){
   const op=TICKETS.filter(t=>t.status==='open').length,cl=TICKETS.filter(t=>t.status==='claimed').length,dn=TICKETS.filter(t=>t.status==='done').length,pd=TICKETS.filter(t=>t.status==='done').reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0);
-  document.getElementById('adm-stats').innerHTML=`<div class="stat-box"><div class="s-label">Abertos</div><div class="s-val">${op}</div><div class="s-sub">Aguardando</div></div><div class="stat-box purple"><div class="s-label">Em Atendimento</div><div class="s-val">${cl}</div></div><div class="stat-box green"><div class="s-label">Finalizados</div><div class="s-val">${dn}</div></div><div class="stat-box gold"><div class="s-label">Comissões Pagas</div><div class="s-val">${fmtMoney(pd)}</div></div>`;
+  const total=TICKETS.length;
+  document.getElementById('adm-stats').innerHTML=`
+    <div class="stat-box"><div class="s-label">Abertos</div><div class="s-val">${op}</div><div class="s-sub">Aguardando</div></div>
+    <div class="stat-box purple"><div class="s-label">Em Atendimento</div><div class="s-val">${cl}</div></div>
+    <div class="stat-box green"><div class="s-label">Finalizados</div><div class="s-val">${dn}</div></div>
+    <div class="stat-box gold"><div class="s-label">Comissões Totais</div><div class="s-val">${fmtMoney(pd)}</div></div>`;
+
+  // ── Charts ──
+  const chartBox = document.getElementById('adm-charts');
+  chartBox.innerHTML = `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:4px">📅 Atendimentos por Dia da Semana</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:14px">Tickets criados nos últimos 30 dias</div>
+      <canvas id="chart-weekday" height="160"></canvas>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:4px">📊 Status Atual</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:14px">Distribuição de tickets por status</div>
+      <canvas id="chart-status" height="160"></canvas>
+    </div>`;
+
+  // Weekday chart
+  const days = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const wdOpen   = Array(7).fill(0);
+  const wdDone   = Array(7).fill(0);
+  const wdWait   = Array(7).fill(0);
+  const cutoff = new Date(Date.now() - 30*24*60*60*1000);
+  TICKETS.forEach(t=>{
+    const d = new Date(t.createdAt);
+    if(d < cutoff) return;
+    const wd = d.getDay();
+    if(t.status==='done') wdDone[wd]++;
+    else if(t.status==='claimed') wdWait[wd]++;
+    else wdOpen[wd]++;
+  });
+
+  setTimeout(()=>{
+    // Destroy old charts if exist
+    if(window._chartWD){ try{window._chartWD.destroy();}catch(e){} }
+    if(window._chartST){ try{window._chartST.destroy();}catch(e){} }
+
+    const wdCtx = document.getElementById('chart-weekday');
+    if(wdCtx && typeof Chart!=='undefined'){
+      window._chartWD = new Chart(wdCtx, {
+        type:'bar',
+        data:{
+          labels: days,
+          datasets:[
+            {label:'Finalizados', data:wdDone, backgroundColor:'rgba(34,211,126,.7)', borderRadius:6},
+            {label:'Em Atendimento', data:wdWait, backgroundColor:'rgba(124,58,237,.6)', borderRadius:6},
+            {label:'Abertos', data:wdOpen, backgroundColor:'rgba(245,197,24,.6)', borderRadius:6}
+          ]
+        },
+        options:{
+          responsive:true, maintainAspectRatio:false,
+          plugins:{legend:{labels:{color:'#9090b0',font:{size:11},boxWidth:12}}},
+          scales:{
+            x:{stacked:true, ticks:{color:'#9090b0',font:{size:11}}, grid:{color:'rgba(255,255,255,.04)'}},
+            y:{stacked:true, ticks:{color:'#9090b0',font:{size:11},stepSize:1}, grid:{color:'rgba(255,255,255,.06)'}, beginAtZero:true}
+          }
+        }
+      });
+    }
+
+    // Status donut
+    const stCtx = document.getElementById('chart-status');
+    if(stCtx && typeof Chart!=='undefined'){
+      window._chartST = new Chart(stCtx, {
+        type:'doughnut',
+        data:{
+          labels:['Abertos','Em Atendimento','Finalizados'],
+          datasets:[{
+            data:[op,cl,dn],
+            backgroundColor:['rgba(245,197,24,.8)','rgba(124,58,237,.8)','rgba(34,211,126,.8)'],
+            borderColor:['#1e1e2a'],
+            borderWidth:3,
+            hoverOffset:6
+          }]
+        },
+        options:{
+          responsive:true, maintainAspectRatio:false,
+          cutout:'68%',
+          plugins:{
+            legend:{position:'bottom',labels:{color:'#9090b0',font:{size:11},boxWidth:12,padding:12}},
+            tooltip:{callbacks:{label:ctx=>' '+ctx.label+': '+ctx.raw+(total?' ('+Math.round(ctx.raw/total*100)+'%)':'')}}
+          }
+        }
+      });
+    }
+  }, 80);
+
+  // Recent tickets table
   document.getElementById('adm-recent').innerHTML=`<div class="table-top"><h3>Tickets Recentes</h3><div class="live-pill"><div class="live-dot"></div>AO VIVO</div></div><table><thead><tr><th>ID</th><th>Código</th><th>Cliente</th><th>Produto</th><th>Status</th><th>Atendente</th><th>Abertura</th></tr></thead><tbody>${TICKETS.slice(0,8).map(t=>{const pr=getProd(t.product),ag=getAgent(t.agent);return`<tr onclick="openDetail('${t.id}')"><td><span class="t-id">${t.id}</span></td><td><span class="t-id" style="color:var(--yellow);letter-spacing:.06em">${t.code||'—'}</span></td><td><div class="t-client">${t.clientName}</div><div class="t-email">${t.clientEmail}</div></td><td>${(t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join(', ')}</td><td>${badge(t.status)}</td><td>${ag?ag.name:'<span style="color:var(--text3)">—</span>'}</td><td style="color:var(--text3);font-size:11px">${fmtDate(t.createdAt)}</td></tr>`;}).join('')}</tbody></table>`;
 }
 function renderAdminTickets(){
@@ -1979,6 +2084,24 @@ function saveAgentSector(){
 function removeAgent(id){const idx=AGENTS.findIndex(a=>a.id===id);if(idx>-1){AGENTS.splice(idx,1);toast('🗑 Atendente removido.');if(window._fbRemoveAgent)window._fbRemoveAgent();renderAdminAgents();}}
 
 // screen activated by async bootstrap above
+function exportarDados(){
+  // Export tickets and agents as JSON for backup/GitHub
+  const backup = {
+    exportedAt: new Date().toISOString(),
+    tickets: TICKETS,
+    agents: AGENTS.map(a=>({...a, pass:'[oculto]'})),
+    commissions: COMMISSIONS,
+  };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'backup-achadinhos-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('✅ Backup exportado! Salve o arquivo no GitHub para segurança.');
+}
+
 </script>
 </body>
 </html>
