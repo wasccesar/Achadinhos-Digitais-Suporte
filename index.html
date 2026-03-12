@@ -768,32 +768,36 @@ function startTicketListener() {
   }, err => console.warn('ticket listener error', err));
 }
 
+// ── Firebase: expose signInWithPopup for use in inline script ──
+window._fbSignInWithPopup = async function() {
+  const result = await signInWithPopup(auth, googleProvider);
+  const user = result.user;
+  window._gUser = user;
+  const userRef = doc(db, 'clientUsers', user.uid);
+  await setDoc(userRef, {uid:user.uid,name:user.displayName,email:user.email,photo:user.photoURL,lastLogin:new Date().toISOString()},{merge:true});
+  return user;
+};
+
 // ── Override submitTicket to also save to Firestore ──
-const _origFinish = window._fbFinish = async function(name,email,desc,attachment,fileInput) {
+window._fbFinish = async function(name,email,desc,attachment,fileInput,googleUid,googleEmail) {
   const ticketId = genId();
   const ticketCode = genCode();
   const ticket = {
     id:ticketId, code:ticketCode, clientName:name, clientEmail:email,
+    googleUid: googleUid||null, googleEmail: googleEmail||null,
     products:[...selectedProducts], product:selectedProducts[0],
     type:pendingType||'duvida', desc,
     attachment:attachment||null, status:'open', agent:null,
     createdAt:new Date().toISOString(), messages:[]
   };
-  // Save to Firestore
   try {
     await setDoc(doc(db,'tickets',ticketId), ticket);
   } catch(e) {
     console.warn('Firestore save error',e);
-    TICKETS.unshift(ticket); // fallback local
+    TICKETS.unshift(ticket);
   }
-  closeOv('ov-ticket');
-  showTicketCode(ticketCode);
-  document.getElementById('tk-name').value='';
-  document.getElementById('tk-email').value='';
-  document.getElementById('tk-desc').value='';
-  if(fileInput)fileInput.value='';
-  selectedProducts=[];pendingType='';
-  document.querySelectorAll('.prod-card').forEach(c=>c.classList.remove('sel'));
+  const gUser = googleUid ? window._gUser : null;
+  _afterTicketSent(ticketCode, gUser);
 };
 
 // ── Override ticket actions to sync Firestore ──
@@ -1480,25 +1484,101 @@ function submitTicket(){
   if(!name||!email||selectedProducts.length===0||!desc){toast('⚠️ Escolha ao menos 1 produto e preencha todos os campos!');return;}
   const file=fileInput&&fileInput.files[0];
   if(file&&file.size>5*1024*1024){toast('⚠️ Arquivo muito grande! Máximo 5MB.');return;}
-  function finish(attachment){
-    if(window._fbFinish) window._fbFinish(name,email,desc,attachment,fileInput);
-    else {
-      const ticketId=genId(),ticketCode=genCode();
-      const newTk={id:ticketId,code:ticketCode,clientName:name,clientEmail:email,googleUid:window._gUser?window._gUser.uid:null,products:[...selectedProducts],product:selectedProducts[0],type:pendingType||'duvida',desc,attachment:attachment||null,status:'open',agent:null,createdAt:new Date().toISOString(),messages:[]};
-      TICKETS.unshift(newTk);
-      if(window.showNotifPop){const pr=(newTk.products||[]).map(pid=>{const p=getProd(pid);return p?p.name:pid;}).join(', ');window.showNotifPop('🎫 Novo chamado!',newTk.clientName+' · '+pr,()=>navTo('admin-tickets'));}
-      closeOv('ov-ticket');showTicketCode(ticketCode);
-      if(window._gUser) setTimeout(()=>showGoogleDashboard(window._gUser),600);
-      document.getElementById('tk-name').value='';document.getElementById('tk-email').value='';document.getElementById('tk-desc').value='';
-      if(fileInput)fileInput.value='';selectedProducts=[];pendingType='';
-      document.querySelectorAll('.prod-card').forEach(c=>c.classList.remove('sel'));
-    }
+
+  // Save form data temporarily for after Google login
+  window._pendingTicket = {name, email, desc, fileInput};
+
+  // If already logged in with Google, send directly
+  if(window._gUser) {
+    _doSendTicket(window._gUser);
+  } else {
+    // Show Google login step inside the ticket modal
+    _showGoogleLoginStep();
   }
+}
+
+function _showGoogleLoginStep() {
+  // Replace modal body with Google login prompt
+  const body = document.querySelector('#ov-ticket .modal-body');
+  body.dataset.originalHtml = body.innerHTML;
+  body.innerHTML =
+    '<div style="text-align:center;padding:20px 10px">'
+    +'<div style="font-size:48px;margin-bottom:12px">🔐</div>'
+    +'<div style="font-size:17px;font-weight:800;margin-bottom:8px">Quase lá!</div>'
+    +'<div style="font-size:13px;color:var(--text2);margin-bottom:24px;line-height:1.6">Entre com sua conta Google para acompanhar seu chamado em tempo real — você receberá atualizações e poderá responder pelo chat.</div>'
+    +'<button onclick="_googleLoginThenSend()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;border:none;color:#3c3c3c;padding:14px 16px;border-radius:12px;font-size:15px;font-weight:700;font-family:var(--font);cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.2);margin-bottom:12px">'
+    +'<svg width="20" height="20" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z"/></svg>'
+    +'Entrar com Google e enviar chamado'
+    +'</button>'
+    +'<button onclick="_sendWithoutGoogle()" style="background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:var(--font);padding:8px;text-decoration:underline">Enviar sem conta Google (não recomendado)</button>'
+    +'</div>';
+}
+
+async function _googleLoginThenSend() {
+  try {
+    const result = await window._fbSignInWithPopup();
+    if(result) _doSendTicket(result);
+  } catch(e) {
+    if(e && e.code === 'auth/popup-closed-by-user') return;
+    toast('❌ Erro no login: '+(e?.message||'tente novamente'));
+  }
+}
+
+function _sendWithoutGoogle() {
+  // Restore form and send
+  const body = document.querySelector('#ov-ticket .modal-body');
+  if(body.dataset.originalHtml) body.innerHTML = body.dataset.originalHtml;
+  _doSendTicket(null);
+}
+
+function _doSendTicket(gUser) {
+  const pt = window._pendingTicket; if(!pt) return;
+  const {name, email, desc, fileInput} = pt;
+  const file = fileInput && fileInput.files[0];
+
+  function finish(attachment){
+    const googleUid = gUser ? gUser.uid : null;
+    const googleEmail = gUser ? gUser.email : null;
+    if(window._fbFinish) {
+      window._fbFinish(name, email, desc, attachment, fileInput, googleUid, googleEmail);
+    } else {
+      const ticketId=genId(), ticketCode=genCode();
+      const newTk={id:ticketId,code:ticketCode,clientName:name,clientEmail:email,
+        googleUid, googleEmail,
+        products:[...selectedProducts],product:selectedProducts[0],
+        type:pendingType||'duvida',desc,attachment:attachment||null,
+        status:'open',agent:null,createdAt:new Date().toISOString(),messages:[]};
+      TICKETS.unshift(newTk);
+      _afterTicketSent(newTk.code, gUser);
+    }
+    window._pendingTicket = null;
+  }
+
   if(file){
     const reader=new FileReader();
     reader.onload=e=>finish({name:file.name,type:file.type,data:e.target.result});
     reader.readAsDataURL(file);
-  } else {finish(null);}
+  } else { finish(null); }
+}
+
+function _afterTicketSent(code, gUser) {
+  closeOv('ov-ticket');
+  // Reset form
+  ['tk-name','tk-email','tk-desc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const fi=document.getElementById('tk-file');if(fi)fi.value='';
+  selectedProducts=[];pendingType='';
+  document.querySelectorAll('.prod-card').forEach(c=>c.classList.remove('sel'));
+  // Restore modal body if needed
+  const body=document.querySelector('#ov-ticket .modal-body');
+  if(body&&body.dataset.originalHtml){body.innerHTML=body.dataset.originalHtml;delete body.dataset.originalHtml;}
+
+  if(gUser) {
+    // Show success then open Google portal
+    toast('✅ Chamado enviado! Abrindo seu histórico...');
+    setTimeout(()=>showGoogleDashboard(gUser), 800);
+  } else {
+    showTicketCode(code);
+  }
 }
 /* ─── FINANCIAL CONTROL ─── */
 let PAYMENTS = {}; // {agId: [{id, amount, date, note, paid}]}
