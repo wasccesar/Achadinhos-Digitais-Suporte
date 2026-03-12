@@ -262,6 +262,67 @@ hr.div{border:none;border-top:1px solid var(--border);margin:18px 0;}
 ::-webkit-scrollbar{width:5px;height:5px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
 .pay-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);}
 .pay-row:last-child{border:none;}
+/* ── CLIENT LIVE CHAT WINDOW ── */
+#screen-chat{align-items:stretch;justify-content:stretch;background:var(--bg);padding:0;}
+.client-chat-wrap{display:flex;flex-direction:column;height:100vh;max-width:500px;width:100%;margin:0 auto;position:relative;z-index:2;}
+.client-chat-header{
+  background:linear-gradient(135deg,var(--purple) 0%,#3b0d8a 100%);
+  padding:14px 18px;display:flex;align-items:center;gap:12px;flex-shrink:0;
+  box-shadow:0 2px 20px rgba(0,0,0,.4);
+}
+.client-chat-header .back-btn{background:rgba(255,255,255,.15);border:none;color:#fff;width:34px;height:34px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.client-chat-header .back-btn:hover{background:rgba(255,255,255,.25);}
+.cc-hdr-info{flex:1;}
+.cc-hdr-name{font-size:15px;font-weight:800;color:#fff;}
+.cc-hdr-sub{font-size:11px;color:rgba(255,255,255,.65);margin-top:1px;}
+.cc-hdr-status{font-size:11px;font-weight:600;padding:3px 10px;border-radius:100px;}
+.cc-hdr-status.open{background:rgba(245,197,24,.2);color:var(--yellow);}
+.cc-hdr-status.claimed{background:rgba(34,211,126,.2);color:var(--green);}
+.cc-hdr-status.done{background:rgba(148,163,184,.15);color:#94a3b8;}
+
+.cc-info-bar{background:var(--surface2);border-bottom:1px solid var(--border);padding:10px 18px;display:flex;gap:16px;flex-wrap:wrap;flex-shrink:0;}
+.cc-info-item{font-size:11px;color:var(--text3);}
+.cc-info-item span{color:var(--text2);font-weight:600;}
+
+.cc-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;background:var(--bg);}
+.cc-messages::-webkit-scrollbar{width:4px;}
+.cc-messages::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+
+.cc-msg{display:flex;flex-direction:column;max-width:82%;}
+.cc-msg.from-agent{align-self:flex-start;}
+.cc-msg.from-client{align-self:flex-end;}
+.cc-msg .bubble{padding:10px 14px;border-radius:18px;font-size:14px;line-height:1.5;word-break:break-word;}
+.cc-msg.from-agent .bubble{background:var(--surface2);border:1px solid var(--border);border-bottom-left-radius:4px;color:var(--text);}
+.cc-msg.from-client .bubble{background:linear-gradient(135deg,var(--purple),#4c1d95);color:#fff;border-bottom-right-radius:4px;}
+.cc-msg .bubble img{max-width:100%;border-radius:10px;display:block;margin-top:4px;cursor:pointer;}
+.cc-msg .meta{font-size:10px;color:var(--text3);margin-top:3px;font-family:var(--mono);}
+.cc-msg.from-client .meta{text-align:right;}
+.cc-msg.from-agent .sender-name{font-size:10px;color:var(--purple3);font-weight:600;margin-bottom:3px;font-family:var(--mono);}
+
+.cc-date-sep{text-align:center;font-size:10px;color:var(--text3);font-family:var(--mono);padding:4px 0;}
+
+.cc-input-area{background:var(--surface);border-top:1px solid var(--border);padding:12px 14px;flex-shrink:0;}
+.cc-input-row{display:flex;align-items:flex-end;gap:8px;}
+.cc-input-row textarea{flex:1;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:20px;font-family:var(--font);font-size:14px;outline:none;resize:none;max-height:100px;min-height:42px;line-height:1.4;transition:.2s;}
+.cc-input-row textarea:focus{border-color:var(--purple2);}
+.cc-send-btn{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--purple),#4c1d95);border:none;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.2s;box-shadow:0 2px 12px var(--pglow);}
+.cc-send-btn:hover{transform:scale(1.05);}
+.cc-media-btn{width:38px;height:38px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--text2);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.2s;}
+.cc-media-btn:hover{border-color:var(--purple2);color:var(--purple3);}
+.cc-typing{font-size:12px;color:var(--text3);padding:2px 0 4px;font-style:italic;}
+.cc-closed-bar{background:rgba(148,163,184,.08);border:1px solid rgba(148,163,184,.2);border-radius:12px;padding:12px 16px;text-align:center;font-size:13px;color:var(--text3);margin:8px 0;}
+
+/* phone lookup */
+.phone-input-wrap{display:flex;gap:8px;align-items:center;}
+.phone-input-wrap input{flex:1;}
+.ticket-card-client{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:10px;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:14px;}
+.ticket-card-client:hover{border-color:var(--purple2);transform:translateY(-1px);}
+.ticket-card-client .tc-left{flex:1;}
+.ticket-card-client .tc-id{font-size:10px;color:var(--text3);font-family:var(--mono);}
+.ticket-card-client .tc-title{font-weight:700;font-size:14px;margin:3px 0;}
+.ticket-card-client .tc-prod{font-size:12px;color:var(--text3);}
+.ticket-card-client .tc-arrow{font-size:20px;color:var(--purple3);}
+
 </style>
 </head>
 <body>
@@ -332,13 +393,40 @@ hr.div{border:none;border-top:1px solid var(--border);margin:18px 0;}
         <div style="height:1px;background:var(--border);margin:4px 0"></div>
         <button class="chat-option" style="border-color:rgba(34,211,126,.25);background:rgba(34,211,126,.04)" onclick="openOv('ov-check-ticket')">
           <span class="opt-icon">🔍</span>
-          <div class="opt-text"><div class="opt-title" style="color:var(--green)">Consultar meu chamado</div><div class="opt-sub">Já abriu? Acompanhe com seu código</div></div>
+          <div class="opt-text"><div class="opt-title" style="color:var(--green)">Consultar meu chamado</div><div class="opt-sub">Já abriu? Entre no chat ao vivo com seu número</div></div>
           <span class="opt-arrow" style="color:var(--green)">→</span>
         </button>
       </div>
     </div>
   </div>
   <div class="internal-link-area"><button onclick="goLogin()">área interna</button></div>
+</div>
+
+
+<!-- CLIENT LIVE CHAT SCREEN -->
+<div id="screen-chat" class="screen">
+  <div class="client-chat-wrap">
+    <div class="client-chat-header">
+      <button class="back-btn" onclick="openPhoneLookup()">←</button>
+      <div class="cc-hdr-info">
+        <div class="cc-hdr-name" id="cc-hdr-name">Suporte</div>
+        <div class="cc-hdr-sub" id="cc-hdr-sub">Achadinhos Digitais</div>
+      </div>
+      <div class="cc-hdr-status" id="cc-hdr-status">—</div>
+    </div>
+    <div class="cc-info-bar" id="cc-info-bar"></div>
+    <div class="cc-messages" id="cc-messages"></div>
+    <div class="cc-input-area" id="cc-input-area">
+      <div class="cc-input-row">
+        <button class="cc-media-btn" onclick="document.getElementById('cc-file-inp').click()" title="Enviar mídia">📎</button>
+        <input type="file" id="cc-file-inp" accept="image/*,video/*,application/pdf" style="display:none" onchange="ccSendMedia(this)"/>
+        <textarea id="cc-msg-inp" placeholder="Digite uma mensagem..." rows="1"
+          oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();ccSendText();}"></textarea>
+        <button class="cc-send-btn" onclick="ccSendText()">➤</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- DASHBOARD -->
@@ -420,17 +508,23 @@ hr.div{border:none;border-top:1px solid var(--border);margin:18px 0;}
   </div>
 </div>
 
-<!-- Ticket lookup modal -->
+<!-- Phone lookup modal -->
 <div class="overlay" id="ov-check-ticket">
   <div class="modal" style="max-width:460px">
-    <div class="modal-head"><div><div class="modal-head-title">🔍 Consultar Chamado</div><div class="modal-head-sub">Digite o código que você recebeu</div></div><button class="modal-close" onclick="closeOv('ov-check-ticket')">×</button></div>
+    <div class="modal-head"><div><div class="modal-head-title">📱 Consultar meus Chamados</div><div class="modal-head-sub">Digite seu WhatsApp para ver seus atendimentos</div></div><button class="modal-close" onclick="closeOv('ov-check-ticket')">×</button></div>
     <div class="modal-body">
       <div class="fgroup">
-        <label>Código do Chamado</label>
-        <input id="lookup-code" placeholder="Ex: AB3X7K9M" style="text-transform:uppercase;letter-spacing:.15em;font-family:var(--mono);font-size:18px;font-weight:700;text-align:center" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')lookupTicket()"/>
+        <label>Seu número de WhatsApp</label>
+        <div style="background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.2);border-radius:12px;padding:12px 14px;margin-bottom:10px;font-size:12px;color:var(--text3);line-height:1.6;">
+          📌 <strong style="color:var(--text2)">Use o mesmo número</strong> que você digitou ao abrir o chamado.<br>
+          Exemplo: <span style="font-family:var(--mono);color:var(--purple3)">(11) 99999-9999</span> ou <span style="font-family:var(--mono);color:var(--purple3)">11999999999</span>
+        </div>
+        <input id="lookup-phone" type="tel" placeholder="(11) 99999-9999" inputmode="numeric"
+          style="font-size:18px;font-weight:700;text-align:center;font-family:var(--mono);letter-spacing:.05em"
+          onkeydown="if(event.key==='Enter')lookupByPhone()"/>
       </div>
       <div id="lookup-result"></div>
-      <button class="submit-btn" onclick="lookupTicket()">🔍 Buscar Chamado</button>
+      <button class="submit-btn" onclick="lookupByPhone()">🔍 Buscar meus Chamados</button>
     </div>
   </div>
 </div>
@@ -618,11 +712,65 @@ window._fbSavePayments = async function() {
   await savePayments();
 };
 
+// ── Client Chat Live Listener ──
+window._startClientChatListener = function(ticketId) {
+  const tDoc = doc(db,'tickets',ticketId);
+  ccUnsubscribe = onSnapshot(tDoc, snap => {
+    if(!snap.exists()) return;
+    const t = {...snap.data(), id:snap.id};
+    // Update local TICKETS array
+    const idx = TICKETS.findIndex(x=>x.id===ticketId);
+    if(idx>-1) TICKETS[idx]=t; else TICKETS.unshift(t);
+    // Re-render chat if still on chat screen
+    const chatScreen=document.getElementById('screen-chat');
+    if(chatScreen && chatScreen.classList.contains('active')){
+      renderClientChat(t);
+    }
+  }, err=>console.warn('client chat listener error',err));
+};
+
+window._fbSendClientMsg = async function(ticketId, msg) {
+  try {
+    const tRef = doc(db,'tickets',ticketId);
+    const snap = await getDoc(tRef);
+    if(!snap.exists()) return;
+    const msgs = [...(snap.data().messages||[]), msg];
+    await updateDoc(tRef, {messages: msgs});
+  } catch(e) {
+    console.warn('send client msg error',e);
+    const t=TICKETS.find(t=>t.id===ticketId);
+    if(t) t.messages.push(msg);
+  }
+};
+
+// ── Also update _fbSendMsg (agent side) to use getDoc ──
+window._fbSendMsg = async function(id, text, sender) {
+  try {
+    const tRef = doc(db,'tickets',id);
+    const snap = await getDoc(tRef);
+    if(!snap.exists()) return;
+    const msgs = [...(snap.data().messages||[]), {from:sender,isAgent:true,text,ts:new Date().toISOString()}];
+    await updateDoc(tRef, {messages: msgs});
+  } catch(e) {
+    const t=TICKETS.find(t=>t.id===id);
+    if(t) t.messages.push({from:sender,isAgent:true,text,ts:new Date().toISOString()});
+  }
+};
+
 // ── Bootstrap ──
 (async () => {
   await loadConfig();
   await loadPayments();
   startTicketListener();
+  // Hash routing on load (F5 persistence for dashboard)
+  const hash = location.hash;
+  if(hash==='#dashboard' && currentUser){
+    enterDashboard();
+  } else if(hash==='#login'){
+    showScreen('login');
+  } else {
+    document.getElementById('screen-client').classList.add('active');
+  }
 })();
 
 </script>
@@ -633,6 +781,7 @@ const ADMIN_CRED={login:'admin',pass:'admin123'};
 let AGENTS=[{id:'ag1',name:'Carlos Henrique',email:'carlos@suporte.com',login:'carlos',pass:'1234',products:['gemini-m','gemini-a','chatgpt-m','chatgpt-a'],closed:12,earnings:187},{id:'ag2',name:'Ana Beatriz',email:'ana@suporte.com',login:'ana',pass:'1234',products:['capcut-m','capcut-a','grok'],closed:9,earnings:134},{id:'ag3',name:'Rafael Souza',email:'rafael@suporte.com',login:'rafael',pass:'1234',products:['chatgpt-m','chatgpt-a','perplexity','grok'],closed:7,earnings:98}];
 let TICKETS=[{id:'T001',code:'DEMO1234',clientName:'Maria Santos',clientEmail:'(11) 99887-6655',products:['gemini-m'],product:'gemini-m',type:'suporte',desc:'Não consigo fazer login no Gemini. Erro 403.',status:'open',agent:null,createdAt:new Date(Date.now()-3600000).toISOString(),messages:[]},{id:'T002',code:'JOAO5678',clientName:'João Pedro',clientEmail:'(21) 98765-4321',products:['chatgpt-a'],product:'chatgpt-a',type:'resgatar',desc:'Quero resgatar meu acesso ChatGPT Plus anual.',status:'claimed',agent:'ag1',createdAt:new Date(Date.now()-7200000).toISOString(),messages:[{from:'Carlos Henrique',isAgent:true,text:'Olá João! Vou te ajudar. Pode me passar seu login?',ts:new Date(Date.now()-3000000).toISOString()}]},{id:'T003',code:'FERN9012',clientName:'Fernanda Lima',clientEmail:'(31) 97654-3210',products:['capcut-m'],product:'capcut-m',type:'cancelamento',desc:'Quero cancelar minha assinatura mensal.',status:'done',agent:'ag2',createdAt:new Date(Date.now()-86400000).toISOString(),closedAt:new Date(Date.now()-3600000).toISOString(),messages:[{from:'Ana Beatriz',isAgent:true,text:'Olá Fernanda! Vou processar o cancelamento.',ts:new Date(Date.now()-80000000).toISOString()},{from:'Cliente',isAgent:false,text:'Obrigada!',ts:new Date(Date.now()-79000000).toISOString()}]}];
 let tkCounter=4,currentUser=null,currentPage='',loginTab='admin',selectedProducts=[],filterStatus='all',pendingType='';
+let ccUnsubscribe=null,clientPhone='',clientTicketId='';
 
 function genId(){return'T'+String(tkCounter++).padStart(3,'0');}
 function genCode(){const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let r='';for(let i=0;i<8;i++)r+=chars[Math.floor(Math.random()*chars.length)];return r;}
@@ -649,7 +798,16 @@ function badge(s){const m={open:'Aberto',claimed:'Em Atendimento',done:'Finaliza
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),3200);}
 function openOv(id){document.getElementById(id).classList.add('open');}
 function closeOv(id){document.getElementById(id).classList.remove('open');}
-function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+id).classList.add('active');}
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById('screen-'+id);
+  if(el)el.classList.add('active');
+  // Update hash for F5 persistence (dashboard only)
+  if(id==='dashboard') location.hash='#dashboard';
+  else if(id==='client') location.hash='';
+  else if(id==='chat') location.hash='#chat';
+  else if(id==='login') location.hash='#login';
+}
 function goClient(){showScreen('client');}
 function goLogin(){showScreen('login');}
 
@@ -667,8 +825,8 @@ function doLogin(){
   if(loginTab==='admin'){if(u===ADMIN_CRED.login&&p===ADMIN_CRED.pass){currentUser={role:'admin',name:'Admin Principal'};enterDashboard();}else err.classList.add('show');}
   else{const ag=AGENTS.find(a=>a.login===u&&a.pass===p);if(ag){currentUser={role:'agent',id:ag.id,name:ag.name};enterDashboard();}else err.classList.add('show');}
 }
-function doLogout(){currentUser=null;document.getElementById('login-user').value='';document.getElementById('login-pass').value='';showScreen('client');}
-function enterDashboard(){buildSidebar();showScreen('dashboard');if(currentUser.role==='admin')navTo('admin-dash');else navTo('agent-queue');}
+function doLogout(){currentUser=null;document.getElementById('login-user').value='';document.getElementById('login-pass').value='';location.hash='';showScreen('client');}
+function enterDashboard(){buildSidebar();showScreen('dashboard');location.hash='#dashboard';if(currentUser.role==='admin')navTo('admin-dash');else navTo('agent-queue');}
 function buildSidebar(){
   document.getElementById('sb-role').textContent=currentUser.role==='admin'?'👑 Admin Principal':'🎧 Atendente';
   document.getElementById('sb-nav').innerHTML=currentUser.role==='admin'?`<div class="nav-section"><span class="nav-section-label">Painel</span><button class="nav-item" onclick="navTo('admin-dash')"><span class="ni">📊</span>Dashboard</button><button class="nav-item" onclick="navTo('admin-tickets')"><span class="ni">🎫</span>Todos os Tickets<span class="nav-badge" id="nb-open">0</span></button><button class="nav-item" onclick="navTo('admin-agents')"><span class="ni">👥</span>Atendentes</button><button class="nav-item" onclick="navTo('admin-commissions')"><span class="ni">💸</span>Comissões</button><button class="nav-item" onclick="navTo('admin-ranking')"><span class="ni">🏆</span>Ranking</button><button class="nav-item" onclick="navTo('admin-finance')"><span class="ni">💰</span>Acerto de Contas</button></div>`:`<div class="nav-section"><span class="nav-section-label">Atendimento</span><button class="nav-item" onclick="navTo('agent-queue')"><span class="ni">🎯</span>Fila de Tickets<span class="nav-badge" id="nb-queue">0</span></button><button class="nav-item" onclick="navTo('agent-mine')"><span class="ni">📋</span>Meus Tickets</button><button class="nav-item" onclick="navTo('agent-done')"><span class="ni">✅</span>Finalizados</button></div><div class="nav-section"><span class="nav-section-label">Performance</span><button class="nav-item" onclick="navTo('agent-earnings')"><span class="ni">💰</span>Meus Ganhos</button><button class="nav-item" onclick="navTo('agent-ranking')"><span class="ni">🏆</span>Ranking</button></div>`;
@@ -717,7 +875,7 @@ function openDetail(id){
     ${t.attachment?`<div style="margin-bottom:18px"><div style="font-size:9px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">📎 Anexo do Cliente</div>${t.attachment.type&&t.attachment.type.startsWith('image/')?`<img src="${t.attachment.data}" style="max-width:100%;border-radius:10px;border:1px solid var(--border);cursor:pointer" onclick="window.open(this.src)" title="Clique para abrir"/>`:''}<div style="font-size:12px;color:var(--text3);margin-top:6px">📄 ${t.attachment.name}</div></div>`:''}<div style="margin-bottom:7px;font-size:9px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em">Conversa (${t.messages.length} mensagens)</div><div class="chat-thread" id="chat-thread-${t.id}">${t.messages.length===0?'<div style="text-align:center;color:var(--text3);padding:18px;font-size:12px">Nenhuma mensagem ainda.</div>':t.messages.map(m=>`<div class="msg-bubble ${m.isAgent?'agent':''}"><div class="msg-from">${m.from} · ${fmtDate(m.ts)}</div><div class="msg-text">${m.text}</div></div>`).join('')}</div>${(isAdmin||isOwner)?`<div class="chat-input-row"><input id="chat-inp-${t.id}" placeholder="Digite uma mensagem..." onkeydown="if(event.key==='Enter')sendMsg('${t.id}')"/><button class="act-btn fill" onclick="sendMsg('${t.id}')">Enviar</button></div>`:''}<hr class="div"><div style="display:flex;gap:8px"><button class="act-btn" style="flex:1;padding:11px" onclick="closeOv('ov-detail')">Fechar</button>${canFinalize?`<button class="act-btn fill" style="flex:2;padding:11px" onclick="agentClose('${t.id}');closeOv('ov-detail')">✅ Finalizar · Ganhar ${fmtMoney(COMMISSIONS[t.product]||0)}</button>`:''} ${isAdmin&&t.status!=='done'?`<button class="act-btn green" style="flex:2;padding:11px" onclick="adminClose('${t.id}');closeOv('ov-detail')">✅ Encerrar (Admin)</button>`:''}</div>`;
   openOv('ov-detail');
 }
-function sendMsg(id){const inp=document.getElementById('chat-inp-'+id);if(!inp)return;const text=inp.value.trim();if(!text)return;const t=TICKETS.find(t=>t.id===id);if(!t)return;const sender=currentUser.role==='admin'?'Admin':getAgent(currentUser.id)?.name||'Atendente';if(window._fbSendMsg){window._fbSendMsg(id,text,sender);}else{t.messages.push({from:sender,isAgent:true,text,ts:new Date().toISOString()});}const thread=document.getElementById('chat-thread-'+id);if(thread){const d=document.createElement('div');d.className='msg-bubble agent';d.innerHTML=`<div class="msg-from">${sender} · Agora</div><div class="msg-text">${text}</div>`;thread.appendChild(d);thread.scrollTop=thread.scrollHeight;}inp.value='';}
+function sendMsg(id){const inp=document.getElementById('chat-inp-'+id);if(!inp)return;const text=inp.value.trim();if(!text)return;const t=TICKETS.find(t=>t.id===id);if(!t)return;const sender=currentUser.role==='admin'?'Admin':getAgent(currentUser.id)?.name||'Atendente';if(window._fbSendMsg){window._fbSendMsg(id,text,sender);}else{const msg={from:sender,isAgent:true,text,ts:new Date().toISOString()};t.messages.push(msg);}const thread=document.getElementById('chat-thread-'+id);if(thread){const d=document.createElement('div');d.className='msg-bubble agent';d.innerHTML=`<div class="msg-from">${sender} · Agora</div><div class="msg-text">${text}</div>`;thread.appendChild(d);thread.scrollTop=thread.scrollHeight;}inp.value='';}
 
 (function init(){
   document.getElementById('tk-prod-grid').innerHTML=PRODUCTS.map(p=>`<div class="prod-card" data-id="${p.id}" onclick="selProd('${p.id}')"><div class="p-check">✓</div><span class="p-emoji">${p.emoji}</span><div class="p-name">${p.name}</div><div class="p-plan">${p.plan}</div></div>`).join('');
@@ -839,41 +997,166 @@ function removePayment(agId,pid) {
 }
 
 function addAgent(){const name=document.getElementById('ag-name').value.trim(),email=document.getElementById('ag-email').value.trim(),login=document.getElementById('ag-login').value.trim(),pass=document.getElementById('ag-pass').value,products=[...document.querySelectorAll('#ag-chk-grid input:checked')].map(i=>i.value);if(!name||!email||!login||!pass||products.length===0){toast('⚠️ Preencha tudo e selecione ao menos 1 produto!');return;}if(AGENTS.find(a=>a.login===login)){toast('⚠️ Login já em uso!');return;}if(login===ADMIN_CRED.login){toast('⚠️ Login reservado!');return;}AGENTS.push({id:'ag'+Date.now(),name,email,login,pass,products,closed:0,earnings:0});closeOv('ov-add-agent');['ag-name','ag-email','ag-login','ag-pass'].forEach(id=>document.getElementById(id).value='');document.querySelectorAll('#ag-chk-grid input').forEach(i=>i.checked=false);toast(`✅ Atendente ${name} cadastrado! Login: ${login}`);if(window._fbAddAgent)window._fbAddAgent();navTo('admin-agents');}
-function lookupTicket(){
-  const code=document.getElementById('lookup-code').value.trim().toUpperCase();
+// ── Phone Lookup ──
+function normalizePhone(p){return p.replace(/\D/g,'');}
+
+function lookupByPhone(){
+  const raw=document.getElementById('lookup-phone').value.trim();
   const resEl=document.getElementById('lookup-result');
-  if(!code){resEl.innerHTML='<div style="color:var(--red);font-size:13px;padding:8px 0">⚠️ Digite o código do chamado.</div>';return;}
-  const t=TICKETS.find(t=>t.code===code);
-  if(!t){resEl.innerHTML='<div style="background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.3);color:var(--red);padding:14px;border-radius:10px;font-size:13px;margin-bottom:14px">❌ Código não encontrado. Verifique se digitou corretamente.</div>';return;}
-  const ag=getAgent(t.agent);
-  const prods=(t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join(', ');
-  const statusLabel={open:'⏳ Aguardando atendente',claimed:'🎧 Em atendimento',done:'✅ Finalizado'};
-  const statusColor={open:'var(--yellow)',claimed:'var(--purple3)',done:'var(--green)'};
-  resEl.innerHTML=`
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:14px">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-        <div>
-          <div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:3px">TICKET ${t.id}</div>
-          <div style="font-weight:800;font-size:16px">${t.clientName}</div>
-          <div style="font-size:12px;color:var(--text3);margin-top:2px">📱 ${t.clientEmail}</div>
+  if(!raw){resEl.innerHTML='<div style="color:var(--red);font-size:13px;padding:8px 0">⚠️ Digite seu número de WhatsApp.</div>';return;}
+  const norm=normalizePhone(raw);
+  if(norm.length<8){resEl.innerHTML='<div style="color:var(--red);font-size:13px;padding:8px 0">⚠️ Número inválido.</div>';return;}
+  const myTickets=TICKETS.filter(t=>normalizePhone(t.clientEmail||'')===norm||normalizePhone(t.clientEmail||'').endsWith(norm)||norm.endsWith(normalizePhone(t.clientEmail||'')));
+  if(myTickets.length===0){
+    resEl.innerHTML='<div style="background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.3);color:var(--red);padding:14px;border-radius:10px;font-size:13px;margin-bottom:10px">❌ Nenhum chamado encontrado com esse número.<br><br><span style="color:var(--text3)">Certifique-se de usar o mesmo número digitado ao abrir o chamado.</span></div>';
+    return;
+  }
+  const statusLabel={open:'⏳ Aguardando',claimed:'🎧 Em Atendimento',done:'✅ Finalizado'};
+  const statusColor={open:'var(--yellow)',claimed:'var(--green)',done:'#94a3b8'};
+  resEl.innerHTML='<div style="margin-bottom:10px;font-size:12px;color:var(--text3)">'+myTickets.length+' chamado(s) encontrado(s) — clique para abrir o chat:</div>'+
+    myTickets.map(t=>{
+      const prods=(t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join(', ');
+      return`<div class="ticket-card-client" onclick="openClientChat('${t.id}','${norm}')">
+        <div class="tc-left">
+          <div class="tc-id">TICKET ${t.id} · ${fmtDate(t.createdAt)}</div>
+          <div class="tc-title">${t.clientName}</div>
+          <div class="tc-prod">${prods}</div>
         </div>
-        <div style="font-size:13px;font-weight:700;color:${statusColor[t.status]||'var(--text)'}">${statusLabel[t.status]||t.status}</div>
-      </div>
-      <div style="font-size:11px;color:var(--text3);margin-bottom:4px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em">Produto(s)</div>
-      <div style="font-size:13px;font-weight:600;margin-bottom:12px">${prods}</div>
-      ${ag?`<div style="font-size:11px;color:var(--text3);margin-bottom:4px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em">Atendente</div><div style="font-size:13px;font-weight:600;margin-bottom:12px">🎧 ${ag.name}</div>`:''}
-      <div style="font-size:11px;color:var(--text3);margin-bottom:4px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em">Aberto em</div>
-      <div style="font-size:12px;color:var(--text2)">${fmtDate(t.createdAt)}</div>
-    </div>
-    ${t.messages.length>0?`
-    <div style="margin-bottom:8px;font-size:10px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em">Conversa (${t.messages.length} mensagens)</div>
-    <div class="chat-thread" style="margin-bottom:14px">${t.messages.map(m=>`<div class="msg-bubble ${m.isAgent?'agent':''}"><div class="msg-from">${m.from} · ${fmtDate(m.ts)}</div><div class="msg-text">${m.text}</div></div>`).join('')}</div>`:'<div style="font-size:12px;color:var(--text3);padding:8px 0;margin-bottom:10px">Nenhuma mensagem ainda — aguarde o atendente.</div>'}
-  `;
+        <div style="font-size:12px;font-weight:700;color:${statusColor[t.status]||'var(--text)'}">${statusLabel[t.status]||t.status}</div>
+        <div class="tc-arrow">→</div>
+      </div>`;
+    }).join('');
 }
+
+function openPhoneLookup(){
+  closeOv('ov-check-ticket');
+  if(ccUnsubscribe){ccUnsubscribe();ccUnsubscribe=null;}
+  showScreen('client');
+}
+
+function openClientChat(ticketId, phone){
+  clientPhone=phone;
+  clientTicketId=ticketId;
+  closeOv('ov-check-ticket');
+  // unsubscribe previous listener
+  if(ccUnsubscribe){ccUnsubscribe();ccUnsubscribe=null;}
+  const t=TICKETS.find(t=>t.id===ticketId);
+  if(!t)return;
+  // Render initial state
+  renderClientChat(t);
+  showScreen('chat');
+  location.hash='#chat';
+  // Start live listener via Firebase module (set by module script)
+  if(window._startClientChatListener) window._startClientChatListener(ticketId);
+}
+
+function renderClientChat(t){
+  const ag=getAgent(t.agent);
+  const statusLabel={open:'⏳ Aguardando',claimed:'🎧 Atendimento',done:'✅ Finalizado'};
+  const statusClass={open:'open',claimed:'claimed',done:'done'};
+  const prods=(t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join(', ');
+
+  document.getElementById('cc-hdr-name').textContent=ag?ag.name:'Aguardando atendente...';
+  document.getElementById('cc-hdr-sub').textContent='Achadinhos Digitais · '+t.type;
+  const statusEl=document.getElementById('cc-hdr-status');
+  statusEl.textContent=statusLabel[t.status]||t.status;
+  statusEl.className='cc-hdr-status '+(statusClass[t.status]||'open');
+
+  document.getElementById('cc-info-bar').innerHTML=
+    `<div class="cc-info-item">🎫 Ticket: <span>${t.id}</span></div>`+
+    `<div class="cc-info-item">📦 <span>${prods}</span></div>`+
+    `<div class="cc-info-item">🕐 Aberto: <span>${fmtDate(t.createdAt)}</span></div>`+
+    (ag?`<div class="cc-info-item">🎧 Atendente: <span>${ag.name}</span></div>`:'');
+
+  // Render messages
+  const msgsEl=document.getElementById('cc-messages');
+  if(!t.messages||t.messages.length===0){
+    msgsEl.innerHTML='<div style="text-align:center;padding:30px 20px;color:var(--text3);font-size:13px">💬 Nenhuma mensagem ainda.<br>Em breve um atendente vai te responder!</div>';
+  } else {
+    msgsEl.innerHTML=t.messages.map(m=>renderCCMsg(m)).join('');
+  }
+  msgsEl.scrollTop=msgsEl.scrollHeight;
+
+  // Input area: hide if done
+  const inputArea=document.getElementById('cc-input-area');
+  if(t.status==='done'){
+    inputArea.innerHTML='<div class="cc-closed-bar">✅ Este chamado foi finalizado. Obrigado pelo contato!</div>';
+  } else {
+    inputArea.innerHTML=`<div class="cc-input-row">
+      <button class="cc-media-btn" onclick="document.getElementById('cc-file-inp').click()" title="Enviar mídia">📎</button>
+      <input type="file" id="cc-file-inp" accept="image/*,application/pdf" style="display:none" onchange="ccSendMedia(this)"/>
+      <textarea id="cc-msg-inp" placeholder="Digite uma mensagem..." rows="1"
+        oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();ccSendText();}"></textarea>
+      <button class="cc-send-btn" onclick="ccSendText()">➤</button>
+    </div>`;
+  }
+}
+
+function renderCCMsg(m){
+  const isClient=!m.isAgent;
+  const side=isClient?'from-client':'from-agent';
+  let content='';
+  if(m.mediaType&&m.mediaType.startsWith('image/')){
+    content=`<img src="${m.mediaData}" alt="imagem" onclick="window.open(this.src)" style="max-width:220px;border-radius:12px;display:block;cursor:pointer;margin-top:2px"/>`;
+  } else if(m.mediaType){
+    content=`<div style="font-size:12px">📄 ${m.mediaName||'Arquivo'}</div>`;
+  } else {
+    content=m.text||'';
+  }
+  const senderLabel=isClient?'Você':m.from;
+  return`<div class="cc-msg ${side}">
+    ${!isClient?`<div class="sender-name">${senderLabel}</div>`:''}
+    <div class="bubble">${content}</div>
+    <div class="meta">${fmtTime(m.ts)}</div>
+  </div>`;
+}
+
+function fmtTime(iso){if(!iso)return'';const d=new Date(iso);return d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});}
+
+function ccSendText(){
+  const inp=document.getElementById('cc-msg-inp');
+  if(!inp)return;
+  const text=inp.value.trim();
+  if(!text)return;
+  const t=TICKETS.find(t=>t.id===clientTicketId);
+  if(!t)return;
+  const msg={from:t.clientName,isAgent:false,text,ts:new Date().toISOString()};
+  inp.value='';inp.style.height='auto';
+  // Optimistic UI
+  const msgsEl=document.getElementById('cc-messages');
+  const div=document.createElement('div');
+  div.innerHTML=renderCCMsg(msg);
+  msgsEl.appendChild(div.firstChild);
+  msgsEl.scrollTop=msgsEl.scrollHeight;
+  // Save
+  if(window._fbSendClientMsg) window._fbSendClientMsg(clientTicketId, msg);
+  else t.messages.push(msg);
+}
+
+function ccSendMedia(input){
+  const file=input.files[0];if(!file)return;
+  if(file.size>5*1024*1024){toast('⚠️ Arquivo muito grande! Máximo 5MB.');return;}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const t=TICKETS.find(t=>t.id===clientTicketId);if(!t)return;
+    const msg={from:t.clientName,isAgent:false,mediaType:file.type,mediaName:file.name,mediaData:e.target.result,ts:new Date().toISOString()};
+    const msgsEl=document.getElementById('cc-messages');
+    const div=document.createElement('div');
+    div.innerHTML=renderCCMsg(msg);
+    msgsEl.appendChild(div.firstChild);
+    msgsEl.scrollTop=msgsEl.scrollHeight;
+    if(window._fbSendClientMsg) window._fbSendClientMsg(clientTicketId,msg);
+    else t.messages.push(msg);
+  };
+  reader.readAsDataURL(file);
+  input.value='';
+}
+
 
 function removeAgent(id){const idx=AGENTS.findIndex(a=>a.id===id);if(idx>-1){AGENTS.splice(idx,1);toast('🗑 Atendente removido.');if(window._fbRemoveAgent)window._fbRemoveAgent();renderAdminAgents();}}
 
-document.getElementById('screen-client').classList.add('active');
+// screen activated by async bootstrap above
 </script>
 </body>
 </html>
