@@ -324,6 +324,7 @@ hr.div{border:none;border-top:1px solid var(--border);margin:18px 0;}
 .ticket-card-client .tc-arrow{font-size:20px;color:var(--purple3);}
 
 </style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -449,7 +450,10 @@ hr.div{border:none;border-top:1px solid var(--border);margin:18px 0;}
     <div id="page-agent-queue" class="dash-page"><div style="display:flex;align-items:center;gap:10px;margin-bottom:4px"><div class="page-title" style="margin:0">Fila de Tickets</div><div class="live-pill"><div class="live-dot"></div>AO VIVO</div></div><div class="page-sub">Pegue primeiro e ganhe a comissão!</div><div class="data-table" id="ag-queue-tbl"></div></div>
     <div id="page-agent-mine" class="dash-page"><div class="page-title">Meus Tickets</div><div class="page-sub">Em andamento</div><div class="data-table" id="ag-mine-tbl"></div></div>
     <div id="page-agent-done" class="dash-page"><div class="page-title">Finalizados</div><div class="page-sub">Histórico</div><div class="data-table" id="ag-done-tbl"></div></div>
-    <div id="page-agent-earnings" class="dash-page"><div class="page-title">Meus Ganhos</div><div class="page-sub">Sua performance financeira</div><div id="ag-earnings-content"></div></div>
+    <div id="page-agent-earnings" class="dash-page"><div class="page-title">Meus Ganhos</div><div class="page-sub">Sua performance financeira e saques</div><div id="ag-earnings-content"></div></div>
+    <div id="page-agent-profile" class="dash-page"><div class="page-title">Meu Perfil</div><div class="page-sub">Dados da conta e configurações</div><div id="ag-profile-content"></div></div>
+    <div id="page-admin-withdrawals" class="dash-page"><div class="page-title">💸 Saques</div><div class="page-sub">Solicitações de saque dos atendentes — automático via MisticPay</div><div id="adm-withdrawals-content"></div></div>
+    <div id="page-admin-agent-profile" class="dash-page"><div class="page-title">👤 Perfil do Atendente</div><div class="page-sub">Histórico completo e financeiro</div><div id="adm-agent-profile-content"></div></div>
     <div id="page-agent-ranking" class="dash-page"><div class="page-title">Ranking Geral</div><div class="page-sub">Sua posição na disputa</div><div class="rank-list" id="ag-rank-list"></div></div>
   </main>
 </div>
@@ -583,6 +587,34 @@ hr.div{border:none;border-top:1px solid var(--border);margin:18px 0;}
     </div>
   </div>
 </div>
+
+<!-- Withdrawal Modal -->
+<div class="overlay" id="ov-withdrawal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-head">
+      <div><div class="modal-head-title">💸 Solicitar Saque</div><div class="modal-head-sub">O valor será enviado automaticamente via Pix</div></div>
+      <button class="modal-close" onclick="closeOv('ov-withdrawal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.3);border-radius:12px;padding:16px;margin-bottom:18px">
+        <div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:4px">SALDO DISPONÍVEL</div>
+        <div id="wd-available" style="font-size:28px;font-weight:800;color:var(--yellow)"></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px">Chave Pix: <span id="wd-pixkey" style="color:var(--green)"></span></div>
+      </div>
+      <div style="margin-bottom:16px">
+        <div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:8px">VALOR DO SAQUE (R$)</div>
+        <input id="wd-amount" type="number" min="0.01" step="0.01" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:12px 14px;border-radius:10px;font-size:18px;font-weight:800;font-family:var(--font);outline:none;box-sizing:border-box"/>
+      </div>
+      <div style="background:rgba(245,197,24,.08);border:1px solid rgba(245,197,24,.2);border-radius:10px;padding:12px;margin-bottom:18px;font-size:12px;color:var(--text3)">
+        ⚡ O saque é processado automaticamente via <strong style="color:var(--yellow)">MisticPay</strong>. O Pix cai em instantes.
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="act-btn" style="flex:1;padding:12px" onclick="closeOv('ov-withdrawal')">Cancelar</button>
+        <button id="wd-confirm-btn" class="act-btn fill" style="flex:2;padding:12px;font-size:14px" onclick="confirmWithdrawal()">💸 Confirmar Saque</button>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <!-- Firebase SDK -->
@@ -627,6 +659,11 @@ async function loadPayments() {
   try {
     const snap = await getDoc(paymentsDoc);
     if(snap.exists()) PAYMENTS = snap.data().payments || {};
+    // Load withdrawals
+    const wdDoc = doc(db,'config','withdrawals');
+    const wdSnap = await getDoc(wdDoc);
+    if(wdSnap.exists()) WITHDRAWALS = wdSnap.data().data || {};
+    updateWithdrawalBadge();
   } catch(e){ console.warn('loadPayments error',e); }
 }
 
@@ -639,6 +676,11 @@ async function savePayments() {
   try { await setDoc(paymentsDoc, { payments: PAYMENTS }); }
   catch(e){ console.warn('savePayments error',e); }
 }
+
+window._fbSaveWithdrawals = async () => {
+  try { await setDoc(doc(db,'config','withdrawals'), {data: WITHDRAWALS}); }
+  catch(e) { console.warn('Save withdrawals error', e); }
+};
 
 // ── Real-time listener: tickets ──
 function startTicketListener() {
@@ -955,7 +997,7 @@ function doLogout(){currentUser=null;document.getElementById('login-user').value
 function enterDashboard(){buildSidebar();showScreen('dashboard');location.hash='#dashboard';if(currentUser.role==='admin')navTo('admin-dash');else navTo('agent-queue');}
 function buildSidebar(){
   document.getElementById('sb-role').textContent=currentUser.role==='admin'?'👑 Admin Principal':'🎧 Atendente';
-  document.getElementById('sb-nav').innerHTML=currentUser.role==='admin'?`<div class="nav-section"><span class="nav-section-label">Painel</span><button class="nav-item" onclick="navTo('admin-dash')"><span class="ni">📊</span>Dashboard</button><button class="nav-item" onclick="navTo('admin-tickets')"><span class="ni">🎫</span>Todos os Tickets<span class="nav-badge" id="nb-open">0</span></button><button class="nav-item" onclick="navTo('admin-agents')"><span class="ni">👥</span>Atendentes</button><button class="nav-item" onclick="navTo('admin-commissions')"><span class="ni">💸</span>Comissões</button><button class="nav-item" onclick="navTo('admin-ranking')"><span class="ni">🏆</span>Ranking</button><button class="nav-item" onclick="navTo('admin-finance')"><span class="ni">💰</span>Acerto de Contas</button></div>`:`<div class="nav-section"><span class="nav-section-label">Atendimento</span><button class="nav-item" onclick="navTo('agent-queue')"><span class="ni">🎯</span>Fila de Tickets<span class="nav-badge" id="nb-queue">0</span></button><button class="nav-item" onclick="navTo('agent-mine')"><span class="ni">📋</span>Meus Tickets</button><button class="nav-item" onclick="navTo('agent-done')"><span class="ni">✅</span>Finalizados</button></div><div class="nav-section"><span class="nav-section-label">Performance</span><button class="nav-item" onclick="navTo('agent-earnings')"><span class="ni">💰</span>Meus Ganhos</button><button class="nav-item" onclick="navTo('agent-ranking')"><span class="ni">🏆</span>Ranking</button></div><div class="nav-section"><span class="nav-section-label">Conta</span><button class="nav-item" onclick="openChangeSector()"><span class="ni">🔄</span>Alterar Setor</button></div>`;
+  document.getElementById('sb-nav').innerHTML=currentUser.role==='admin'?`<div class="nav-section"><span class="nav-section-label">Painel</span><button class="nav-item" onclick="navTo('admin-dash')"><span class="ni">📊</span>Dashboard</button><button class="nav-item" onclick="navTo('admin-tickets')"><span class="ni">🎫</span>Todos os Tickets<span class="nav-badge" id="nb-open">0</span></button><button class="nav-item" onclick="navTo('admin-agents')"><span class="ni">👥</span>Atendentes</button><button class="nav-item" onclick="navTo('admin-commissions')"><span class="ni">💸</span>Comissões</button><button class="nav-item" onclick="navTo('admin-ranking')"><span class="ni">🏆</span>Ranking</button><button class="nav-item" onclick="navTo('admin-finance')"><span class="ni">💰</span>Acerto de Contas</button><button class="nav-item" onclick="navTo('admin-withdrawals')"><span class="ni">💸</span>Saques<span class="nav-badge" id="nb-withdrawals" style="display:none">!</span></button></div>`:`<div class="nav-section"><span class="nav-section-label">Atendimento</span><button class="nav-item" onclick="navTo('agent-queue')"><span class="ni">🎯</span>Fila de Tickets<span class="nav-badge" id="nb-queue">0</span></button><button class="nav-item" onclick="navTo('agent-mine')"><span class="ni">📋</span>Meus Tickets</button><button class="nav-item" onclick="navTo('agent-done')"><span class="ni">✅</span>Finalizados</button></div><div class="nav-section"><span class="nav-section-label">Performance</span><button class="nav-item" onclick="navTo('agent-earnings')"><span class="ni">💰</span>Meus Ganhos</button><button class="nav-item" onclick="navTo('agent-ranking')"><span class="ni">🏆</span>Ranking</button></div><div class="nav-section"><span class="nav-section-label">Conta</span><button class="nav-item" onclick="navTo('agent-profile')"><span class="ni">👤</span>Meu Perfil</button></div>`;
   updateBadges();
 }
 function updateBadges(){const o=TICKETS.filter(t=>t.status==='open').length;const nb=document.getElementById('nb-open');if(nb)nb.textContent=o;if(currentUser&&currentUser.role==='agent'){const ag=getAgent(currentUser.id);if(ag){const nq=document.getElementById('nb-queue');if(nq)nq.textContent=TICKETS.filter(t=>t.status==='open'&&ag.products.includes(t.product)).length;}}}
@@ -965,7 +1007,7 @@ function navTo(page){
   document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
   const pe=document.getElementById('page-'+page);if(pe)pe.classList.add('active');
   document.querySelectorAll('.nav-item').forEach(b=>{if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes(`'${page}'`))b.classList.add('active');});
-  const r={'admin-dash':renderAdminDash,'admin-tickets':renderAdminTickets,'admin-agents':renderAdminAgents,'admin-commissions':renderCommissions,'admin-ranking':()=>renderRanking('adm-rank-list'),'admin-finance':renderAdminFinance,'agent-queue':renderAgentQueue,'agent-mine':renderAgentMine,'agent-done':renderAgentDone,'agent-earnings':renderAgentEarnings,'agent-ranking':()=>renderRanking('ag-rank-list')};
+  const r={'admin-dash':renderAdminDash,'admin-tickets':renderAdminTickets,'admin-agents':renderAdminAgents,'admin-commissions':renderCommissions,'admin-ranking':()=>renderRanking('adm-rank-list'),'admin-finance':renderAdminFinance,'agent-queue':renderAgentQueue,'agent-mine':renderAgentMine,'agent-done':renderAgentDone,'agent-earnings':renderAgentEarnings,'agent-profile':renderAgentProfile,'agent-ranking':()=>renderRanking('ag-rank-list'),'admin-withdrawals':renderAdminWithdrawals,'admin-agent-profile':()=>{},};
   if(r[page])r[page]();updateBadges();
 }
 function renderAdminDash(){
@@ -978,14 +1020,125 @@ function renderAdminTickets(){
   document.getElementById('adm-tickets-tbl').innerHTML=`<div class="table-top"><h3>Tickets (${list.length})</h3><div class="filter-row">${['all','open','claimed','done'].map(s=>`<button class="f-btn ${filterStatus===s?'on':''}" onclick="setFilter('${s}')">${s==='all'?'Todos':s==='open'?'Abertos':s==='claimed'?'Em Atend.':'Finalizados'}</button>`).join('')}</div></div><table><thead><tr><th>ID</th><th>Código</th><th>Cliente</th><th>Produto</th><th>Tipo</th><th>Status</th><th>Atendente</th><th>Abertura</th><th>Ações</th></tr></thead><tbody>${list.map(t=>{const pr=getProd(t.product),ag=getAgent(t.agent);return`<tr><td><span class="t-id">${t.id}</span></td><td><span class="t-id" style="color:var(--yellow);letter-spacing:.06em">${t.code||'—'}</span></td><td><div class="t-client">${t.clientName}</div><div class="t-email">${t.clientEmail}</div></td><td>${(t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join(', ')}</td><td style="font-size:11px;color:var(--text3)">${t.type}</td><td>${badge(t.status)}</td><td>${ag?ag.name:'<span style="color:var(--text3)">—</span>'}</td><td style="color:var(--text3);font-size:11px">${fmtDate(t.createdAt)}</td><td><button class="act-btn" onclick="openDetail('${t.id}')">👁 Ver</button>${t.status!=='done'?`<button class="act-btn green" onclick="adminClose('${t.id}')">✅</button>`:''}<button class="act-btn red" onclick="adminDel('${t.id}')">🗑</button></td></tr>`;}).join('')}</tbody></table>`;
 }
 function renderAdminAgents(){
-  document.getElementById('adm-agents-grid').innerHTML=AGENTS.map(a=>{const extra=TICKETS.filter(t=>t.agent===a.id&&t.status==='done').reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0);const active=TICKETS.filter(t=>t.agent===a.id&&t.status==='claimed').length;return`<div class="agent-card"><div class="ag-top"><div class="ag-avatar">${initials(a.name)}</div><div><div class="ag-name">${a.name}</div><div class="ag-email"><a href="https://wa.me/55${(a.email||'').replace(/\D/g,'')}" target="_blank" style="color:var(--green);text-decoration:none">📱 ${a.email}</a></div><div class="ag-login-tag">@${a.login}</div></div></div><div class="ag-stats"><div class="ag-stat"><div class="label">Fechados</div><div class="val">${a.closed}</div></div><div class="ag-stat"><div class="label">Em Aberto</div><div class="val">${active}</div></div></div><div class="ag-prods">${a.products.map(pid=>{const p=getProd(pid);return`<span class="ag-prod-tag">${p?p.emoji+' '+p.name:pid}</span>`;}).join('')}</div><div class="ag-earnings"><div class="label">💰 Ganhos</div><div class="amount">${fmtMoney(a.earnings+extra)}</div></div><div class="ag-actions"><button class="act-btn" onclick="openAgentPerms('${a.id}')">🔐 Permissões</button><button class="act-btn red" onclick="removeAgent('${a.id}')">Remover</button></div></div>`;}).join('')||'<div class="empty-box"><div class="e-icon">👥</div><p>Nenhum atendente cadastrado.</p></div>';
+  document.getElementById('adm-agents-grid').innerHTML=AGENTS.map(a=>{const extra=TICKETS.filter(t=>t.agent===a.id&&t.status==='done').reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0);const active=TICKETS.filter(t=>t.agent===a.id&&t.status==='claimed').length;return`<div class="agent-card"><div class="ag-top"><div class="ag-avatar">${initials(a.name)}</div><div><div class="ag-name">${a.name}</div><div class="ag-email"><a href="https://wa.me/55${(a.email||'').replace(/\D/g,'')}" target="_blank" style="color:var(--green);text-decoration:none">📱 ${a.email}</a></div><div class="ag-login-tag">@${a.login}</div></div></div><div class="ag-stats"><div class="ag-stat"><div class="label">Fechados</div><div class="val">${a.closed}</div></div><div class="ag-stat"><div class="label">Em Aberto</div><div class="val">${active}</div></div></div><div class="ag-prods">${a.products.map(pid=>{const p=getProd(pid);return`<span class="ag-prod-tag">${p?p.emoji+' '+p.name:pid}</span>`;}).join('')}</div><div class="ag-earnings"><div class="label">💰 Ganhos</div><div class="amount">${fmtMoney(a.earnings+extra)}</div></div><div class="ag-actions"><button class="act-btn" onclick="openAdminAgentProfile('${a.id}')">📊 Ver Perfil</button><button class="act-btn" onclick="openAgentPerms('${a.id}')">🔐 Permissões</button><button class="act-btn red" onclick="removeAgent('${a.id}')">Remover</button></div></div>`;}).join('')||'<div class="empty-box"><div class="e-icon">👥</div><p>Nenhum atendente cadastrado.</p></div>';
 }
 function renderCommissions(){document.getElementById('adm-comm-list').innerHTML=PRODUCTS.map(p=>`<div class="comm-row"><div><div class="comm-prod-name">${p.emoji} ${p.name}</div><div class="comm-prod-plan">${p.plan}</div></div><div style="font-size:11px;color:var(--text3);font-family:var(--mono)">por ticket</div><div style="display:flex;align-items:center;gap:7px"><span style="color:var(--text3)">R$</span><input class="comm-input" type="number" min="0" step="0.5" value="${COMMISSIONS[p.id]||0}" oninput="COMMISSIONS['${p.id}']=parseFloat(this.value)||0;document.getElementById('cd-${p.id}').textContent=fmtMoney(COMMISSIONS['${p.id}']);if(window._fbSaveCommissions)window._fbSaveCommissions()"/></div><div class="comm-display" id="cd-${p.id}">${fmtMoney(COMMISSIONS[p.id]||0)}</div></div>`).join('');}
 function renderRanking(cid){const sorted=AGENTS.map(a=>{const extra=TICKETS.filter(t=>t.agent===a.id&&t.status==='done').reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0);return{...a,total:a.earnings+extra};}).sort((a,b)=>b.total-a.total);document.getElementById(cid).innerHTML=sorted.map((a,i)=>`<div class="rank-row ${i===0?'first':''}"><div class="rank-num ${i===0?'g':i===1?'s':i===2?'b':''}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</div><div class="ag-avatar" style="width:42px;height:42px;font-size:15px">${initials(a.name)}</div><div class="rank-info"><div class="rank-name">${a.name}</div><div class="rank-sub">${a.closed} tickets · @${a.login}</div></div><div class="rank-earn">${fmtMoney(a.total)}</div></div>`).join('')||'<div class="empty-box"><div class="e-icon">🏆</div><p>Nenhum dado ainda.</p></div>';}
 function renderAgentQueue(){const me=getAgent(currentUser.id),avail=me?TICKETS.filter(t=>t.status==='open'&&(t.products||[t.product]).some(p=>me.products.includes(p))):[];document.getElementById('ag-queue-tbl').innerHTML=avail.length===0?'<div class="empty-box"><div class="e-icon">🎉</div><p>Fila vazia!</p></div>':`<table><thead><tr><th>ID</th><th>Cliente</th><th>Produto</th><th>Tipo</th><th>Abertura</th><th>Comissão</th><th>Ação</th></tr></thead><tbody>${avail.map(t=>{const pr=getProd(t.product);return`<tr><td><span class="t-id">${t.id}</span></td><td>${t.clientName}</td><td>${(t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join(', ')}</td><td style="font-size:11px;color:var(--text3)">${t.type}</td><td style="font-size:11px;color:var(--text3)">${fmtDate(t.createdAt)}</td><td style="color:var(--yellow);font-weight:800">${fmtMoney(COMMISSIONS[t.product]||0)}</td><td><button class="act-btn yf" onclick="claimTicket('${t.id}')">⚡ Pegar</button></td></tr>`;}).join('')}</tbody></table>`;}
 function renderAgentMine(){const mine=TICKETS.filter(t=>t.agent===currentUser.id&&t.status==='claimed');document.getElementById('ag-mine-tbl').innerHTML=mine.length===0?'<div class="empty-box"><div class="e-icon">📭</div><p>Nenhum ticket em andamento.</p></div>':`<table><thead><tr><th>ID</th><th>Cliente</th><th>Produto</th><th>Status</th><th>Comissão</th><th>Ações</th></tr></thead><tbody>${mine.map(t=>{const pr=getProd(t.product);return`<tr><td><span class="t-id">${t.id}</span></td><td>${agentCan('name')?t.clientName:'🔒 Oculto'}</td><td>${(t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join(', ')}</td><td>${badge(t.status)}</td><td style="color:var(--yellow);font-weight:800">${fmtMoney(COMMISSIONS[t.product]||0)}</td><td><button class="act-btn" onclick="openDetail('${t.id}')">💬 Atender</button><button class="act-btn green" onclick="agentClose('${t.id}')">✅ Finalizar</button></td></tr>`;}).join('')}</tbody></table>`;}
 function renderAgentDone(){const done=TICKETS.filter(t=>t.agent===currentUser.id&&t.status==='done');document.getElementById('ag-done-tbl').innerHTML=done.length===0?'<div class="empty-box"><div class="e-icon">📦</div><p>Nenhum finalizado ainda.</p></div>':`<table><thead><tr><th>ID</th><th>Cliente</th><th>Produto</th><th>Finalizado em</th><th>Comissão</th><th></th></tr></thead><tbody>${done.map(t=>{const pr=getProd(t.product);return`<tr><td><span class="t-id">${t.id}</span></td><td>${t.clientName}</td><td>${(t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join(', ')}</td><td style="font-size:11px;color:var(--text3)">${fmtDate(t.closedAt)}</td><td style="color:var(--green);font-weight:800">${fmtMoney(COMMISSIONS[t.product]||0)}</td><td><button class="act-btn" onclick="openDetail('${t.id}')">👁 Ver</button></td></tr>`;}).join('')}</tbody></table>`;}
-function renderAgentEarnings(){const me=getAgent(currentUser.id);if(!me)return;const extra=TICKETS.filter(t=>t.agent===me.id&&t.status==='done').reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0);const total=me.earnings+extra;document.getElementById('ag-earnings-content').innerHTML=`<div class="stats-row" style="grid-template-columns:repeat(3,1fr)"><div class="stat-box green"><div class="s-label">Total Acumulado</div><div class="s-val">${fmtMoney(total)}</div></div><div class="stat-box purple"><div class="s-label">Tickets Fechados</div><div class="s-val">${me.closed}</div></div><div class="stat-box gold"><div class="s-label">Média por Ticket</div><div class="s-val">${fmtMoney(total/Math.max(1,me.closed))}</div></div></div><div class="data-table" style="margin-top:20px"><div class="table-top"><h3>Comissões por Produto</h3></div><table><thead><tr><th>Produto</th><th>Comissão por Ticket</th></tr></thead><tbody>${me.products.map(pid=>{const p=getProd(pid);return`<tr><td>${p?p.emoji+' '+p.name+' '+p.plan:pid}</td><td style="color:var(--yellow);font-size:19px;font-weight:800">${fmtMoney(COMMISSIONS[pid]||0)}</td></tr>`;}).join('')}</tbody></table></div>`;}
+function getMonthlyEarnings(agId) {
+  const months = {};
+  TICKETS.filter(t=>t.agent===agId&&t.status==='done').forEach(t=>{
+    const d = new Date(t.closedAt||t.createdAt);
+    const key = d.getFullYear()+'-'+(String(d.getMonth()+1).padStart(2,'0'));
+    months[key] = (months[key]||0) + (COMMISSIONS[t.product]||0);
+  });
+  return months;
+}
+
+function renderAgentEarnings() {
+  const me = getAgent(currentUser.id); if(!me) return;
+  const allDone = TICKETS.filter(t=>t.agent===me.id&&t.status==='done');
+  const total = allDone.reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0) + me.earnings;
+  const withdrawn = (WITHDRAWALS[me.id]||[]).filter(w=>w.status==='completed').reduce((s,w)=>s+w.amount,0);
+  const pending = (WITHDRAWALS[me.id]||[]).filter(w=>w.status==='pending').reduce((s,w)=>s+w.amount,0);
+  const available = total - withdrawn - pending;
+
+  // Monthly chart data
+  const monthly = getMonthlyEarnings(me.id);
+  const sortedMonths = Object.keys(monthly).sort().slice(-6);
+  const monthLabels = sortedMonths.map(k=>{const [y,m]=k.split('-');const names=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];return names[parseInt(m)-1]+'/'+y.slice(2);});
+  const monthValues = sortedMonths.map(k=>monthly[k]);
+
+  // Month filter for ticket history
+  const allMonths = [...new Set(allDone.map(t=>{const d=new Date(t.closedAt||t.createdAt);return d.getFullYear()+'-'+(String(d.getMonth()+1).padStart(2,'0'));}))].sort().reverse();
+  const selMonth = window._earningsMonth || (allMonths[0]||'');
+  const filtered = selMonth ? allDone.filter(t=>{const d=new Date(t.closedAt||t.createdAt);const k=d.getFullYear()+'-'+(String(d.getMonth()+1).padStart(2,'0'));return k===selMonth;}) : allDone;
+
+  document.getElementById('ag-earnings-content').innerHTML =
+    '<div class="stats-row" style="grid-template-columns:repeat(2,1fr) repeat(2,1fr);gap:12px;margin-bottom:18px">'
+    +'<div class="stat-box green"><div class="s-label">Total Acumulado</div><div class="s-val">'+fmtMoney(total)+'</div></div>'
+    +'<div class="stat-box gold"><div class="s-label">Disponível p/ Saque</div><div class="s-val">'+fmtMoney(available)+'</div></div>'
+    +'<div class="stat-box purple"><div class="s-label">Já Sacado</div><div class="s-val">'+fmtMoney(withdrawn)+'</div></div>'
+    +'<div class="stat-box"><div class="s-label">Tickets Fechados</div><div class="s-val">'+me.closed+'</div></div>'
+    +'</div>'
+    // Saque button
+    +(available > 0
+      ? '<div style="background:linear-gradient(135deg,rgba(124,58,237,.15),rgba(245,197,24,.08));border:1px solid rgba(245,197,24,.3);border-radius:14px;padding:18px 20px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">'
+        +'<div><div style="font-size:13px;font-weight:700;margin-bottom:3px">💸 Saque Disponível</div>'
+        +'<div style="font-size:22px;font-weight:800;color:var(--yellow)">'+fmtMoney(available)+'</div>'
+        +(me.pixKey?'<div style="font-size:11px;color:var(--text3);margin-top:2px">Chave Pix: '+me.pixKey+'</div>':'<div style="font-size:11px;color:var(--red);margin-top:2px">⚠️ Cadastre sua chave Pix no Perfil primeiro</div>')
+        +'</div>'
+        +'<button class="act-btn fill" style="padding:12px 22px;font-size:14px" onclick="openWithdrawal()">💸 Solicitar Saque</button>'
+        +'</div>'
+      : '')
+    // Chart
+    +(sortedMonths.length > 0
+      ? '<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:18px">'
+        +'<div style="font-size:12px;font-weight:700;margin-bottom:14px">📈 Ganhos por Mês</div>'
+        +'<canvas id="earnings-chart" height="120"></canvas>'
+        +'</div>'
+      : '')
+    // History header + filter
+    +'<div class="data-table">'
+    +'<div class="table-top" style="flex-wrap:wrap;gap:8px">'
+    +'<h3>Histórico de Tickets</h3>'
+    +'<div style="display:flex;gap:6px;flex-wrap:wrap">'
+    +'<button class="f-btn '+(selMonth===''?'on':'')+'" onclick="window._earningsMonth=\'\';renderAgentEarnings()">Todos</button>'
+    +allMonths.map(m=>{const [y,mo]=m.split('-');const names=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];const label=names[parseInt(mo)-1]+'/'+y.slice(2);return'<button class="f-btn '+(selMonth===m?'on':'')+'" onclick="window._earningsMonth=\''+m+'\';renderAgentEarnings()">'+label+'</button>';}).join('')
+    +'</div></div>'
+    +(filtered.length===0
+      ? '<div class="empty-box"><div class="e-icon">📭</div><p>Nenhum ticket neste período.</p></div>'
+      : '<table><thead><tr><th>ID</th><th>Produto</th><th>Tipo</th><th>Finalizado em</th><th>Comissão</th></tr></thead><tbody>'
+        +filtered.map(t=>'<tr><td><span class="t-id">'+t.id+'</span></td><td>'+(t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join(', ')+'</td><td style="font-size:11px;color:var(--text3)">'+t.type+'</td><td style="font-size:11px;color:var(--text3)">'+fmtDate(t.closedAt)+'</td><td style="color:var(--green);font-weight:800">'+fmtMoney(COMMISSIONS[t.product]||0)+'</td></tr>').join('')
+        +'</tbody></table>')
+    +'</div>'
+    // Withdrawal history
+    +((WITHDRAWALS[me.id]||[]).length > 0
+      ? '<div class="data-table" style="margin-top:18px"><div class="table-top"><h3>Histórico de Saques</h3></div><table><thead><tr><th>Data</th><th>Valor</th><th>Chave Pix</th><th>Status</th></tr></thead><tbody>'
+        +(WITHDRAWALS[me.id]||[]).slice().reverse().map(w=>'<tr><td style="font-size:11px;color:var(--text3)">'+fmtDate(w.date)+'</td><td style="color:var(--yellow);font-weight:800">'+fmtMoney(w.amount)+'</td><td style="font-size:11px;color:var(--text3)">'+w.pixKey+'</td><td>'+wBadge(w.status)+'</td></tr>').join('')
+        +'</tbody></table></div>'
+      : '');
+
+  // Draw chart after DOM update
+  if(sortedMonths.length > 0) {
+    setTimeout(()=>{
+      const canvas = document.getElementById('earnings-chart');
+      if(!canvas) return;
+      if(canvas._chart) canvas._chart.destroy();
+      canvas._chart = new Chart(canvas, {
+        type: 'bar',
+        data: {
+          labels: monthLabels,
+          datasets: [{
+            label: 'Ganhos (R$)',
+            data: monthValues,
+            backgroundColor: 'rgba(124,58,237,0.5)',
+            borderColor: 'rgba(124,58,237,1)',
+            borderWidth: 2,
+            borderRadius: 8,
+            hoverBackgroundColor: 'rgba(245,197,24,0.6)'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: 'rgba(255,255,255,.05)' }, ticks: { color: '#94a3b8', font: { size: 11 } } },
+            y: { grid: { color: 'rgba(255,255,255,.05)' }, ticks: { color: '#94a3b8', font: { size: 11 }, callback: v=>'R$ '+v.toFixed(0) } }
+          }
+        }
+      });
+    }, 50);
+  }
+}
+
+function wBadge(s) {
+  if(s==='completed') return '<span style="background:rgba(34,211,126,.15);color:var(--green);padding:3px 9px;border-radius:100px;font-size:10px;font-weight:700">✅ Pago</span>';
+  if(s==='pending')   return '<span style="background:rgba(245,197,24,.15);color:var(--yellow);padding:3px 9px;border-radius:100px;font-size:10px;font-weight:700">⏳ Processando</span>';
+  return '<span style="background:rgba(248,113,113,.15);color:var(--red);padding:3px 9px;border-radius:100px;font-size:10px;font-weight:700">❌ Falhou</span>';
+}
 function claimTicket(id){if(window._fbClaimTicket){window._fbClaimTicket(id);return;}const t=TICKETS.find(t=>t.id===id);if(!t||t.status!=='open'){toast('⚠️ Ticket já foi pego!');return;}t.status='claimed';t.agent=currentUser.id;toast(`⚡ Você pegou o ticket ${id}!`);navTo('agent-queue');}
 function agentClose(id){if(window._fbAgentClose){window._fbAgentClose(id);return;}const t=TICKETS.find(t=>t.id===id);if(!t)return;t.status='done';t.closedAt=new Date().toISOString();const comm=COMMISSIONS[t.product]||0;const ag=getAgent(currentUser.id);if(ag){ag.closed++;ag.earnings+=comm;}toast(`✅ Ticket ${id} finalizado! Você ganhou ${fmtMoney(comm)} 🎉`);navTo('agent-mine');}
 function adminClose(id){if(window._fbAdminClose){window._fbAdminClose(id);return;}const t=TICKETS.find(t=>t.id===id);if(!t||t.status==='done')return;t.status='done';t.closedAt=new Date().toISOString();const ag=getAgent(t.agent);if(ag){ag.closed++;ag.earnings+=(COMMISSIONS[t.product]||0);}toast(`✅ Ticket ${id} encerrado.`);navTo(currentPage);}
@@ -1173,6 +1326,279 @@ function removePayment(agId,pid) {
   toast('🗑 Pagamento removido.');
 }
 
+
+/* ─── WITHDRAWALS ─── */
+let WITHDRAWALS = {}; // {agId: [{id,amount,pixKey,date,status,txId}]}
+
+const MISTIC_CLIENT_ID = 'ci_q9lq3ykoxai9ktq';
+const MISTIC_CLIENT_SECRET = 'cs_hz69fztetgpbi51tfad7c25fg';
+
+async function misticPayWithdraw(pixKey, amount, name) {
+  try {
+    // Get token
+    const tokenRes = await fetch('https://api.misticpay.com/v1/oauth/token', {
+      method: 'POST',
+      headers: {'Content-Type':'application/x-www-form-urlencoded'},
+      body: new URLSearchParams({grant_type:'client_credentials',client_id:MISTIC_CLIENT_ID,client_secret:MISTIC_CLIENT_SECRET})
+    });
+    const tokenData = await tokenRes.json();
+    const token = tokenData.access_token;
+    if(!token) throw new Error('Token inválido');
+
+    // Create payout
+    const payRes = await fetch('https://api.misticpay.com/v1/payouts', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify({
+        amount: Math.round(amount * 100), // centavos
+        pix_key: pixKey,
+        name: name,
+        description: 'Saque comissão - Achadinhos Digitais'
+      })
+    });
+    const payData = await payRes.json();
+    return {success: payRes.ok, txId: payData.id||payData.transaction_id||null, raw: payData};
+  } catch(e) {
+    console.error('MisticPay error:', e);
+    return {success: false, error: e.message};
+  }
+}
+
+async function openWithdrawal() {
+  const me = getAgent(currentUser.id); if(!me) return;
+  if(!me.pixKey) { toast('⚠️ Cadastre sua chave Pix no Perfil primeiro!'); navTo('agent-profile'); return; }
+  const allDone = TICKETS.filter(t=>t.agent===me.id&&t.status==='done');
+  const total = allDone.reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0) + me.earnings;
+  const withdrawn = (WITHDRAWALS[me.id]||[]).filter(w=>w.status==='completed').reduce((s,w)=>s+w.amount,0);
+  const pending = (WITHDRAWALS[me.id]||[]).filter(w=>w.status==='pending').reduce((s,w)=>s+w.amount,0);
+  const available = total - withdrawn - pending;
+  if(available <= 0) { toast('⚠️ Sem saldo disponível!'); return; }
+
+  document.getElementById('wd-available').textContent = fmtMoney(available);
+  document.getElementById('wd-pixkey').textContent = me.pixKey;
+  document.getElementById('wd-amount').max = available;
+  document.getElementById('wd-amount').value = available.toFixed(2);
+  openOv('ov-withdrawal');
+}
+
+async function confirmWithdrawal() {
+  const me = getAgent(currentUser.id); if(!me) return;
+  const amtEl = document.getElementById('wd-amount');
+  const amount = parseFloat(amtEl.value);
+  if(!amount || amount <= 0) { toast('⚠️ Valor inválido!'); return; }
+
+  const allDone = TICKETS.filter(t=>t.agent===me.id&&t.status==='done');
+  const total = allDone.reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0) + me.earnings;
+  const withdrawn = (WITHDRAWALS[me.id]||[]).filter(w=>w.status==='completed').reduce((s,w)=>s+w.amount,0);
+  const pendingAmt = (WITHDRAWALS[me.id]||[]).filter(w=>w.status==='pending').reduce((s,w)=>s+w.amount,0);
+  const available = total - withdrawn - pendingAmt;
+  if(amount > available) { toast('⚠️ Valor maior que disponível!'); return; }
+
+  const btn = document.getElementById('wd-confirm-btn');
+  btn.disabled = true; btn.textContent = '⏳ Processando...';
+
+  // Add as pending first
+  const wdRecord = {
+    id: 'wd'+Date.now(), amount, pixKey: me.pixKey,
+    date: new Date().toISOString(), status: 'pending', txId: null, agentName: me.name
+  };
+  if(!WITHDRAWALS[me.id]) WITHDRAWALS[me.id] = [];
+  WITHDRAWALS[me.id].push(wdRecord);
+  if(window._fbSaveWithdrawals) window._fbSaveWithdrawals();
+
+  // Call MisticPay
+  const result = await misticPayWithdraw(me.pixKey, amount, me.name);
+
+  if(result.success) {
+    wdRecord.status = 'completed';
+    wdRecord.txId = result.txId;
+    toast('✅ Saque de '+fmtMoney(amount)+' processado! Pix enviado para '+me.pixKey);
+  } else {
+    wdRecord.status = 'failed';
+    wdRecord.error = result.error || 'Erro na API';
+    toast('❌ Erro no saque: '+(result.error||'Tente novamente'));
+  }
+
+  if(window._fbSaveWithdrawals) window._fbSaveWithdrawals();
+  btn.disabled = false; btn.textContent = '💸 Confirmar Saque';
+  closeOv('ov-withdrawal');
+  renderAgentEarnings();
+  updateWithdrawalBadge();
+}
+
+function updateWithdrawalBadge() {
+  const badge = document.getElementById('nb-withdrawals');
+  if(!badge) return;
+  const hasPending = Object.values(WITHDRAWALS).some(list=>list.some(w=>w.status==='pending'));
+  badge.style.display = hasPending ? '' : 'none';
+  badge.textContent = '!';
+}
+
+function renderAdminWithdrawals() {
+  const allWd = [];
+  Object.entries(WITHDRAWALS).forEach(([agId, list]) => {
+    const ag = getAgent(agId);
+    list.forEach(w => allWd.push({...w, agentName: ag?ag.name:agId, agId}));
+  });
+  allWd.sort((a,b)=>new Date(b.date)-new Date(a.date));
+
+  const totalPaid = allWd.filter(w=>w.status==='completed').reduce((s,w)=>s+w.amount,0);
+  const totalPending = allWd.filter(w=>w.status==='pending').reduce((s,w)=>s+w.amount,0);
+
+  let html = '<div class="stats-row" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px">'
+    +'<div class="stat-box green"><div class="s-label">Total Sacado</div><div class="s-val">'+fmtMoney(totalPaid)+'</div></div>'
+    +'<div class="stat-box gold"><div class="s-label">Processando</div><div class="s-val">'+fmtMoney(totalPending)+'</div></div>'
+    +'<div class="stat-box purple"><div class="s-label">Solicitações</div><div class="s-val">'+allWd.length+'</div></div>'
+    +'</div>';
+
+  if(allWd.length === 0) {
+    html += '<div class="empty-box"><div class="e-icon">💸</div><p>Nenhum saque solicitado ainda.</p></div>';
+  } else {
+    html += '<div class="data-table"><table><thead><tr><th>Atendente</th><th>Data</th><th>Valor</th><th>Chave Pix</th><th>Status</th><th>TX ID</th></tr></thead><tbody>'
+      +allWd.map(w=>'<tr>'
+        +'<td><strong style="cursor:pointer;color:var(--purple3)" onclick="openAdminAgentProfile(\''+w.agId+'\')">'+w.agentName+'</strong></td>'
+        +'<td style="font-size:11px;color:var(--text3)">'+fmtDate(w.date)+'</td>'
+        +'<td style="color:var(--yellow);font-weight:800">'+fmtMoney(w.amount)+'</td>'
+        +'<td style="font-size:11px;color:var(--text3)">'+w.pixKey+'</td>'
+        +'<td>'+wBadge(w.status)+'</td>'
+        +'<td style="font-size:10px;color:var(--text3);font-family:var(--mono)">'+(w.txId||'—')+'</td>'
+        +'</tr>').join('')
+      +'</tbody></table></div>';
+  }
+  document.getElementById('adm-withdrawals-content').innerHTML = html;
+}
+
+function renderAgentProfile() {
+  const me = getAgent(currentUser.id); if(!me) return;
+  document.getElementById('ag-profile-content').innerHTML =
+    '<div style="max-width:500px">'
+    +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:26px;margin-bottom:16px">'
+    +'<div style="display:flex;align-items:center;gap:16px;margin-bottom:22px">'
+    +'<div class="ag-avatar" style="width:60px;height:60px;font-size:22px">'+initials(me.name)+'</div>'
+    +'<div><div style="font-size:18px;font-weight:800">'+me.name+'</div><div class="ag-login-tag" style="margin-top:4px">@'+me.login+'</div></div>'
+    +'</div>'
+    +'<div style="font-size:10px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px">Produtos que atendo</div>'
+    +'<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:22px">'
+    +me.products.map(pid=>{const p=getProd(pid);return p?'<span class="ag-prod-tag">'+p.emoji+' '+p.name+' '+p.plan+'</span>':'';}).join('')
+    +'</div>'
+    +'<button class="act-btn" onclick="openChangeSector()" style="width:100%;padding:11px">🔄 Alterar Setor</button>'
+    +'</div>'
+    +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:26px">'
+    +'<div style="font-size:14px;font-weight:700;margin-bottom:16px">💳 Chave Pix para Saques</div>'
+    +'<div style="font-size:12px;color:var(--text3);margin-bottom:12px">Informe sua chave Pix (CPF, telefone, e-mail ou chave aleatória)</div>'
+    +'<div style="display:flex;gap:8px">'
+    +'<input id="pix-key-input" type="text" placeholder="Sua chave Pix..." value="'+(me.pixKey||'')+'" style="flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:10px;font-size:13px;font-family:var(--font);outline:none"/>'
+    +'<button class="act-btn fill" onclick="savePixKey()">Salvar</button>'
+    +'</div>'
+    +(me.pixKey?'<div style="margin-top:10px;font-size:12px;color:var(--green)">✅ Chave cadastrada: '+me.pixKey+'</div>':'')
+    +'</div>'
+    +'</div>';
+}
+
+function savePixKey() {
+  const me = getAgent(currentUser.id); if(!me) return;
+  const key = document.getElementById('pix-key-input').value.trim();
+  if(!key) { toast('⚠️ Informe uma chave Pix!'); return; }
+  me.pixKey = key;
+  if(window._fbAddAgent) window._fbAddAgent();
+  toast('✅ Chave Pix salva!');
+  renderAgentProfile();
+}
+
+function openAdminAgentProfile(agId) {
+  window._viewingAgentId = agId;
+  navTo('admin-agent-profile');
+  renderAdminAgentProfile(agId);
+}
+
+function renderAdminAgentProfile(agId) {
+  agId = agId || window._viewingAgentId;
+  const a = getAgent(agId); if(!a) return;
+  const allDone = TICKETS.filter(t=>t.agent===agId&&t.status==='done');
+  const total = allDone.reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0) + a.earnings;
+  const withdrawn = (WITHDRAWALS[agId]||[]).filter(w=>w.status==='completed').reduce((s,w)=>s+w.amount,0);
+  const available = total - withdrawn;
+
+  // Monthly breakdown
+  const monthly = getMonthlyEarnings(agId);
+  const sortedM = Object.keys(monthly).sort().reverse();
+  const monthNames = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+  // Selected month for this view
+  const selM = window._adminAgentMonth || '';
+  const filteredT = selM ? allDone.filter(t=>{const d=new Date(t.closedAt||t.createdAt);return d.getFullYear()+'-'+(String(d.getMonth()+1).padStart(2,'0'))===selM;}) : allDone;
+
+  document.getElementById('page-admin-agent-profile').querySelector('.page-title').textContent = '👤 '+a.name;
+
+  let html = '<div style="display:flex;align-items:center;gap:14px;margin-bottom:20px">'
+    +'<div class="ag-avatar" style="width:56px;height:56px;font-size:20px">'+initials(a.name)+'</div>'
+    +'<div><div style="font-size:17px;font-weight:800">'+a.name+'</div>'
+    +'<div class="ag-login-tag" style="margin-top:4px">@'+a.login+' · '+(a.pixKey?'Pix: '+a.pixKey:'⚠️ Sem chave Pix')+'</div></div>'
+    +'</div>'
+    +'<div class="stats-row" style="grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px">'
+    +'<div class="stat-box green"><div class="s-label">Total Ganho</div><div class="s-val">'+fmtMoney(total)+'</div></div>'
+    +'<div class="stat-box gold"><div class="s-label">Disponível</div><div class="s-val">'+fmtMoney(available)+'</div></div>'
+    +'<div class="stat-box purple"><div class="s-label">Já Sacado</div><div class="s-val">'+fmtMoney(withdrawn)+'</div></div>'
+    +'<div class="stat-box"><div class="s-label">Tickets</div><div class="s-val">'+allDone.length+'</div></div>'
+    +'</div>'
+    // Monthly summary
+    +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:18px">'
+    +'<div style="font-size:12px;font-weight:700;margin-bottom:12px">📅 Faturamento por Mês</div>'
+    +'<canvas id="admin-agent-chart" height="100"></canvas>'
+    +'</div>'
+    // Month filter + tickets
+    +'<div class="data-table"><div class="table-top" style="flex-wrap:wrap;gap:8px"><h3>Tickets Finalizados</h3>'
+    +'<div style="display:flex;gap:5px;flex-wrap:wrap">'
+    +'<button class="f-btn '+(selM===''?'on':'')+'" onclick="window._adminAgentMonth=\'\';renderAdminAgentProfile()">Todos</button>'
+    +sortedM.map(m=>{const [y,mo]=m.split('-');const label=monthNames[parseInt(mo)-1]+'/'+y.slice(2);return'<button class="f-btn '+(selM===m?'on':'')+'" onclick="window._adminAgentMonth=\''+m+'\';renderAdminAgentProfile()">'+label+' · '+fmtMoney(monthly[m])+'</button>';}).join('')
+    +'</div></div>'
+    +(filteredT.length===0
+      ? '<div class="empty-box"><div class="e-icon">📭</div><p>Nenhum ticket.</p></div>'
+      : '<table><thead><tr><th>ID</th><th>Produto</th><th>Tipo</th><th>Finalizado</th><th>Comissão</th></tr></thead><tbody>'
+        +filteredT.map(t=>'<tr><td><span class="t-id">'+t.id+'</span></td><td>'+(t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join(', ')+'</td><td style="font-size:11px;color:var(--text3)">'+t.type+'</td><td style="font-size:11px;color:var(--text3)">'+fmtDate(t.closedAt)+'</td><td style="color:var(--green);font-weight:800">'+fmtMoney(COMMISSIONS[t.product]||0)+'</td></tr>').join('')
+        +'</tbody></table>')
+    +'</div>'
+    // Withdrawals
+    +((WITHDRAWALS[agId]||[]).length > 0
+      ? '<div class="data-table" style="margin-top:18px"><div class="table-top"><h3>Saques</h3></div><table><thead><tr><th>Data</th><th>Valor</th><th>Status</th><th>TX ID</th></tr></thead><tbody>'
+        +(WITHDRAWALS[agId]||[]).slice().reverse().map(w=>'<tr><td style="font-size:11px;color:var(--text3)">'+fmtDate(w.date)+'</td><td style="color:var(--yellow);font-weight:800">'+fmtMoney(w.amount)+'</td><td>'+wBadge(w.status)+'</td><td style="font-size:10px;font-family:var(--mono);color:var(--text3)">'+(w.txId||'—')+'</td></tr>').join('')
+        +'</tbody></table></div>'
+      : '');
+
+  document.getElementById('adm-agent-profile-content').innerHTML = html;
+
+  // Chart
+  if(sortedM.length > 0) {
+    setTimeout(()=>{
+      const canvas = document.getElementById('admin-agent-chart');
+      if(!canvas) return;
+      if(canvas._chart) canvas._chart.destroy();
+      const last6 = sortedM.slice().reverse().slice(-6);
+      canvas._chart = new Chart(canvas, {
+        type: 'bar',
+        data: {
+          labels: last6.map(m=>{const [y,mo]=m.split('-');return monthNames[parseInt(mo)-1]+'/'+y.slice(2);}),
+          datasets: [{
+            label: 'Ganhos (R$)',
+            data: last6.map(m=>monthly[m]),
+            backgroundColor: 'rgba(245,197,24,0.4)',
+            borderColor: 'rgba(245,197,24,1)',
+            borderWidth: 2,
+            borderRadius: 8
+          }]
+        },
+        options: {
+          responsive:true,
+          plugins:{legend:{display:false}},
+          scales:{
+            x:{grid:{color:'rgba(255,255,255,.05)'},ticks:{color:'#94a3b8',font:{size:11}}},
+            y:{grid:{color:'rgba(255,255,255,.05)'},ticks:{color:'#94a3b8',font:{size:11},callback:v=>'R$ '+v.toFixed(0)}}
+          }
+        }
+      });
+    }, 50);
+  }
+}
 function addAgent(){const name=document.getElementById('ag-name').value.trim(),email=document.getElementById('ag-email').value.trim(),login=document.getElementById('ag-login').value.trim(),pass=document.getElementById('ag-pass').value,products=[...document.querySelectorAll('#ag-chk-grid input:checked')].map(i=>i.value);if(!name||!email||!login||!pass||products.length===0){toast('⚠️ Preencha tudo e selecione ao menos 1 produto!');return;}if(AGENTS.find(a=>a.login===login)){toast('⚠️ Login já em uso!');return;}if(login===ADMIN_CRED.login){toast('⚠️ Login reservado!');return;}AGENTS.push({id:'ag'+Date.now(),name,email,login,pass,products,closed:0,earnings:0});closeOv('ov-add-agent');['ag-name','ag-email','ag-login','ag-pass'].forEach(id=>document.getElementById(id).value='');document.querySelectorAll('#ag-chk-grid input').forEach(i=>i.checked=false);toast(`✅ Atendente ${name} cadastrado! Login: ${login}`);if(window._fbAddAgent)window._fbAddAgent();navTo('admin-agents');}
 // ── Phone Lookup ──
 function normalizePhone(p){return p.replace(/\D/g,'');}
