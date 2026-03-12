@@ -446,7 +446,7 @@ hr.div{border:none;border-top:1px solid var(--border);margin:18px 0;}
       </div>
       <div style="padding:10px 16px 16px;position:relative;z-index:2">
         <div style="height:1px;background:var(--border);margin-bottom:12px"></div>
-        <button onclick="currentGoogleUser?showGoogleDashboard(currentGoogleUser):signInWithGoogle()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;border:1.5px solid #e0e0e0;color:#3c3c3c;padding:12px 16px;border-radius:12px;font-size:14px;font-weight:600;font-family:var(--font);cursor:pointer;transition:.2s;box-shadow:0 1px 6px rgba(0,0,0,.15)" onmouseover="this.style.boxShadow='0 3px 12px rgba(0,0,0,.2)'" onmouseout="this.style.boxShadow='0 1px 6px rgba(0,0,0,.15)'">
+        <button onclick="window.currentGoogleUser?showGoogleDashboard(window.currentGoogleUser):signInWithGoogle()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;border:1.5px solid #e0e0e0;color:#3c3c3c;padding:12px 16px;border-radius:12px;font-size:14px;font-weight:600;font-family:var(--font);cursor:pointer;transition:.2s;box-shadow:0 1px 6px rgba(0,0,0,.15)" onmouseover="this.style.boxShadow='0 3px 12px rgba(0,0,0,.2)'" onmouseout="this.style.boxShadow='0 1px 6px rgba(0,0,0,.15)'">
           <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z"/></svg>
           Continuar com Google — ver meus chamados
         </button>
@@ -957,21 +957,21 @@ window.signInWithGoogle = async function() {
   }
 };
 
-// Current Google user
-let currentGoogleUser = null;
+// Current Google user - exposed globally
+window.currentGoogleUser = null;
 let _lastSeenMsgCounts = {}; // ticketId -> msg count seen by client
 
 function showGoogleDashboard(user) {
-  currentGoogleUser = user;
+  window.currentGoogleUser = user;
   const myTickets = TICKETS.filter(t =>
     (t.googleUid && t.googleUid === user.uid) ||
     (t.clientEmail && t.clientEmail.toLowerCase() === user.email.toLowerCase())
   );
   showPortalScreen(user, myTickets);
 }
+window.showGoogleDashboard = showGoogleDashboard;
 
 function showPortalScreen(user, tickets) {
-  // Fill header
   const nameEl = document.getElementById('prt-name');
   const emailEl = document.getElementById('prt-email');
   const photoEl = document.getElementById('prt-photo');
@@ -988,7 +988,6 @@ function showPortalScreen(user, tickets) {
     if(photoEl) photoEl.style.display = 'none';
   }
 
-  // Render tickets sorted by most recent activity
   const listEl = document.getElementById('prt-tickets-list');
   if(!listEl) return;
 
@@ -1036,18 +1035,17 @@ function showPortalScreen(user, tickets) {
   showScreen('portal');
 }
 
-function openClientChatPortal(ticketId) {
+window.openClientChatPortal = function(ticketId) {
   const t = TICKETS.find(t=>t.id===ticketId);
   if(!t) return;
-  // Mark as seen
   const agentMsgs = (t.messages||[]).filter(m=>m.isAgent).length;
   _lastSeenMsgCounts[ticketId] = agentMsgs;
   openClientChat(ticketId, 'google');
-}
+};
 
 window.signOutGoogle = async function() {
   try { await signOut(auth); } catch(e){}
-  currentGoogleUser = null;
+  window.currentGoogleUser = null;
   showScreen('client');
 };
 
@@ -1062,93 +1060,76 @@ async function requestNotifPermission() {
     _notifPermission = perm === 'granted';
   }
 }
+window.requestNotifPermission = requestNotifPermission;
 
 function showNotifPopup(title, body, onClick) {
-  // Remove existing
   const existing = document.getElementById('notif-popup-el');
   if(existing) existing.remove();
-
   const el = document.createElement('div');
   el.id = 'notif-popup-el';
   el.className = 'notif-popup';
   el.innerHTML = '<div class="np-icon">🔔</div><div class="np-body"><div class="np-title">'+title+'</div><div class="np-sub">'+body+'</div></div><div class="np-close" onclick="document.getElementById('notif-popup-el').remove()">✕</div>';
-  el.style.cursor = onClick ? 'pointer' : 'default';
-  if(onClick) el.addEventListener('click', function(e){ if(!e.target.classList.contains('np-close')) onClick(); });
+  if(onClick) { el.style.cursor='pointer'; el.addEventListener('click',function(e){if(!e.target.classList.contains('np-close'))onClick();}); }
   document.body.appendChild(el);
   setTimeout(()=>{ if(el.parentNode) el.remove(); }, 6000);
-
-  // Also send system notification if permission granted
   if(_notifPermission && Notification.permission === 'granted') {
-    try { new Notification(title, {body, icon:'/favicon.ico'}); } catch(e){}
+    try { new Notification(title, {body}); } catch(e){}
   }
 }
+window.showNotifPopup = showNotifPopup;
 
-// Watch for new agent messages on client's tickets
+function notifyStaffNewTicket(ticket) {
+  const prods = (ticket.products||[ticket.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join(', ');
+  showNotifPopup('🎫 Novo chamado chegou!', ticket.clientName+' · '+prods, ()=>{if(window.currentUser)navTo('admin-tickets');});
+}
+window.notifyStaffNewTicket = notifyStaffNewTicket;
+
 let _prevMsgCounts = {};
 function checkForNewAgentMessages() {
-  if(!currentGoogleUser) return;
+  if(!window.currentGoogleUser) return;
+  const u = window.currentGoogleUser;
   const myTickets = TICKETS.filter(t =>
-    (t.googleUid && t.googleUid === currentGoogleUser.uid) ||
-    (t.clientEmail && t.clientEmail.toLowerCase() === currentGoogleUser.email.toLowerCase())
+    (t.googleUid && t.googleUid === u.uid) ||
+    (t.clientEmail && t.clientEmail.toLowerCase() === u.email.toLowerCase())
   );
   myTickets.forEach(t => {
     const agentMsgs = (t.messages||[]).filter(m=>m.isAgent);
     const prev = _prevMsgCounts[t.id] || 0;
-    if(agentMsgs.length > prev) {
+    if(agentMsgs.length > prev && prev > 0) {
       const lastMsg = agentMsgs[agentMsgs.length-1];
       const prods = (t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join(', ');
-      showNotifPopup('💬 Resposta no seu chamado!', prods+': '+lastMsg.text.slice(0,60), ()=>openClientChatPortal(t.id));
-      _prevMsgCounts[t.id] = agentMsgs.length;
-    } else if(prev===0) {
-      _prevMsgCounts[t.id] = agentMsgs.length;
+      showNotifPopup('💬 Resposta no seu chamado!', prods+': '+lastMsg.text.slice(0,60), ()=>window.openClientChatPortal(t.id));
     }
+    _prevMsgCounts[t.id] = agentMsgs.length;
   });
 }
 
-// Agent/admin notification when new ticket is created
-function notifyStaffNewTicket(ticket) {
-  const prods = (ticket.products||[ticket.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join(', ');
-  showNotifPopup('🎫 Novo chamado chegou!', ticket.clientName+' · '+prods, ()=>{if(currentUser)navTo('admin-tickets');});
-  if(_notifPermission && Notification.permission === 'granted') {
-    try { new Notification('🎫 Novo chamado!', {body: ticket.clientName+' abriu: '+prods}); } catch(e){}
-  }
-}
-
-// Watch for new tickets (for agents/admin)
-let _prevTicketCount = 0;
+let _prevTicketCount = -1;
 function checkForNewTickets() {
-  if(!currentUser) return;
+  if(!window.currentUser) return;
   const openCount = TICKETS.filter(t=>t.status==='open').length;
-  if(_prevTicketCount > 0 && openCount > _prevTicketCount) {
-    const newest = TICKETS.filter(t=>t.status==='open').slice(-1)[0];
+  if(_prevTicketCount >= 0 && openCount > _prevTicketCount) {
+    const newest = [...TICKETS].filter(t=>t.status==='open').slice(-1)[0];
     if(newest) notifyStaffNewTicket(newest);
   }
   _prevTicketCount = openCount;
 }
 
-// Periodic check
-setInterval(()=>{
-  checkForNewAgentMessages();
-  checkForNewTickets();
-}, 3000);
+setInterval(()=>{ checkForNewAgentMessages(); checkForNewTickets(); }, 3000);
 
-// startTicket from portal context  
-function startTicketPortal(type) {
+window.startTicketPortal = function(type) {
   pendingType = type;
   const labels = {suporte:'🛠️ Suporte Técnico',resgatar:'🎁 Resgatar Produto',renovacao:'🔄 Renovar Assinatura',cancelamento:'❌ Cancelamento',duvida:'❓ Dúvida Geral'};
   document.getElementById('ov-ticket-title').textContent = '📩 '+labels[type];
-  // Pre-fill name/email if Google user
-  if(currentGoogleUser) {
+  if(window.currentGoogleUser) {
     const nameEl = document.getElementById('tk-name');
-    const emailEl = document.getElementById('tk-email');
-    if(nameEl && !nameEl.value) nameEl.value = currentGoogleUser.displayName||'';
-    // Don't overwrite phone if already set
+    if(nameEl && !nameEl.value) nameEl.value = window.currentGoogleUser.displayName||'';
   }
-  // Show image tip for suporte
   const banner = document.getElementById('img-tip-banner');
   if(banner) banner.style.display = type==='suporte' ? 'flex' : 'none';
   openOv('ov-ticket');
-}
+};
+
 
 // Check if user was already signed in (page refresh)
 onAuthStateChanged(auth, user => {
@@ -1221,9 +1202,9 @@ function startTicket(type){
   const banner = document.getElementById('img-tip-banner');
   if(banner) banner.style.display = type==='suporte' ? 'flex' : 'none';
   // Pre-fill if Google user
-  if(currentGoogleUser) {
+  if(window.currentGoogleUser) {
     const nameEl = document.getElementById('tk-name');
-    if(nameEl && !nameEl.value) nameEl.value = currentGoogleUser.displayName||'';
+    if(nameEl && !nameEl.value) nameEl.value = window.currentGoogleUser.displayName||'';
   }
   openOv('ov-ticket');
 }
@@ -1471,11 +1452,11 @@ function submitTicket(){
     if(window._fbFinish) window._fbFinish(name,email,desc,attachment,fileInput);
     else {
       const ticketId=genId(),ticketCode=genCode();
-      const newTicket={id:ticketId,code:ticketCode,clientName:name,clientEmail:email,googleUid:currentGoogleUser?currentGoogleUser.uid:null,products:[...selectedProducts],product:selectedProducts[0],type:pendingType||'duvida',desc,attachment:attachment||null,status:'open',agent:null,createdAt:new Date().toISOString(),messages:[]};
+      const newTicket={id:ticketId,code:ticketCode,clientName:name,clientEmail:email,googleUid:window.currentGoogleUser?window.currentGoogleUser.uid:null,products:[...selectedProducts],product:selectedProducts[0],type:pendingType||'duvida',desc,attachment:attachment||null,status:'open',agent:null,createdAt:new Date().toISOString(),messages:[]};
       TICKETS.unshift(newTicket);
       notifyStaffNewTicket(newTicket);
       closeOv('ov-ticket');showTicketCode(ticketCode);
-      if(currentGoogleUser) setTimeout(()=>showGoogleDashboard(currentGoogleUser),800);
+      if(window.currentGoogleUser) setTimeout(()=>showGoogleDashboard(window.currentGoogleUser),800);
       document.getElementById('tk-name').value='';document.getElementById('tk-email').value='';document.getElementById('tk-desc').value='';
       if(fileInput)fileInput.value='';selectedProducts=[];pendingType='';
       document.querySelectorAll('.prod-card').forEach(c=>c.classList.remove('sel'));
