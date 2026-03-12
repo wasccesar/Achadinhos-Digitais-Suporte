@@ -5,1597 +5,686 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Suporte — Achadinhos Digitais</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg:       #08080f;
-  --bg2:      #0e0e1a;
-  --surface:  #13131f;
-  --surface2: #1c1c2e;
-  --border:   #2a2a42;
-  --border2:  #3d3d60;
-  --purple:   #7c3aed;
-  --purple2:  #9f67ff;
-  --purple3:  #c4a3ff;
-  --purple-glow: rgba(124,58,237,.35);
-  --gold:     #d4a853;
-  --green:    #34d399;
-  --red:      #f87171;
-  --text:     #e8e8f8;
-  --text2:    #a0a0c0;
-  --text3:    #6060a0;
-  --font-display: 'Playfair Display', serif;
-  --font-body:    'Outfit', sans-serif;
-  --font-mono:    'JetBrains Mono', monospace;
+:root{
+  --bg:#09090e;--bg2:#111119;--surface:#16161f;--surface2:#1e1e2a;
+  --border:#28283a;--border2:#3a3a55;
+  --purple:#7c3aed;--purple2:#9b5cff;--purple3:#c5a3ff;--pglow:rgba(124,58,237,.3);
+  --yellow:#f5c518;--yellow2:#ffe066;--yglow:rgba(245,197,24,.25);
+  --green:#22d37e;--red:#f87171;
+  --text:#f0f0fa;--text2:#9090b0;--text3:#55557a;
+  --font:'Plus Jakarta Sans',sans-serif;--mono:'JetBrains Mono',monospace;
 }
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-weight:400;min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
+body::before{content:'';position:fixed;top:-20%;left:50%;transform:translateX(-50%);width:70vw;height:60vh;background:radial-gradient(ellipse,rgba(124,58,237,.1) 0%,transparent 70%);pointer-events:none;z-index:0;}
 
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+.screen{display:none;position:relative;z-index:1;min-height:100vh;}
+.screen.active{display:flex;flex-direction:column;}
 
-html { scroll-behavior: smooth; }
+/* file input */
+input[type=file]{color:var(--text2);}
+input[type=file]::file-selector-button{background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:7px 14px;border-radius:8px;font-family:var(--font);font-size:12px;cursor:pointer;margin-right:10px;transition:.2s;}
+input[type=file]::file-selector-button:hover{border-color:var(--purple2);color:var(--purple3);}
 
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-body);
-  font-weight: 400;
-  min-height: 100vh;
-  overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
-}
+/* ── LOGIN ── */
+#screen-login{align-items:center;justify-content:center;padding:24px;}
+.login-card{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:44px 36px;box-shadow:0 0 80px rgba(124,58,237,.12),0 40px 80px rgba(0,0,0,.5);position:relative;}
+.login-card::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:55%;height:1px;background:linear-gradient(90deg,transparent,var(--purple2),transparent);}
+.login-logo{text-align:center;margin-bottom:32px;}
+.login-logo .brand{font-size:22px;font-weight:800;line-height:1.2;}
+.login-logo .brand span{color:var(--yellow);}
+.login-logo .sub{font-size:12px;color:var(--text3);font-family:var(--mono);margin-top:5px;letter-spacing:.08em;}
+.login-tabs{display:flex;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:4px;margin-bottom:24px;gap:4px;}
+.login-tab{flex:1;padding:9px;border-radius:9px;border:none;background:none;color:var(--text2);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;transition:.2s;}
+.login-tab.active{background:var(--purple);color:#fff;box-shadow:0 0 20px var(--pglow);}
+.fgroup{margin-bottom:16px;}
+.fgroup label{display:block;font-size:11px;font-weight:600;color:var(--text3);margin-bottom:7px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;}
+.fgroup input,.fgroup textarea,.fgroup select{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:13px 15px;border-radius:10px;font-size:14px;font-family:var(--font);outline:none;transition:.2s;appearance:none;}
+.fgroup input:focus,.fgroup textarea:focus,.fgroup select:focus{border-color:var(--purple2);box-shadow:0 0 0 3px rgba(155,92,255,.1);}
+.fgroup select option{background:var(--surface);}
+.fgroup textarea{resize:vertical;min-height:90px;line-height:1.6;}
+.btn-primary{width:100%;background:linear-gradient(135deg,var(--purple),#4c1d95);border:none;color:#fff;padding:14px;border-radius:11px;font-size:15px;font-weight:700;font-family:var(--font);cursor:pointer;transition:.3s;box-shadow:0 4px 28px var(--pglow);margin-top:6px;}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 36px var(--pglow);}
+.login-error{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.3);color:var(--red);padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px;display:none;}
+.login-error.show{display:block;}
+.client-link{text-align:center;margin-top:18px;font-size:13px;color:var(--text3);}
+.client-link a{color:var(--purple3);text-decoration:none;font-weight:600;}
 
-/* ── Grain overlay ── */
-body::after {
-  content:'';
-  position:fixed; inset:0; pointer-events:none; z-index:9999;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-  opacity: .4;
-}
+/* ── CLIENT CHAT ── */
+#screen-client{align-items:center;justify-content:center;background:var(--bg);padding:20px;}
+#screen-client::after{content:'';position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(rgba(124,58,237,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(124,58,237,.04) 1px,transparent 1px);background-size:48px 48px;z-index:0;}
 
-/* ── Purple ambient glow ── */
-body::before {
-  content:'';
-  position:fixed; top:-30%; left:50%; transform:translateX(-50%);
-  width:80vw; height:80vh;
-  background: radial-gradient(ellipse, rgba(124,58,237,.12) 0%, transparent 70%);
-  pointer-events:none; z-index:0;
-}
+.chat-wrapper{position:relative;z-index:2;width:100%;max-width:440px;display:flex;flex-direction:column;animation:popIn .4s cubic-bezier(.34,1.56,.64,1);}
+@keyframes popIn{from{opacity:0;transform:scale(.93) translateY(16px)}to{opacity:1;transform:none}}
 
-/* ═══════════════ SCREENS ═══════════════ */
-.screen { display:none; position:relative; z-index:1; min-height:100vh; }
-.screen.active { display:flex; flex-direction:column; }
-/* Client is default on load - set via JS below */
+.chat-header{background:linear-gradient(135deg,var(--purple) 0%,#3b0d8a 100%);border-radius:24px 24px 0 0;padding:22px 24px 20px;display:flex;align-items:center;gap:14px;position:relative;overflow:hidden;}
+.chat-header::before{content:'';position:absolute;top:-40px;right:-40px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.06);}
+.chat-header::after{content:'';position:absolute;bottom:-30px;left:20px;width:80px;height:80px;border-radius:50%;background:rgba(245,197,24,.08);}
+.chat-avatar{width:52px;height:52px;border-radius:16px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;box-shadow:0 4px 16px rgba(0,0,0,.3);position:relative;z-index:1;}
+.chat-header-info{position:relative;z-index:1;}
+.chat-header-name{font-size:17px;font-weight:800;color:#fff;}
+.chat-header-sub{font-size:12px;color:rgba(255,255,255,.65);margin-top:2px;}
+.online-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:5px;box-shadow:0 0 8px var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 
-/* ═══════════════ LOGIN SCREEN ═══════════════ */
-#screen-login {
-  align-items:center; justify-content:center;
-  background: var(--bg);
-}
+.chat-body{background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 24px 24px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.5),0 0 0 1px rgba(124,58,237,.1);}
 
-.login-card {
-  width: 100%; max-width: 420px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 24px;
-  padding: 48px 40px;
-  position: relative;
-  box-shadow: 0 0 80px rgba(124,58,237,.15), 0 40px 80px rgba(0,0,0,.6);
-  animation: fadeUp .5s ease;
-}
+.chat-messages{padding:20px 20px 8px;display:flex;flex-direction:column;gap:8px;}
+.bot-msg{display:flex;gap:10px;align-items:flex-start;animation:msgIn .3s ease;}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.bot-msg-avatar{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,var(--purple),#4c1d95);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.bot-msg-bubble{background:var(--surface2);border:1px solid var(--border);border-radius:4px 16px 16px 16px;padding:12px 16px;font-size:14px;line-height:1.6;max-width:calc(100% - 50px);}
+.bot-msg-bubble strong{color:var(--yellow);}
 
-.login-card::before {
-  content:'';
-  position:absolute; top:0; left:50%; transform:translateX(-50%);
-  width:60%; height:1px;
-  background: linear-gradient(90deg, transparent, var(--purple2), transparent);
-}
+.chat-divider{text-align:center;font-size:11px;color:var(--text3);font-family:var(--mono);padding:4px 0 2px;letter-spacing:.05em;}
 
-.login-logo {
-  text-align:center; margin-bottom:36px;
-}
-.login-logo .brand {
-  font-family: var(--font-display);
-  font-size: 26px; font-weight: 700;
-  color: var(--text);
-  line-height:1.2;
-}
-.login-logo .brand span { color: var(--purple2); }
-.login-logo .sub {
-  font-size: 12px; color: var(--text3);
-  font-family: var(--font-mono);
-  margin-top: 6px; letter-spacing:.08em;
-}
+.chat-options{padding:10px 16px 18px;display:flex;flex-direction:column;gap:8px;}
+.chat-option{display:flex;align-items:center;gap:12px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:13px 15px;cursor:pointer;transition:.2s;text-align:left;font-family:var(--font);font-size:14px;font-weight:500;color:var(--text);position:relative;overflow:hidden;width:100%;}
+.chat-option::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(124,58,237,.08),transparent);opacity:0;transition:.2s;}
+.chat-option:hover{border-color:var(--purple2);transform:translateX(3px);}
+.chat-option:hover::before{opacity:1;}
+.chat-option .opt-icon{font-size:22px;flex-shrink:0;}
+.chat-option .opt-text{flex:1;}
+.chat-option .opt-title{font-weight:700;font-size:14px;}
+.chat-option .opt-sub{font-size:11px;color:var(--text3);margin-top:1px;}
+.chat-option .opt-arrow{color:var(--purple3);font-size:15px;flex-shrink:0;transition:.2s;}
+.chat-option:hover .opt-arrow{transform:translateX(3px);}
+.chat-option.y{border-color:rgba(245,197,24,.3);background:rgba(245,197,24,.04);}
+.chat-option.y:hover{border-color:var(--yellow);}
+.chat-option.y .opt-arrow{color:var(--yellow);}
 
-.login-tabs {
-  display:flex; background: var(--bg2);
-  border:1px solid var(--border); border-radius:12px;
-  padding:4px; margin-bottom:28px; gap:4px;
-}
-.login-tab {
-  flex:1; padding:9px; border-radius:9px; border:none;
-  background:none; color:var(--text2); font-family:var(--font-body);
-  font-size:13px; font-weight:500; cursor:pointer; transition:.25s;
-}
-.login-tab.active {
-  background: var(--purple); color:#fff;
-  box-shadow: 0 0 20px var(--purple-glow);
-}
+.internal-link-area{text-align:center;margin-top:14px;position:relative;z-index:2;}
+.internal-link-area button{background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;font-family:var(--mono);letter-spacing:.05em;padding:4px 8px;border-radius:6px;transition:.2s;}
+.internal-link-area button:hover{color:var(--text2);}
 
-.form-field { margin-bottom:16px; }
-.form-field label {
-  display:block; font-size:11px; font-weight:500;
-  color:var(--text3); margin-bottom:8px;
-  font-family:var(--font-mono); letter-spacing:.1em; text-transform:uppercase;
-}
-.form-field input {
-  width:100%; background:var(--bg2); border:1px solid var(--border);
-  color:var(--text); padding:13px 16px; border-radius:10px;
-  font-size:15px; font-family:var(--font-body); outline:none;
-  transition:border-color .2s, box-shadow .2s;
-}
-.form-field input:focus {
-  border-color: var(--purple2);
-  box-shadow: 0 0 0 3px rgba(159,103,255,.12);
-}
+/* ── DASHBOARD ── */
+#screen-dashboard{flex-direction:row;}
+.sidebar{width:256px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+.sidebar-brand{padding:26px 20px 18px;border-bottom:1px solid var(--border);}
+.sidebar-brand .name{font-size:14px;font-weight:800;line-height:1.3;}
+.sidebar-brand .name span{color:var(--yellow);}
+.sidebar-brand .role-pill{display:inline-block;margin-top:8px;background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.3);color:var(--purple3);padding:3px 10px;border-radius:100px;font-size:10px;font-family:var(--mono);}
+.sidebar-nav{padding:14px 10px;flex:1;}
+.nav-section{margin-bottom:22px;}
+.nav-section-label{font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:var(--text3);font-family:var(--mono);padding:0 10px 8px;display:block;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:10px;cursor:pointer;transition:.15s;font-size:13px;color:var(--text2);font-weight:500;border:none;background:none;width:100%;text-align:left;font-family:var(--font);position:relative;}
+.nav-item:hover{background:var(--surface2);color:var(--text);}
+.nav-item.active{background:rgba(124,58,237,.14);color:var(--purple3);}
+.nav-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:55%;background:var(--purple2);border-radius:0 2px 2px 0;}
+.nav-item .ni{font-size:15px;width:20px;text-align:center;}
+.nav-badge{margin-left:auto;background:var(--yellow);color:#000;font-size:10px;font-family:var(--mono);font-weight:700;padding:2px 7px;border-radius:100px;min-width:20px;text-align:center;}
+.sidebar-footer{padding:14px;border-top:1px solid var(--border);}
+.logout-btn{width:100%;background:none;border:1px solid var(--border);color:var(--text3);padding:9px;border-radius:10px;font-size:13px;cursor:pointer;font-family:var(--font);font-weight:500;transition:.2s;}
+.logout-btn:hover{border-color:var(--red);color:var(--red);}
+.dash-main{flex:1;overflow-y:auto;}
+.dash-page{display:none;padding:34px;}
+.dash-page.active{display:block;}
+.page-title{font-size:26px;font-weight:800;margin-bottom:4px;}
+.page-sub{color:var(--text3);font-size:13px;margin-bottom:28px;}
 
-.btn-primary {
-  width:100%; background: linear-gradient(135deg, var(--purple), #5b21b6);
-  border:none; color:#fff; padding:14px;
-  border-radius:12px; font-size:15px; font-weight:600;
-  font-family:var(--font-body); cursor:pointer;
-  transition:.3s; position:relative; overflow:hidden;
-  box-shadow: 0 4px 30px var(--purple-glow);
-  margin-top:8px;
-}
-.btn-primary:hover { transform:translateY(-1px); box-shadow:0 8px 40px var(--purple-glow); }
-.btn-primary:active { transform:translateY(0); }
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px;}
+.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;transition:.2s;}
+.stat-box:hover{border-color:var(--border2);}
+.stat-box .s-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);font-family:var(--mono);margin-bottom:8px;}
+.stat-box .s-val{font-size:32px;font-weight:800;line-height:1;}
+.stat-box .s-sub{font-size:11px;color:var(--text3);margin-top:5px;}
+.stat-box.purple{border-color:rgba(124,58,237,.35);}.stat-box.purple .s-val{color:var(--purple2);}
+.stat-box.green{border-color:rgba(34,211,126,.25);}.stat-box.green .s-val{color:var(--green);}
+.stat-box.gold{border-color:rgba(245,197,24,.3);}.stat-box.gold .s-val{color:var(--yellow);}
 
-.login-error {
-  background: rgba(248,113,113,.1); border:1px solid rgba(248,113,113,.3);
-  color:var(--red); padding:10px 14px; border-radius:8px;
-  font-size:13px; margin-bottom:16px; display:none;
-}
-.login-error.show { display:block; }
+.data-table{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+.table-top{padding:18px 22px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);}
+.table-top h3{font-size:15px;font-weight:700;}
+.filter-row{display:flex;gap:5px;}
+.f-btn{background:none;border:1px solid var(--border);color:var(--text3);padding:5px 12px;border-radius:7px;font-size:11px;cursor:pointer;font-family:var(--mono);transition:.15s;}
+.f-btn:hover,.f-btn.on{border-color:var(--purple);color:var(--purple3);}
+table{width:100%;border-collapse:collapse;}
+thead th{padding:11px 18px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);font-family:var(--mono);border-bottom:1px solid var(--border);}
+tbody tr{border-bottom:1px solid rgba(40,40,58,.6);transition:.12s;cursor:pointer;}
+tbody tr:hover{background:var(--surface2);}
+tbody tr:last-child{border:none;}
+td{padding:13px 18px;font-size:13px;}
+td .t-id{font-family:var(--mono);font-size:11px;color:var(--text3);}
+td .t-client{font-weight:600;}
+td .t-email{font-size:11px;color:var(--text3);font-family:var(--mono);}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:100px;font-size:10px;font-family:var(--mono);font-weight:600;letter-spacing:.04em;}
+.badge::before{content:'●';font-size:7px;}
+.b-open{background:rgba(245,197,24,.1);color:var(--yellow);border:1px solid rgba(245,197,24,.2);}
+.b-claimed{background:rgba(124,58,237,.12);color:var(--purple3);border:1px solid rgba(124,58,237,.25);}
+.b-done{background:rgba(34,211,126,.08);color:var(--green);border:1px solid rgba(34,211,126,.2);}
+.act-btn{background:none;border:1px solid var(--border);color:var(--text2);padding:5px 11px;border-radius:7px;font-size:11px;cursor:pointer;font-family:var(--mono);transition:.15s;margin-right:3px;}
+.act-btn:hover{border-color:var(--purple);color:var(--purple3);}
+.act-btn.green:hover{border-color:var(--green);color:var(--green);}
+.act-btn.red:hover{border-color:var(--red);color:var(--red);}
+.act-btn.fill{background:linear-gradient(135deg,var(--purple),#4c1d95);border-color:transparent;color:#fff;}
+.act-btn.fill:hover{opacity:.85;}
+.act-btn.yf{background:var(--yellow);border-color:transparent;color:#000;font-weight:700;}
+.act-btn.yf:hover{opacity:.85;}
 
-/* ─── CLIENT access link ─── */
-.client-link {
-  text-align:center; margin-top:20px;
-  font-size:13px; color:var(--text3);
-}
-.client-link a {
-  color:var(--purple3); text-decoration:none; font-weight:500;
-}
-.client-link a:hover { text-decoration:underline; }
+.agents-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.agent-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;transition:.2s;}
+.agent-card:hover{border-color:var(--border2);}
+.ag-top{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.ag-avatar{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;flex-shrink:0;background:linear-gradient(135deg,rgba(124,58,237,.3),rgba(76,29,149,.3));border:1px solid rgba(124,58,237,.3);color:var(--purple3);}
+.ag-name{font-weight:700;font-size:14px;}
+.ag-email{font-size:11px;color:var(--text3);}
+.ag-login-tag{font-size:10px;color:var(--yellow);font-family:var(--mono);margin-top:2px;}
+.ag-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.ag-stat{background:var(--bg2);border-radius:9px;padding:10px 12px;}
+.ag-stat .label{font-size:10px;color:var(--text3);font-family:var(--mono);}
+.ag-stat .val{font-size:20px;font-weight:800;margin-top:2px;}
+.ag-prods{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;}
+.ag-prod-tag{background:var(--surface2);border:1px solid var(--border);padding:2px 8px;border-radius:5px;font-size:10px;font-family:var(--mono);color:var(--text3);}
+.ag-earnings{background:rgba(245,197,24,.07);border:1px solid rgba(245,197,24,.2);border-radius:10px;padding:11px 14px;display:flex;justify-content:space-between;align-items:center;}
+.ag-earnings .label{font-size:11px;color:var(--yellow);font-family:var(--mono);}
+.ag-earnings .amount{font-size:20px;font-weight:800;color:var(--yellow);}
+.ag-actions{display:flex;gap:7px;margin-top:10px;}
+.ag-actions .act-btn{flex:1;text-align:center;padding:8px;}
 
-/* ═══════════════ CLIENT PORTAL ═══════════════ */
-#screen-client {
-  background: var(--bg);
-}
+.comm-list{display:flex;flex-direction:column;gap:9px;}
+.comm-row{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:15px 22px;display:grid;grid-template-columns:1fr auto auto auto;align-items:center;gap:20px;transition:.15s;}
+.comm-row:hover{border-color:var(--border2);}
+.comm-prod-name{font-weight:700;font-size:14px;}
+.comm-prod-plan{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px;}
+.comm-input{background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:9px;font-size:15px;font-weight:700;width:100px;text-align:center;outline:none;transition:.2s;font-family:var(--font);}
+.comm-input:focus{border-color:var(--yellow);box-shadow:0 0 0 3px rgba(245,197,24,.08);}
+.comm-display{font-size:20px;font-weight:800;color:var(--yellow);min-width:78px;text-align:right;}
 
-.client-nav {
-  padding: 20px 40px;
-  display:flex; align-items:center; justify-content:space-between;
-  border-bottom:1px solid var(--border);
-  background: rgba(8,8,15,.8); backdrop-filter:blur(20px);
-  position:sticky; top:0; z-index:50;
-}
-.brand-mark {
-  font-family:var(--font-display); font-size:18px; font-weight:700;
-}
-.brand-mark span { color:var(--purple2); }
+.rank-list{display:flex;flex-direction:column;gap:9px;}
+.rank-row{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:16px 22px;display:flex;align-items:center;gap:16px;transition:.15s;}
+.rank-row:hover{border-color:var(--border2);}
+.rank-row.first{border-color:rgba(245,197,24,.4);background:rgba(245,197,24,.03);}
+.rank-num{font-size:26px;font-weight:800;min-width:38px;}
+.rank-num.g{color:var(--yellow);}.rank-num.s{color:#94a3b8;}.rank-num.b{color:#b45309;}
+.rank-info{flex:1;}
+.rank-name{font-weight:700;font-size:14px;}
+.rank-sub{font-size:11px;color:var(--text3);margin-top:1px;}
+.rank-earn{font-size:24px;font-weight:800;color:var(--green);}
 
-.hero-section {
-  flex:1; display:flex; flex-direction:column;
-  align-items:center; justify-content:center;
-  padding:80px 24px 60px; text-align:center;
-}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;}
+.detail-item{background:var(--bg2);border-radius:9px;padding:12px;}
+.detail-item .label{font-size:9px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;}
+.detail-item .val{font-size:13px;font-weight:600;}
+.chat-thread{display:flex;flex-direction:column;gap:8px;max-height:220px;overflow-y:auto;padding-right:4px;}
+.chat-thread::-webkit-scrollbar{width:3px;}
+.chat-thread::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+.msg-bubble{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 13px;}
+.msg-bubble.agent{background:rgba(124,58,237,.1);border-color:rgba(124,58,237,.22);}
+.msg-from{font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:4px;}
+.msg-text{font-size:13px;line-height:1.6;}
+.chat-input-row{display:flex;gap:8px;margin-top:10px;}
+.chat-input-row input{flex:1;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:9px;font-family:var(--font);font-size:13px;outline:none;}
+.chat-input-row input:focus{border-color:var(--purple2);}
 
-.hero-eyebrow {
-  display:inline-flex; align-items:center; gap:8px;
-  font-family:var(--font-mono); font-size:11px; letter-spacing:.15em;
-  color:var(--purple3); text-transform:uppercase;
-  padding:6px 16px; border-radius:100px;
-  border:1px solid rgba(196,163,255,.2);
-  background:rgba(124,58,237,.08);
-  margin-bottom:32px;
-}
-.hero-eyebrow::before { content:'◆'; font-size:8px; }
+.live-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.22);color:#f87171;padding:3px 10px;border-radius:100px;font-size:10px;font-family:var(--mono);letter-spacing:.1em;}
+.live-dot{width:5px;height:5px;border-radius:50%;background:#f87171;animation:blink 1.2s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+.empty-box{text-align:center;padding:60px 20px;}
+.empty-box .e-icon{font-size:48px;margin-bottom:12px;opacity:.4;}
+.empty-box p{color:var(--text3);font-size:14px;}
+.chk-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.chk-item{display:flex;align-items:center;gap:7px;background:var(--bg2);border:1px solid var(--border);padding:8px 11px;border-radius:9px;cursor:pointer;transition:.15s;}
+.chk-item input{accent-color:var(--purple2);width:14px;height:14px;}
+.chk-item label{font-size:12px;cursor:pointer;}
+.chk-item:has(input:checked){border-color:var(--purple2);background:rgba(124,58,237,.07);}
+.toast{position:fixed;bottom:26px;right:26px;z-index:9000;background:var(--surface2);border:1px solid var(--purple);color:var(--text);padding:13px 18px;border-radius:13px;font-size:13px;font-weight:500;display:none;animation:msgIn .3s;box-shadow:0 0 28px var(--pglow);max-width:300px;line-height:1.5;}
+.toast.show{display:block;}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+hr.div{border:none;border-top:1px solid var(--border);margin:18px 0;}
 
-.hero-title {
-  font-family:var(--font-display);
-  font-size: clamp(42px, 7vw, 88px);
-  font-weight:900; line-height:1.0;
-  margin-bottom:20px;
-  letter-spacing:-1px;
-}
-.hero-title em {
-  font-style:normal;
-  background: linear-gradient(135deg, var(--purple2), var(--purple3));
-  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-  background-clip:text;
-}
+.overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.82);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:20px;}
+.overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:22px;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;box-shadow:0 0 80px rgba(124,58,237,.18),0 50px 100px rgba(0,0,0,.7);animation:msgIn .3s ease;position:relative;}
+.modal::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:50%;height:1px;background:linear-gradient(90deg,transparent,var(--purple2),transparent);}
+.modal-head{padding:28px 28px 0;display:flex;justify-content:space-between;align-items:flex-start;}
+.modal-head-title{font-size:21px;font-weight:800;}
+.modal-head-sub{font-size:12px;color:var(--text3);margin-top:3px;}
+.modal-close{background:var(--surface2);border:1px solid var(--border);color:var(--text2);width:34px;height:34px;border-radius:50%;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;flex-shrink:0;}
+.modal-close:hover{background:var(--border);color:var(--text);}
+.modal-body{padding:22px 28px 28px;}
+.submit-btn{width:100%;background:linear-gradient(135deg,var(--purple),#4c1d95);border:none;color:#fff;padding:14px;border-radius:12px;font-size:15px;font-weight:700;font-family:var(--font);cursor:pointer;transition:.25s;box-shadow:0 4px 28px var(--pglow);margin-top:6px;}
+.submit-btn:hover{opacity:.88;transform:translateY(-1px);}
+.prod-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;}
+.prod-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;transition:.2s;position:relative;}
+.prod-card:hover{border-color:var(--border2);}
+.prod-card.sel{border-color:var(--purple2);background:rgba(124,58,237,.08);}
+.prod-card .p-check{position:absolute;top:9px;right:9px;width:18px;height:18px;border-radius:50%;background:var(--purple);display:none;align-items:center;justify-content:center;font-size:10px;}
+.prod-card.sel .p-check{display:flex;}
+.prod-card .p-emoji{font-size:24px;display:block;margin-bottom:7px;}
+.prod-card .p-name{font-weight:700;font-size:13px;}
+.prod-card .p-plan{font-size:11px;color:var(--text3);margin-top:1px;}
 
-.hero-sub {
-  font-size:18px; color:var(--text2); max-width:460px;
-  line-height:1.7; margin-bottom:48px; font-weight:300;
-}
-
-.cta-button {
-  background: linear-gradient(135deg, var(--purple) 0%, #4c1d95 100%);
-  border:none; color:#fff; padding:20px 52px;
-  border-radius:14px; font-size:17px; font-weight:600;
-  font-family:var(--font-body); cursor:pointer;
-  box-shadow: 0 0 60px rgba(124,58,237,.4);
-  transition:.3s; position:relative; overflow:hidden;
-  letter-spacing:.01em;
-}
-.cta-button::after {
-  content:'';
-  position:absolute; inset:0;
-  background:linear-gradient(135deg,rgba(255,255,255,.15),transparent 60%);
-}
-.cta-button:hover {
-  transform:translateY(-3px);
-  box-shadow:0 0 90px rgba(124,58,237,.6);
-}
-
-/* products strip */
-.products-strip {
-  display:flex; gap:12px; flex-wrap:wrap; justify-content:center;
-  margin-top:48px; padding:0 24px;
-}
-.prod-pill {
-  background:var(--surface); border:1px solid var(--border);
-  padding:8px 18px; border-radius:100px; font-size:13px; color:var(--text2);
-  transition:.2s;
-}
-.prod-pill:hover { border-color:var(--purple); color:var(--purple3); }
-
-/* ═══════════════ MODAL ═══════════════ */
-.overlay {
-  position:fixed; inset:0; z-index:200;
-  background:rgba(0,0,0,.85); backdrop-filter:blur(10px);
-  display:none; align-items:center; justify-content:center; padding:20px;
-}
-.overlay.open { display:flex; }
-
-.modal {
-  background:var(--surface); border:1px solid var(--border2);
-  border-radius:24px; width:100%; max-width:580px;
-  max-height:92vh; overflow-y:auto;
-  box-shadow:0 0 100px rgba(124,58,237,.2), 0 60px 120px rgba(0,0,0,.8);
-  animation:fadeUp .3s ease;
-  position:relative;
-}
-.modal::before {
-  content:'';
-  position:absolute; top:0; left:50%; transform:translateX(-50%);
-  width:50%; height:1px;
-  background:linear-gradient(90deg,transparent,var(--purple2),transparent);
-}
-@keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:none} }
-
-.modal-head {
-  padding:32px 32px 0;
-  display:flex; justify-content:space-between; align-items:flex-start;
-}
-.modal-head-title {
-  font-family:var(--font-display); font-size:24px; font-weight:700;
-}
-.modal-head-sub { font-size:13px; color:var(--text3); margin-top:4px; }
-.modal-close {
-  background:var(--surface2); border:1px solid var(--border);
-  color:var(--text2); width:36px; height:36px; border-radius:50%;
-  font-size:18px; cursor:pointer; display:flex; align-items:center;
-  justify-content:center; transition:.2s; flex-shrink:0;
-}
-.modal-close:hover { background:var(--border); color:var(--text); }
-.modal-body { padding:24px 32px 32px; }
-
-/* form elements */
-.fgroup { margin-bottom:18px; }
-.fgroup label {
-  display:block; font-size:11px; font-weight:500;
-  color:var(--text3); margin-bottom:8px;
-  font-family:var(--font-mono); letter-spacing:.1em; text-transform:uppercase;
-}
-.fgroup input, .fgroup textarea, .fgroup select {
-  width:100%; background:var(--bg2); border:1px solid var(--border);
-  color:var(--text); padding:13px 16px; border-radius:12px;
-  font-size:14px; font-family:var(--font-body); outline:none;
-  transition:.2s; appearance:none;
-}
-.fgroup input:focus, .fgroup textarea:focus, .fgroup select:focus {
-  border-color:var(--purple2); box-shadow:0 0 0 3px rgba(159,103,255,.1);
-}
-.fgroup textarea { resize:vertical; min-height:90px; line-height:1.6; }
-.fgroup select option { background:var(--surface); }
-
-/* product selector grid */
-.prod-grid {
-  display:grid; grid-template-columns:repeat(2,1fr); gap:10px;
-}
-.prod-card {
-  background:var(--bg2); border:1px solid var(--border);
-  border-radius:14px; padding:16px; cursor:pointer; transition:.25s;
-  position:relative; overflow:hidden;
-}
-.prod-card::before {
-  content:''; position:absolute; inset:0;
-  background:linear-gradient(135deg,rgba(124,58,237,0),rgba(124,58,237,.08));
-  opacity:0; transition:.25s;
-}
-.prod-card:hover { border-color:var(--border2); }
-.prod-card:hover::before { opacity:1; }
-.prod-card.sel { border-color:var(--purple2); background:rgba(124,58,237,.1); }
-.prod-card.sel::before { opacity:1; }
-.prod-card .p-emoji { font-size:26px; display:block; margin-bottom:8px; }
-.prod-card .p-name { font-weight:600; font-size:14px; }
-.prod-card .p-plan { font-size:12px; color:var(--text3); margin-top:2px; }
-.prod-card .p-check {
-  position:absolute; top:10px; right:10px;
-  width:20px; height:20px; border-radius:50%;
-  background:var(--purple); display:none; align-items:center;
-  justify-content:center; font-size:11px;
-}
-.prod-card.sel .p-check { display:flex; }
-
-.submit-btn {
-  width:100%; background:linear-gradient(135deg,var(--purple),#4c1d95);
-  border:none; color:#fff; padding:15px;
-  border-radius:12px; font-size:15px; font-weight:600;
-  font-family:var(--font-body); cursor:pointer; transition:.3s;
-  box-shadow:0 4px 30px var(--purple-glow); margin-top:8px;
-}
-.submit-btn:hover { opacity:.88; transform:translateY(-1px); }
-
-/* ═══════════════ DASHBOARD SHELL ═══════════════ */
-#screen-dashboard {
-  flex-direction:row; background:var(--bg);
-}
-
-.sidebar {
-  width:260px; flex-shrink:0;
-  background:var(--surface); border-right:1px solid var(--border);
-  display:flex; flex-direction:column;
-  position:sticky; top:0; height:100vh; overflow-y:auto;
-}
-
-.sidebar-brand {
-  padding:28px 24px 20px;
-  border-bottom:1px solid var(--border);
-}
-.sidebar-brand .name {
-  font-family:var(--font-display); font-size:15px; font-weight:700;
-  line-height:1.3;
-}
-.sidebar-brand .name span { color:var(--purple2); }
-.sidebar-brand .role-pill {
-  display:inline-block; margin-top:8px;
-  background:rgba(124,58,237,.15); border:1px solid rgba(124,58,237,.3);
-  color:var(--purple3); padding:3px 10px; border-radius:100px;
-  font-size:11px; font-family:var(--font-mono);
-}
-
-.sidebar-nav { padding:16px 12px; flex:1; }
-.nav-section { margin-bottom:24px; }
-.nav-section-label {
-  font-size:9px; text-transform:uppercase; letter-spacing:.15em;
-  color:var(--text3); font-family:var(--font-mono);
-  padding:0 12px 10px; display:block;
-}
-.nav-item {
-  display:flex; align-items:center; gap:10px;
-  padding:10px 12px; border-radius:10px; cursor:pointer;
-  transition:.2s; font-size:13px; color:var(--text2);
-  border:none; background:none; width:100%; text-align:left;
-  font-family:var(--font-body); position:relative;
-}
-.nav-item:hover { background:var(--surface2); color:var(--text); }
-.nav-item.active {
-  background:rgba(124,58,237,.15); color:var(--purple3);
-}
-.nav-item.active::before {
-  content:''; position:absolute; left:0; top:50%; transform:translateY(-50%);
-  width:3px; height:60%; background:var(--purple2); border-radius:0 2px 2px 0;
-}
-.nav-item .ni { font-size:15px; width:20px; text-align:center; }
-.nav-badge {
-  margin-left:auto; background:var(--purple); color:#fff;
-  font-size:10px; font-family:var(--font-mono);
-  padding:2px 7px; border-radius:100px; min-width:20px; text-align:center;
-}
-
-.sidebar-footer {
-  padding:16px; border-top:1px solid var(--border);
-}
-.logout-btn {
-  width:100%; background:none; border:1px solid var(--border);
-  color:var(--text3); padding:10px; border-radius:10px;
-  font-size:13px; cursor:pointer; font-family:var(--font-body);
-  transition:.2s;
-}
-.logout-btn:hover { border-color:var(--red); color:var(--red); }
-
-/* ── Main content ── */
-.dash-main { flex:1; overflow-y:auto; }
-
-.dash-page { display:none; padding:36px; }
-.dash-page.active { display:block; }
-
-.page-title {
-  font-family:var(--font-display); font-size:30px; font-weight:700;
-  margin-bottom:6px;
-}
-.page-sub { color:var(--text3); font-size:14px; margin-bottom:32px; }
-
-/* stats */
-.stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:32px; }
-.stat-box {
-  background:var(--surface); border:1px solid var(--border);
-  border-radius:16px; padding:22px;
-  position:relative; overflow:hidden; transition:.2s;
-}
-.stat-box:hover { border-color:var(--border2); }
-.stat-box::after {
-  content:''; position:absolute; top:0; right:0;
-  width:60px; height:60px; border-radius:50%;
-  background: radial-gradient(circle, rgba(124,58,237,.15), transparent 70%);
-  transform:translate(20px,-20px);
-}
-.stat-box .s-label {
-  font-size:10px; text-transform:uppercase; letter-spacing:.1em;
-  color:var(--text3); font-family:var(--font-mono); margin-bottom:10px;
-}
-.stat-box .s-val {
-  font-family:var(--font-display); font-size:36px; font-weight:900;
-  line-height:1;
-}
-.stat-box .s-sub { font-size:12px; color:var(--text3); margin-top:6px; }
-.stat-box.purple { border-color:rgba(124,58,237,.4); }
-.stat-box.purple .s-val { color:var(--purple2); }
-.stat-box.green { border-color:rgba(52,211,153,.3); }
-.stat-box.green .s-val { color:var(--green); }
-.stat-box.gold { border-color:rgba(212,168,83,.3); }
-.stat-box.gold .s-val { color:var(--gold); }
-
-/* table */
-.data-table {
-  background:var(--surface); border:1px solid var(--border);
-  border-radius:18px; overflow:hidden;
-}
-.table-top {
-  padding:20px 24px; display:flex; justify-content:space-between;
-  align-items:center; border-bottom:1px solid var(--border);
-}
-.table-top h3 { font-family:var(--font-display); font-size:17px; font-weight:700; }
-.filter-row { display:flex; gap:6px; }
-.f-btn {
-  background:none; border:1px solid var(--border); color:var(--text3);
-  padding:5px 13px; border-radius:8px; font-size:11px; cursor:pointer;
-  font-family:var(--font-mono); transition:.2s; letter-spacing:.05em;
-}
-.f-btn:hover, .f-btn.on { border-color:var(--purple); color:var(--purple3); }
-
-table { width:100%; border-collapse:collapse; }
-thead th {
-  padding:12px 20px; text-align:left;
-  font-size:10px; text-transform:uppercase; letter-spacing:.1em;
-  color:var(--text3); font-family:var(--font-mono);
-  border-bottom:1px solid var(--border);
-}
-tbody tr {
-  border-bottom:1px solid rgba(42,42,66,.5); transition:.15s; cursor:pointer;
-}
-tbody tr:hover { background:var(--surface2); }
-tbody tr:last-child { border:none; }
-td { padding:15px 20px; font-size:13px; }
-td .t-id { font-family:var(--font-mono); font-size:12px; color:var(--text3); }
-td .t-client { font-weight:500; }
-td .t-email { font-size:11px; color:var(--text3); }
-
-/* badges */
-.badge {
-  display:inline-flex; align-items:center; gap:5px;
-  padding:4px 10px; border-radius:100px;
-  font-size:10px; font-family:var(--font-mono); font-weight:500;
-  letter-spacing:.05em;
-}
-.badge::before { content:'●'; font-size:7px; }
-.b-open   { background:rgba(212,168,83,.12); color:var(--gold); border:1px solid rgba(212,168,83,.25); }
-.b-claimed{ background:rgba(124,58,237,.12); color:var(--purple3); border:1px solid rgba(124,58,237,.25); }
-.b-done   { background:rgba(52,211,153,.1); color:var(--green); border:1px solid rgba(52,211,153,.2); }
-
-/* action btns */
-.act-btn {
-  background:none; border:1px solid var(--border); color:var(--text2);
-  padding:6px 12px; border-radius:8px; font-size:11px; cursor:pointer;
-  font-family:var(--font-mono); transition:.2s; margin-right:4px;
-}
-.act-btn:hover { border-color:var(--purple); color:var(--purple3); }
-.act-btn.green:hover { border-color:var(--green); color:var(--green); }
-.act-btn.red:hover { border-color:var(--red); color:var(--red); }
-.act-btn.fill {
-  background:linear-gradient(135deg,var(--purple),#4c1d95);
-  border-color:transparent; color:#fff;
-}
-.act-btn.fill:hover { opacity:.85; }
-
-/* agent cards */
-.agents-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
-.agent-card {
-  background:var(--surface); border:1px solid var(--border);
-  border-radius:18px; padding:24px; transition:.2s;
-  position:relative; overflow:hidden;
-}
-.agent-card:hover { border-color:var(--border2); }
-.agent-card::before {
-  content:''; position:absolute; top:-40px; right:-40px;
-  width:100px; height:100px; border-radius:50%;
-  background:radial-gradient(circle,rgba(124,58,237,.08),transparent);
-}
-.ag-top { display:flex; align-items:center; gap:14px; margin-bottom:18px; }
-.ag-avatar {
-  width:50px; height:50px; border-radius:14px;
-  display:flex; align-items:center; justify-content:center;
-  font-family:var(--font-display); font-size:18px; font-weight:900;
-  flex-shrink:0;
-  background:linear-gradient(135deg,rgba(124,58,237,.3),rgba(76,29,149,.3));
-  border:1px solid rgba(124,58,237,.3); color:var(--purple3);
-}
-.ag-name { font-weight:600; font-size:15px; }
-.ag-email { font-size:11px; color:var(--text3); margin-top:2px; }
-.ag-stats { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
-.ag-stat { background:var(--bg2); border-radius:10px; padding:10px 14px; }
-.ag-stat .label { font-size:10px; color:var(--text3); font-family:var(--font-mono); }
-.ag-stat .val { font-family:var(--font-display); font-size:22px; font-weight:700; margin-top:2px; }
-.ag-prods { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px; }
-.ag-prod-tag {
-  background:var(--surface2); border:1px solid var(--border);
-  padding:3px 9px; border-radius:6px; font-size:10px;
-  font-family:var(--font-mono); color:var(--text3);
-}
-.ag-earnings {
-  background:linear-gradient(135deg,rgba(212,168,83,.1),rgba(124,58,237,.08));
-  border:1px solid rgba(212,168,83,.2); border-radius:12px;
-  padding:12px 16px; display:flex; justify-content:space-between; align-items:center;
-}
-.ag-earnings .label { font-size:11px; color:var(--gold); font-family:var(--font-mono); }
-.ag-earnings .amount { font-family:var(--font-display); font-size:22px; font-weight:700; color:var(--gold); }
-.ag-actions { display:flex; gap:8px; margin-top:12px; }
-.ag-actions .act-btn { flex:1; text-align:center; padding:9px; }
-
-/* commissions */
-.comm-list { display:flex; flex-direction:column; gap:10px; }
-.comm-row {
-  background:var(--surface); border:1px solid var(--border);
-  border-radius:14px; padding:16px 24px;
-  display:grid; grid-template-columns:1fr auto auto;
-  align-items:center; gap:24px; transition:.2s;
-}
-.comm-row:hover { border-color:var(--border2); }
-.comm-prod-name { font-weight:600; font-size:14px; }
-.comm-prod-plan { font-size:11px; color:var(--text3); font-family:var(--font-mono); margin-top:2px; }
-.comm-input {
-  background:var(--bg2); border:1px solid var(--border); color:var(--text);
-  padding:9px 14px; border-radius:10px; font-size:15px; font-weight:600;
-  font-family:var(--font-display); width:110px; text-align:center; outline:none;
-  transition:.2s;
-}
-.comm-input:focus { border-color:var(--gold); box-shadow:0 0 0 3px rgba(212,168,83,.1); }
-.comm-display { font-family:var(--font-display); font-size:22px; font-weight:700; color:var(--gold); min-width:80px; text-align:right; }
-
-/* ranking */
-.rank-list { display:flex; flex-direction:column; gap:10px; }
-.rank-row {
-  background:var(--surface); border:1px solid var(--border);
-  border-radius:14px; padding:18px 24px;
-  display:flex; align-items:center; gap:18px; transition:.2s;
-}
-.rank-row:hover { border-color:var(--border2); }
-.rank-row.first { border-color:rgba(212,168,83,.4); background:rgba(212,168,83,.04); }
-.rank-num { font-family:var(--font-display); font-size:28px; font-weight:900; min-width:40px; }
-.rank-num.g { color:var(--gold); }
-.rank-num.s { color:#94a3b8; }
-.rank-num.b { color:#92400e; }
-.rank-info { flex:1; }
-.rank-name { font-weight:600; font-size:15px; }
-.rank-sub { font-size:12px; color:var(--text3); margin-top:2px; }
-.rank-earn { font-family:var(--font-display); font-size:26px; font-weight:900; color:var(--green); }
-
-/* ticket detail */
-.detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
-.detail-item { background:var(--bg2); border-radius:10px; padding:14px; }
-.detail-item .label { font-size:10px; color:var(--text3); font-family:var(--font-mono); text-transform:uppercase; letter-spacing:.1em; margin-bottom:5px; }
-.detail-item .val { font-size:14px; font-weight:500; }
-
-.chat-thread { display:flex; flex-direction:column; gap:10px; max-height:240px; overflow-y:auto; padding-right:4px; }
-.chat-thread::-webkit-scrollbar { width:4px; }
-.chat-thread::-webkit-scrollbar-track { background:transparent; }
-.chat-thread::-webkit-scrollbar-thumb { background:var(--border2); border-radius:4px; }
-.msg-bubble { background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:12px 14px; }
-.msg-bubble.agent { background:rgba(124,58,237,.1); border-color:rgba(124,58,237,.25); }
-.msg-from { font-size:10px; color:var(--text3); font-family:var(--font-mono); margin-bottom:5px; }
-.msg-text { font-size:13px; line-height:1.6; }
-
-.chat-input-row { display:flex; gap:10px; margin-top:12px; }
-.chat-input-row input {
-  flex:1; background:var(--bg2); border:1px solid var(--border);
-  color:var(--text); padding:11px 15px; border-radius:10px;
-  font-family:var(--font-body); font-size:14px; outline:none;
-}
-.chat-input-row input:focus { border-color:var(--purple2); }
-
-/* queue live indicator */
-.live-pill {
-  display:inline-flex; align-items:center; gap:6px;
-  background:rgba(248,113,113,.1); border:1px solid rgba(248,113,113,.25);
-  color:#f87171; padding:4px 12px; border-radius:100px;
-  font-size:10px; font-family:var(--font-mono); letter-spacing:.1em;
-}
-.live-dot { width:6px; height:6px; border-radius:50%; background:#f87171; animation:blink 1.2s infinite; }
-@keyframes blink { 0%,100%{opacity:1}50%{opacity:.2} }
-
-/* empty state */
-.empty-box { text-align:center; padding:64px 24px; }
-.empty-box .e-icon { font-size:52px; margin-bottom:14px; opacity:.5; }
-.empty-box p { color:var(--text3); font-size:15px; }
-
-/* add agent checkbox grid */
-.chk-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-.chk-item {
-  display:flex; align-items:center; gap:8px;
-  background:var(--bg2); border:1px solid var(--border);
-  padding:9px 12px; border-radius:10px; cursor:pointer; transition:.2s;
-}
-.chk-item input { accent-color:var(--purple2); width:15px; height:15px; }
-.chk-item label { font-size:12px; cursor:pointer; }
-.chk-item:has(input:checked) { border-color:var(--purple2); background:rgba(124,58,237,.08); }
-
-/* toast */
-.toast {
-  position:fixed; bottom:28px; right:28px; z-index:9000;
-  background:var(--surface2); border:1px solid var(--purple);
-  color:var(--text); padding:14px 20px; border-radius:14px;
-  font-size:14px; display:none; animation:fadeUp .3s;
-  box-shadow:0 0 30px var(--purple-glow);
-  max-width:320px; line-height:1.4;
-}
-.toast.show { display:block; }
-
-/* form row */
-.frow { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-
-/* scrollbar global */
-::-webkit-scrollbar { width:5px; height:5px; }
-::-webkit-scrollbar-track { background:var(--bg); }
-::-webkit-scrollbar-thumb { background:var(--border2); border-radius:3px; }
-
-/* divider */
-hr.div { border:none; border-top:1px solid var(--border); margin:20px 0; }
-
-@media(max-width:960px){
-  .stats-row{grid-template-columns:1fr 1fr;}
-  .agents-grid{grid-template-columns:1fr;}
-  #screen-dashboard{flex-direction:column;}
-  .sidebar{width:100%;height:auto;position:relative;}
-}
-@media(max-width:600px){
-  .stats-row{grid-template-columns:1fr;}
-  .prod-grid{grid-template-columns:1fr;}
-  .frow{grid-template-columns:1fr;}
-  .dash-page{padding:20px 16px;}
-  .comm-row{grid-template-columns:1fr auto;}
-}
+@media(max-width:960px){.stats-row{grid-template-columns:1fr 1fr;}.agents-grid{grid-template-columns:1fr;}#screen-dashboard{flex-direction:column;}.sidebar{width:100%;height:auto;position:relative;}}
+@media(max-width:600px){.stats-row{grid-template-columns:1fr;}.prod-grid{grid-template-columns:1fr;}.frow{grid-template-columns:1fr;}.dash-page{padding:18px 14px;}.comm-row{grid-template-columns:1fr auto;}}
+::-webkit-scrollbar{width:5px;height:5px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+.pay-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);}
+.pay-row:last-child{border:none;}
 </style>
 </head>
 <body>
 
-<!-- ════════════════════════════════════════
-     SCREEN 1 — LOGIN
-════════════════════════════════════════ -->
-<div id="screen-login" class="screen active">
+<!-- LOGIN -->
+<div id="screen-login" class="screen">
   <div class="login-card">
     <div class="login-logo">
-      <div class="brand">Achadinhos<br><span>Digitais</span></div>
+      <div class="brand">Achadinhos <span>Digitais</span></div>
       <div class="sub">Sistema de Suporte</div>
     </div>
-
     <div class="login-tabs">
       <button class="login-tab active" onclick="setLoginTab('admin')">Admin</button>
       <button class="login-tab" onclick="setLoginTab('agent')">Atendente</button>
     </div>
-
     <div id="login-error" class="login-error">Usuário ou senha incorretos.</div>
-
-    <div class="fgroup">
-      <label>Login</label>
-      <input type="text" id="login-user" placeholder="Seu usuário" autocomplete="off" />
-    </div>
-    <div class="fgroup">
-      <label>Senha</label>
-      <input type="password" id="login-pass" placeholder="••••••••"
-        onkeydown="if(event.key==='Enter')doLogin()" />
-    </div>
+    <div class="fgroup"><label>Login</label><input type="text" id="login-user" placeholder="Seu usuário" autocomplete="off"/></div>
+    <div class="fgroup"><label>Senha</label><input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
     <button class="btn-primary" onclick="doLogin()">Entrar →</button>
-
-    <div class="client-link">
-      Precisa de suporte? <a href="#" onclick="goClient()">Abrir um ticket</a>
-    </div>
+    <div class="client-link">Precisa de suporte? <a href="#" onclick="goClient()">Abrir um chamado</a></div>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════
-     SCREEN 2 — CLIENT PORTAL
-════════════════════════════════════════ -->
-<div id="screen-client" class="screen" style="background:var(--bg);align-items:center;justify-content:center;padding:24px;">
-
-  <!-- tiny internal link, tucked away -->
-  <div style="position:fixed;bottom:16px;right:20px;z-index:10">
-    <button onclick="goLogin()" style="background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;font-family:var(--font-mono)">área interna</button>
-  </div>
-
-  <div style="width:100%;max-width:480px">
-
-    <!-- Logo -->
-    <div style="text-align:center;margin-bottom:36px">
-      <div style="font-family:var(--font-display);font-size:28px;font-weight:700;line-height:1.2">
-        Achadinhos <span style="color:var(--purple2)">Digitais</span>
+<!-- CLIENT CHAT -->
+<div id="screen-client" class="screen">
+  <div class="chat-wrapper">
+    <div class="chat-header">
+      <div class="chat-avatar">🎧</div>
+      <div class="chat-header-info">
+        <div class="chat-header-name">Achadinhos Digitais</div>
+        <div class="chat-header-sub"><span class="online-dot"></span>Suporte Online — respondemos rápido!</div>
       </div>
-      <div style="font-size:14px;color:var(--text3);margin-top:6px">Central de Suporte ao Cliente</div>
     </div>
-
-    <!-- BIG friendly card -->
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:28px;overflow:hidden;box-shadow:0 0 80px rgba(124,58,237,.12),0 40px 80px rgba(0,0,0,.5)">
-
-      <!-- top strip -->
-      <div style="background:linear-gradient(135deg,var(--purple),#4c1d95);padding:28px 32px;text-align:center">
-        <div style="font-size:52px;margin-bottom:10px">🎧</div>
-        <div style="font-family:var(--font-display);font-size:22px;font-weight:700;color:#fff">Olá! Como podemos te ajudar?</div>
-        <div style="font-size:14px;color:rgba(255,255,255,.7);margin-top:6px">Nossa equipe está pronta para te atender</div>
+    <div class="chat-body">
+      <div class="chat-messages">
+        <div class="bot-msg">
+          <div class="bot-msg-avatar">🤖</div>
+          <div class="bot-msg-bubble">Olá! 👋 Seja bem-vindo ao suporte da <strong>Achadinhos Digitais</strong>.<br><br>Como posso te ajudar hoje? Escolha uma das opções abaixo 👇</div>
+        </div>
       </div>
-
-      <!-- main action -->
-      <div style="padding:32px">
-
-        <button onclick="openOv('ov-ticket')"
-          style="width:100%;background:linear-gradient(135deg,var(--purple),#4c1d95);border:none;color:#fff;
-                 padding:22px 24px;border-radius:18px;cursor:pointer;transition:.3s;
-                 box-shadow:0 8px 40px rgba(124,58,237,.4);display:flex;align-items:center;gap:16px;
-                 text-align:left;margin-bottom:16px"
-          onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 50px rgba(124,58,237,.55)'"
-          onmouseout="this.style.transform='none';this.style.boxShadow='0 8px 40px rgba(124,58,237,.4)'">
-          <div style="font-size:36px;flex-shrink:0">📩</div>
-          <div>
-            <div style="font-size:18px;font-weight:700;font-family:var(--font-display)">Abrir Chamado de Suporte</div>
-            <div style="font-size:13px;color:rgba(255,255,255,.7);margin-top:3px">Clique aqui para falar com um atendente</div>
-          </div>
-          <div style="margin-left:auto;font-size:24px;opacity:.7">→</div>
+      <div class="chat-divider">— o que você precisa? —</div>
+      <div class="chat-options">
+        <button class="chat-option y" onclick="startTicket('suporte')">
+          <span class="opt-icon">🛠️</span>
+          <div class="opt-text"><div class="opt-title">Estou com um problema técnico</div><div class="opt-sub">Erro de acesso, produto não funcionando</div></div>
+          <span class="opt-arrow">→</span>
         </button>
-
-        <!-- what we support -->
-        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:20px">
-          <div style="font-size:12px;color:var(--text3);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px">Produtos com suporte disponível</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-            <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px">
-              <span style="font-size:20px">🤖</span><span style="font-size:13px;font-weight:500">Gemini</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px">
-              <span style="font-size:20px">💬</span><span style="font-size:13px;font-weight:500">ChatGPT</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px">
-              <span style="font-size:20px">🎬</span><span style="font-size:13px;font-weight:500">CapCut</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px">
-              <span style="font-size:20px">⚡</span><span style="font-size:13px;font-weight:500">Super Grok</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;grid-column:1/-1">
-              <span style="font-size:20px">🔍</span><span style="font-size:13px;font-weight:500">Perplexity</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- reassurance -->
-        <div style="display:flex;justify-content:center;gap:24px;margin-top:20px;flex-wrap:wrap">
-          <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text3)">
-            <span>✅</span> Resposta rápida
-          </div>
-          <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text3)">
-            <span>🔒</span> 100% seguro
-          </div>
-          <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text3)">
-            <span>💜</span> Atendimento humanizado
-          </div>
-        </div>
-
+        <button class="chat-option" onclick="startTicket('resgatar')">
+          <span class="opt-icon">🎁</span>
+          <div class="opt-text"><div class="opt-title">Quero resgatar meu produto</div><div class="opt-sub">Gemini, ChatGPT, CapCut, Grok, Perplexity</div></div>
+          <span class="opt-arrow">→</span>
+        </button>
+        <button class="chat-option" onclick="startTicket('renovacao')">
+          <span class="opt-icon">🔄</span>
+          <div class="opt-text"><div class="opt-title">Renovar minha assinatura</div><div class="opt-sub">Mensal ou anual</div></div>
+          <span class="opt-arrow">→</span>
+        </button>
+        <button class="chat-option" onclick="startTicket('cancelamento')">
+          <span class="opt-icon">❌</span>
+          <div class="opt-text"><div class="opt-title">Cancelar assinatura</div><div class="opt-sub">Solicitar cancelamento</div></div>
+          <span class="opt-arrow">→</span>
+        </button>
+        <button class="chat-option" onclick="startTicket('duvida')">
+          <span class="opt-icon">❓</span>
+          <div class="opt-text"><div class="opt-title">Tenho uma dúvida</div><div class="opt-sub">Outra pergunta ou solicitação</div></div>
+          <span class="opt-arrow">→</span>
+        </button>
+        <div style="height:1px;background:var(--border);margin:4px 0"></div>
+        <button class="chat-option" style="border-color:rgba(34,211,126,.25);background:rgba(34,211,126,.04)" onclick="openOv('ov-check-ticket')">
+          <span class="opt-icon">🔍</span>
+          <div class="opt-text"><div class="opt-title" style="color:var(--green)">Consultar meu chamado</div><div class="opt-sub">Já abriu? Acompanhe com seu código</div></div>
+          <span class="opt-arrow" style="color:var(--green)">→</span>
+        </button>
       </div>
     </div>
-
   </div>
+  <div class="internal-link-area"><button onclick="goLogin()">área interna</button></div>
 </div>
 
-<!-- ════════════════════════════════════════
-     SCREEN 3 — DASHBOARD
-════════════════════════════════════════ -->
+<!-- DASHBOARD -->
 <div id="screen-dashboard" class="screen">
-
-  <!-- SIDEBAR -->
   <aside class="sidebar">
-    <div class="sidebar-brand">
-      <div class="name">Achadinhos<br><span>Digitais</span></div>
-      <div class="role-pill" id="sb-role">—</div>
-    </div>
-    <nav class="sidebar-nav" id="sb-nav"><!-- built by JS --></nav>
-    <div class="sidebar-footer">
-      <button class="logout-btn" onclick="doLogout()">↩ Sair</button>
-    </div>
+    <div class="sidebar-brand"><div class="name">Achadinhos <span>Digitais</span></div><div class="role-pill" id="sb-role">—</div></div>
+    <nav class="sidebar-nav" id="sb-nav"></nav>
+    <div class="sidebar-footer"><button class="logout-btn" onclick="doLogout()">↩ Sair</button></div>
   </aside>
-
-  <!-- MAIN -->
   <main class="dash-main">
-
-    <!-- ── ADMIN PAGES ── -->
-    <div id="page-admin-dash" class="dash-page">
-      <div class="page-title">Dashboard</div>
-      <div class="page-sub">Visão geral em tempo real</div>
-      <div class="stats-row" id="adm-stats"></div>
-      <div class="data-table" id="adm-recent"></div>
-    </div>
-
-    <div id="page-admin-tickets" class="dash-page">
-      <div class="page-title">Todos os Tickets</div>
-      <div class="page-sub">Gerencie e acompanhe cada atendimento</div>
-      <div class="data-table" id="adm-tickets-tbl"></div>
-    </div>
-
-    <div id="page-admin-agents" class="dash-page">
-      <div class="page-title">Atendentes</div>
-      <div class="page-sub">Gerencie sua equipe</div>
-      <div style="margin-bottom:20px">
-        <button class="act-btn fill" onclick="openOv('ov-add-agent')">+ Adicionar Atendente</button>
-      </div>
-      <div class="agents-grid" id="adm-agents-grid"></div>
-    </div>
-
-    <div id="page-admin-commissions" class="dash-page">
-      <div class="page-title">Comissões</div>
-      <div class="page-sub">Defina quanto cada ticket vale por produto</div>
-      <div class="comm-list" id="adm-comm-list"></div>
-    </div>
-
-    <div id="page-admin-ranking" class="dash-page">
-      <div class="page-title">Ranking</div>
-      <div class="page-sub">Disputa em tempo real entre atendentes</div>
-      <div class="rank-list" id="adm-rank-list"></div>
-    </div>
-
-    <!-- ── AGENT PAGES ── -->
-    <div id="page-agent-queue" class="dash-page">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
-        <div class="page-title" style="margin:0">Fila de Tickets</div>
-        <div class="live-pill"><div class="live-dot"></div>AO VIVO</div>
-      </div>
-      <div class="page-sub">Seja o primeiro a pegar — quem finalizar ganha a comissão!</div>
-      <div class="data-table" id="ag-queue-tbl"></div>
-    </div>
-
-    <div id="page-agent-mine" class="dash-page">
-      <div class="page-title">Meus Tickets</div>
-      <div class="page-sub">Atendimentos em andamento</div>
-      <div class="data-table" id="ag-mine-tbl"></div>
-    </div>
-
-    <div id="page-agent-done" class="dash-page">
-      <div class="page-title">Finalizados</div>
-      <div class="page-sub">Seu histórico de atendimentos</div>
-      <div class="data-table" id="ag-done-tbl"></div>
-    </div>
-
-    <div id="page-agent-earnings" class="dash-page">
-      <div class="page-title">Meus Ganhos</div>
-      <div class="page-sub">Sua performance financeira</div>
-      <div id="ag-earnings-content"></div>
-    </div>
-
-    <div id="page-agent-ranking" class="dash-page">
-      <div class="page-title">Ranking Geral</div>
-      <div class="page-sub">Sua posição na disputa</div>
-      <div class="rank-list" id="ag-rank-list"></div>
-    </div>
-
+    <div id="page-admin-dash" class="dash-page"><div class="page-title">Dashboard</div><div class="page-sub">Visão geral em tempo real</div><div class="stats-row" id="adm-stats"></div><div class="data-table" id="adm-recent"></div></div>
+    <div id="page-admin-tickets" class="dash-page"><div class="page-title">Todos os Tickets</div><div class="page-sub">Gerencie cada atendimento</div><div class="data-table" id="adm-tickets-tbl"></div></div>
+    <div id="page-admin-agents" class="dash-page"><div class="page-title">Atendentes</div><div class="page-sub">Gerencie sua equipe</div><div style="margin-bottom:18px"><button class="act-btn fill" onclick="openOv('ov-add-agent')">+ Adicionar Atendente</button></div><div class="agents-grid" id="adm-agents-grid"></div></div>
+    <div id="page-admin-commissions" class="dash-page"><div class="page-title">Comissões</div><div class="page-sub">Valor por ticket finalizado</div><div class="comm-list" id="adm-comm-list"></div></div>
+    <div id="page-admin-ranking" class="dash-page"><div class="page-title">Ranking</div><div class="page-sub">Disputa em tempo real</div><div class="rank-list" id="adm-rank-list"></div></div>
+    <div id="page-admin-finance" class="dash-page"><div class="page-title">💰 Acerto de Contas</div><div class="page-sub">Marque os pagamentos feitos — saiba exatamente quanto ainda deve para cada atendente</div><div id="adm-finance-content"></div></div>
+    <div id="page-agent-queue" class="dash-page"><div style="display:flex;align-items:center;gap:10px;margin-bottom:4px"><div class="page-title" style="margin:0">Fila de Tickets</div><div class="live-pill"><div class="live-dot"></div>AO VIVO</div></div><div class="page-sub">Pegue primeiro e ganhe a comissão!</div><div class="data-table" id="ag-queue-tbl"></div></div>
+    <div id="page-agent-mine" class="dash-page"><div class="page-title">Meus Tickets</div><div class="page-sub">Em andamento</div><div class="data-table" id="ag-mine-tbl"></div></div>
+    <div id="page-agent-done" class="dash-page"><div class="page-title">Finalizados</div><div class="page-sub">Histórico</div><div class="data-table" id="ag-done-tbl"></div></div>
+    <div id="page-agent-earnings" class="dash-page"><div class="page-title">Meus Ganhos</div><div class="page-sub">Sua performance financeira</div><div id="ag-earnings-content"></div></div>
+    <div id="page-agent-ranking" class="dash-page"><div class="page-title">Ranking Geral</div><div class="page-sub">Sua posição na disputa</div><div class="rank-list" id="ag-rank-list"></div></div>
   </main>
 </div>
 
-<!-- ════════════════════ OVERLAYS ════════════════════ -->
-
-<!-- Ticket creation -->
+<!-- OVERLAYS -->
 <div class="overlay" id="ov-ticket">
   <div class="modal">
-    <div class="modal-head">
-      <div>
-        <div class="modal-head-title">📩 Abrir Chamado</div>
-        <div class="modal-head-sub">Preencha os campos abaixo — é rápido e fácil!</div>
-      </div>
-      <button class="modal-close" onclick="closeOv('ov-ticket')">×</button>
-    </div>
+    <div class="modal-head"><div><div class="modal-head-title" id="ov-ticket-title">📩 Abrir Chamado</div><div class="modal-head-sub">Preencha os campos — é rápido!</div></div><button class="modal-close" onclick="closeOv('ov-ticket')">×</button></div>
     <div class="modal-body">
-      <div class="fgroup">
-        <label>👤 Qual é o seu nome?</label>
-        <input id="tk-name" placeholder="Ex: Maria Silva" style="font-size:16px;padding:15px 16px" />
-      </div>
-      <div class="fgroup">
-        <label>📧 Seu melhor e-mail para contato</label>
-        <input type="email" id="tk-email" placeholder="Ex: maria@gmail.com" style="font-size:16px;padding:15px 16px" />
-      </div>
-      <div class="fgroup">
-        <label>🙋 O que você precisa?</label>
-        <select id="tk-type" style="font-size:15px;padding:14px 16px">
-          <option value="">Toque aqui para escolher...</option>
-          <option value="suporte">🛠️ Estou com um problema técnico</option>
-          <option value="resgatar">🎁 Quero resgatar meu produto</option>
-          <option value="cancelamento">❌ Quero cancelar</option>
-          <option value="renovacao">🔄 Quero renovar minha assinatura</option>
-          <option value="duvida">❓ Tenho uma dúvida</option>
-        </select>
-      </div>
-      <div class="fgroup">
-        <label>📦 Qual produto é o seu?</label>
-        <div class="prod-grid" id="tk-prod-grid"></div>
-      </div>
-      <div class="fgroup">
-        <label>💬 Conta pra gente o que aconteceu</label>
-        <textarea id="tk-desc" placeholder="Escreva aqui o seu problema ou dúvida. Quanto mais detalhes, mais rápido te ajudamos! 😊" style="font-size:14px;padding:14px 16px;min-height:100px"></textarea>
-      </div>
-      <button class="submit-btn" onclick="submitTicket()" style="font-size:17px;padding:18px;border-radius:16px">
-        📩 Enviar Pedido de Suporte
-      </button>
-      <div style="text-align:center;font-size:12px;color:var(--text3);margin-top:12px">
-        ✅ Você receberá uma resposta em breve. Não precisa criar conta!
-      </div>
+      <div class="fgroup"><label>👤 Seu nome</label><input id="tk-name" placeholder="Ex: Maria Silva"/></div>
+      <div class="fgroup"><label>📱 Seu WhatsApp</label><input type="tel" id="tk-email" placeholder="Ex: (11) 99999-9999" inputmode="numeric"/></div>
+      <div class="fgroup"><label>📦 Qual é o seu produto?</label><div class="prod-grid" id="tk-prod-grid"></div></div>
+      <div class="fgroup"><label>💬 Conta o que aconteceu</label><textarea id="tk-desc" placeholder="Descreva seu problema com detalhes. Quanto mais info, mais rápido te ajudamos! 😊"></textarea></div>
+      <div class="fgroup"><label>📎 Anexar imagem ou print (opcional)</label><input type="file" id="tk-file" accept="image/*,.pdf" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:10px;font-family:var(--font);font-size:13px;cursor:pointer;"/><div style="font-size:11px;color:var(--text3);margin-top:5px">📷 Fotos, prints, comprovantes — máx. 5MB</div></div>
+      <button class="submit-btn" onclick="submitTicket()">📩 Enviar Pedido de Suporte</button>
+      <div style="text-align:center;font-size:11px;color:var(--text3);margin-top:10px">✅ Não precisa criar conta. Resposta em breve!</div>
     </div>
   </div>
 </div>
 
-<!-- Ticket detail -->
 <div class="overlay" id="ov-detail">
-  <div class="modal">
-    <div class="modal-head">
-      <div>
-        <div class="modal-head-title" id="dt-title">Ticket</div>
-        <div class="modal-head-sub" id="dt-sub"></div>
-      </div>
-      <button class="modal-close" onclick="closeOv('ov-detail')">×</button>
-    </div>
+  <div class="modal" style="max-width:640px">
+    <div class="modal-head"><div><div class="modal-head-title" id="dt-title">Ticket</div><div class="modal-head-sub" id="dt-sub"></div></div><button class="modal-close" onclick="closeOv('ov-detail')">×</button></div>
     <div class="modal-body" id="dt-body"></div>
   </div>
 </div>
 
-<!-- Add agent -->
 <div class="overlay" id="ov-add-agent">
   <div class="modal">
-    <div class="modal-head">
-      <div class="modal-head-title">Cadastrar Atendente</div>
-      <button class="modal-close" onclick="closeOv('ov-add-agent')">×</button>
-    </div>
+    <div class="modal-head"><div class="modal-head-title">👤 Cadastrar Atendente</div><button class="modal-close" onclick="closeOv('ov-add-agent')">×</button></div>
     <div class="modal-body">
-      <div class="frow">
-        <div class="fgroup"><label>Nome Completo</label><input id="ag-name" placeholder="Nome..." /></div>
-        <div class="fgroup"><label>Email</label><input id="ag-email" placeholder="email@..." /></div>
-      </div>
-      <div class="frow">
-        <div class="fgroup"><label>Login (usuário)</label><input id="ag-login" placeholder="ex: carlos" autocomplete="off" /></div>
-        <div class="fgroup"><label>Senha</label><input type="password" id="ag-pass" placeholder="Mínimo 4 caracteres" /></div>
-      </div>
-      <div class="fgroup">
-        <label>Produtos que pode atender</label>
-        <div class="chk-grid" id="ag-chk-grid"></div>
-      </div>
+      <div class="frow"><div class="fgroup"><label>Nome Completo</label><input id="ag-name" placeholder="Nome..."/></div><div class="fgroup"><label>WhatsApp</label><input id="ag-email" placeholder="(11) 99999-9999"/></div></div>
+      <div class="frow"><div class="fgroup"><label>Login</label><input id="ag-login" placeholder="ex: carlos" autocomplete="off"/></div><div class="fgroup"><label>Senha</label><input type="password" id="ag-pass" placeholder="Mínimo 4 caracteres"/></div></div>
+      <div class="fgroup"><label>Produtos que pode atender</label><div class="chk-grid" id="ag-chk-grid"></div></div>
       <button class="submit-btn" onclick="addAgent()">Cadastrar Atendente →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Ticket code modal -->
+<div class="overlay" id="ov-ticket-code">
+  <div class="modal" style="max-width:420px;text-align:center">
+    <div class="modal-head" style="justify-content:flex-end;padding-bottom:0"><button class="modal-close" onclick="closeOv('ov-ticket-code')">×</button></div>
+    <div class="modal-body" style="padding-top:10px">
+      <div style="font-size:52px;margin-bottom:12px">🎉</div>
+      <div style="font-size:20px;font-weight:800;margin-bottom:8px">Chamado aberto com sucesso!</div>
+      <div style="font-size:13px;color:var(--text3);margin-bottom:24px;line-height:1.6">Em breve um especialista vai entrar em contato. Guarde o código abaixo para acompanhar seu chamado:</div>
+      <div style="background:var(--bg2);border:2px solid var(--yellow);border-radius:16px;padding:22px;margin-bottom:20px">
+        <div style="font-size:11px;color:var(--text3);font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">Seu código de chamado</div>
+        <div id="tc-code" style="font-size:36px;font-weight:800;letter-spacing:.18em;color:var(--yellow);font-family:var(--mono)">——</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:8px">📸 Tire um print desse código!</div>
+      </div>
+      <div style="background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.2);border-radius:12px;padding:14px;margin-bottom:20px;font-size:12px;color:var(--text2);line-height:1.6;text-align:left">
+        <strong style="color:var(--purple3)">Como usar:</strong><br>
+        Volte ao chat e clique em <em>"Consultar meu chamado"</em> e digite esse código para ver o status e a conversa com o atendente.
+      </div>
+      <button class="submit-btn" onclick="closeOv('ov-ticket-code')">Entendido! ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- Ticket lookup modal -->
+<div class="overlay" id="ov-check-ticket">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-head"><div><div class="modal-head-title">🔍 Consultar Chamado</div><div class="modal-head-sub">Digite o código que você recebeu</div></div><button class="modal-close" onclick="closeOv('ov-check-ticket')">×</button></div>
+    <div class="modal-body">
+      <div class="fgroup">
+        <label>Código do Chamado</label>
+        <input id="lookup-code" placeholder="Ex: AB3X7K9M" style="text-transform:uppercase;letter-spacing:.15em;font-family:var(--mono);font-size:18px;font-weight:700;text-align:center" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')lookupTicket()"/>
+      </div>
+      <div id="lookup-result"></div>
+      <button class="submit-btn" onclick="lookupTicket()">🔍 Buscar Chamado</button>
     </div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
-<!-- ════════════════════ SCRIPT ════════════════════ -->
 <script>
-/* ─── DATA ─── */
-const PRODUCTS = [
-  {id:'gemini-m',  name:'Gemini',     plan:'Mensal', emoji:'🤖'},
-  {id:'gemini-a',  name:'Gemini',     plan:'Anual',  emoji:'🤖'},
-  {id:'chatgpt-m', name:'ChatGPT',    plan:'Mensal', emoji:'💬'},
-  {id:'chatgpt-a', name:'ChatGPT',    plan:'Anual',  emoji:'💬'},
-  {id:'capcut-m',  name:'CapCut',     plan:'Mensal', emoji:'🎬'},
-  {id:'capcut-a',  name:'CapCut',     plan:'Anual',  emoji:'🎬'},
-  {id:'grok',      name:'Super Grok', plan:'Único',  emoji:'⚡'},
-  {id:'perplexity',name:'Perplexity', plan:'Único',  emoji:'🔍'},
-];
+const PRODUCTS=[{id:'gemini-m',name:'Gemini',plan:'Mensal',emoji:'🤖'},{id:'gemini-a',name:'Gemini',plan:'Anual',emoji:'🤖'},{id:'chatgpt-m',name:'ChatGPT',plan:'Mensal',emoji:'💬'},{id:'chatgpt-a',name:'ChatGPT',plan:'Anual',emoji:'💬'},{id:'capcut-m',name:'CapCut',plan:'Mensal',emoji:'🎬'},{id:'capcut-a',name:'CapCut',plan:'Anual',emoji:'🎬'},{id:'grok',name:'Super Grok',plan:'Único',emoji:'⚡'},{id:'perplexity',name:'Perplexity',plan:'Único',emoji:'🔍'}];
+let COMMISSIONS={'gemini-m':5,'gemini-a':15,'chatgpt-m':6,'chatgpt-a':18,'capcut-m':4,'capcut-a':12,'grok':10,'perplexity':8};
+const ADMIN_CRED={login:'admin',pass:'admin123'};
+let AGENTS=[{id:'ag1',name:'Carlos Henrique',email:'carlos@suporte.com',login:'carlos',pass:'1234',products:['gemini-m','gemini-a','chatgpt-m','chatgpt-a'],closed:12,earnings:187},{id:'ag2',name:'Ana Beatriz',email:'ana@suporte.com',login:'ana',pass:'1234',products:['capcut-m','capcut-a','grok'],closed:9,earnings:134},{id:'ag3',name:'Rafael Souza',email:'rafael@suporte.com',login:'rafael',pass:'1234',products:['chatgpt-m','chatgpt-a','perplexity','grok'],closed:7,earnings:98}];
+let TICKETS=[{id:'T001',code:'DEMO1234',clientName:'Maria Santos',clientEmail:'(11) 99887-6655',products:['gemini-m'],product:'gemini-m',type:'suporte',desc:'Não consigo fazer login no Gemini. Erro 403.',status:'open',agent:null,createdAt:new Date(Date.now()-3600000).toISOString(),messages:[]},{id:'T002',code:'JOAO5678',clientName:'João Pedro',clientEmail:'(21) 98765-4321',products:['chatgpt-a'],product:'chatgpt-a',type:'resgatar',desc:'Quero resgatar meu acesso ChatGPT Plus anual.',status:'claimed',agent:'ag1',createdAt:new Date(Date.now()-7200000).toISOString(),messages:[{from:'Carlos Henrique',isAgent:true,text:'Olá João! Vou te ajudar. Pode me passar seu login?',ts:new Date(Date.now()-3000000).toISOString()}]},{id:'T003',code:'FERN9012',clientName:'Fernanda Lima',clientEmail:'(31) 97654-3210',products:['capcut-m'],product:'capcut-m',type:'cancelamento',desc:'Quero cancelar minha assinatura mensal.',status:'done',agent:'ag2',createdAt:new Date(Date.now()-86400000).toISOString(),closedAt:new Date(Date.now()-3600000).toISOString(),messages:[{from:'Ana Beatriz',isAgent:true,text:'Olá Fernanda! Vou processar o cancelamento.',ts:new Date(Date.now()-80000000).toISOString()},{from:'Cliente',isAgent:false,text:'Obrigada!',ts:new Date(Date.now()-79000000).toISOString()}]}];
+let tkCounter=4,currentUser=null,currentPage='',loginTab='admin',selectedProducts=[],filterStatus='all',pendingType='';
 
-let COMMISSIONS = {
-  'gemini-m':5,'gemini-a':15,'chatgpt-m':6,'chatgpt-a':18,
-  'capcut-m':4,'capcut-a':12,'grok':10,'perplexity':8
-};
-
-// Admin credentials (hardcoded, only admin can access admin panel)
-const ADMIN_CRED = { login:'admin', pass:'admin123', name:'Admin Principal', role:'admin' };
-
-let AGENTS = [
-  {id:'ag1', name:'Carlos Henrique', email:'carlos@suporte.com', login:'carlos', pass:'1234',
-   products:['gemini-m','gemini-a','chatgpt-m','chatgpt-a'], closed:12, earnings:187},
-  {id:'ag2', name:'Ana Beatriz', email:'ana@suporte.com', login:'ana', pass:'1234',
-   products:['capcut-m','capcut-a','grok'], closed:9, earnings:134},
-  {id:'ag3', name:'Rafael Souza', email:'rafael@suporte.com', login:'rafael', pass:'1234',
-   products:['chatgpt-m','chatgpt-a','perplexity','grok'], closed:7, earnings:98},
-];
-
-let TICKETS = [
-  {id:'T001', clientName:'Maria Santos', clientEmail:'maria@gmail.com', product:'gemini-m',
-   type:'suporte', desc:'Não consigo fazer login no Gemini. Erro 403.',
-   status:'open', agent:null, createdAt:new Date(Date.now()-3600000).toISOString(), messages:[]},
-  {id:'T002', clientName:'João Pedro', clientEmail:'joao@gmail.com', product:'chatgpt-a',
-   type:'resgatar', desc:'Quero resgatar meu acesso ChatGPT Plus anual.',
-   status:'claimed', agent:'ag1', createdAt:new Date(Date.now()-7200000).toISOString(),
-   messages:[{from:'Carlos Henrique',isAgent:true,text:'Olá João! Vou te ajudar. Pode me passar seu login?',ts:new Date(Date.now()-3000000).toISOString()}]},
-  {id:'T003', clientName:'Fernanda Lima', clientEmail:'fer@gmail.com', product:'capcut-m',
-   type:'cancelamento', desc:'Quero cancelar minha assinatura mensal.',
-   status:'done', agent:'ag2', createdAt:new Date(Date.now()-86400000).toISOString(),
-   closedAt:new Date(Date.now()-3600000).toISOString(), messages:[
-     {from:'Ana Beatriz',isAgent:true,text:'Olá Fernanda! Vou processar o cancelamento.',ts:new Date(Date.now()-80000000).toISOString()},
-     {from:'Cliente',isAgent:false,text:'Obrigada!',ts:new Date(Date.now()-79000000).toISOString()}
-   ]},
-];
-
-let tkCounter = 4;
-let currentUser = null; // {role:'admin'|'agent', id, name}
-let currentPage = '';
-let loginTab = 'admin';
-let selectedProduct = null;
-let filterStatus = 'all';
-
-/* ─── HELPERS ─── */
-function genId() { return 'T' + String(tkCounter++).padStart(3,'0'); }
-function getAgent(id) { return AGENTS.find(a=>a.id===id); }
-function getProd(id) { return PRODUCTS.find(p=>p.id===id); }
-function fmtDate(iso) {
-  if(!iso) return '—';
-  const d=new Date(iso);
-  return d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+function genId(){return'T'+String(tkCounter++).padStart(3,'0');}
+function genCode(){const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let r='';for(let i=0;i<8;i++)r+=chars[Math.floor(Math.random()*chars.length)];return r;}
+function showTicketCode(code){
+  document.getElementById('tc-code').textContent=code;
+  openOv('ov-ticket-code');
 }
-function fmtMoney(v) { return 'R$ '+Number(v).toFixed(2).replace('.',','); }
-function initials(n) { return n.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase(); }
-function badge(s) {
-  const map={open:'Aberto',claimed:'Em Atendimento',done:'Finalizado'};
-  const cls={open:'b-open',claimed:'b-claimed',done:'b-done'};
-  return `<span class="badge ${cls[s]||'b-open'}">${map[s]||s}</span>`;
-}
-function toast(msg) {
-  const el=document.getElementById('toast');
-  el.textContent=msg; el.classList.add('show');
-  clearTimeout(el._t);
-  el._t=setTimeout(()=>el.classList.remove('show'),3200);
-}
-function openOv(id) { document.getElementById(id).classList.add('open'); }
-function closeOv(id) { document.getElementById(id).classList.remove('open'); }
+function getAgent(id){return AGENTS.find(a=>a.id===id);}
+function getProd(id){return PRODUCTS.find(p=>p.id===id);}
+function fmtDate(iso){if(!iso)return'—';const d=new Date(iso);return d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});}
+function fmtMoney(v){return'R$ '+Number(v).toFixed(2).replace('.',',');}
+function initials(n){return n.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();}
+function badge(s){const m={open:'Aberto',claimed:'Em Atendimento',done:'Finalizado'};const c={open:'b-open',claimed:'b-claimed',done:'b-done'};return`<span class="badge ${c[s]||'b-open'}">${m[s]||s}</span>`;}
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),3200);}
+function openOv(id){document.getElementById(id).classList.add('open');}
+function closeOv(id){document.getElementById(id).classList.remove('open');}
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+id).classList.add('active');}
+function goClient(){showScreen('client');}
+function goLogin(){showScreen('login');}
 
-/* ─── NAV BETWEEN SCREENS ─── */
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById('screen-'+id).classList.add('active');
-}
-function goClient() { showScreen('client'); }
-function goLogin() { showScreen('login'); }
-
-/* ─── LOGIN ─── */
-function setLoginTab(t) {
-  loginTab = t;
-  document.querySelectorAll('.login-tab').forEach((b,i)=>{
-    b.classList.toggle('active', (i===0&&t==='admin')||(i===1&&t==='agent'));
-  });
+function startTicket(type){
+  pendingType=type;
+  const labels={suporte:'🛠️ Suporte Técnico',resgatar:'🎁 Resgatar Produto',renovacao:'🔄 Renovar Assinatura',cancelamento:'❌ Cancelamento',duvida:'❓ Dúvida Geral'};
+  document.getElementById('ov-ticket-title').textContent='📩 '+labels[type];
+  openOv('ov-ticket');
 }
 
-function doLogin() {
-  const u = document.getElementById('login-user').value.trim();
-  const p = document.getElementById('login-pass').value;
-  const errEl = document.getElementById('login-error');
-  errEl.classList.remove('show');
-
-  if(loginTab==='admin') {
-    if(u===ADMIN_CRED.login && p===ADMIN_CRED.pass) {
-      currentUser = {role:'admin', name:'Admin Principal'};
-      enterDashboard();
-    } else { errEl.classList.add('show'); }
-  } else {
-    const ag = AGENTS.find(a=>a.login===u && a.pass===p);
-    if(ag) {
-      currentUser = {role:'agent', id:ag.id, name:ag.name};
-      enterDashboard();
-    } else { errEl.classList.add('show'); }
-  }
+function setLoginTab(t){loginTab=t;document.querySelectorAll('.login-tab').forEach((b,i)=>{b.classList.toggle('active',(i===0&&t==='admin')||(i===1&&t==='agent'));});}
+function doLogin(){
+  const u=document.getElementById('login-user').value.trim(),p=document.getElementById('login-pass').value,err=document.getElementById('login-error');
+  err.classList.remove('show');
+  if(loginTab==='admin'){if(u===ADMIN_CRED.login&&p===ADMIN_CRED.pass){currentUser={role:'admin',name:'Admin Principal'};enterDashboard();}else err.classList.add('show');}
+  else{const ag=AGENTS.find(a=>a.login===u&&a.pass===p);if(ag){currentUser={role:'agent',id:ag.id,name:ag.name};enterDashboard();}else err.classList.add('show');}
 }
-
-function doLogout() {
-  currentUser = null;
-  document.getElementById('login-user').value='';
-  document.getElementById('login-pass').value='';
-  showScreen('login');
-}
-
-/* ─── DASHBOARD ─── */
-function enterDashboard() {
-  buildSidebar();
-  showScreen('dashboard');
-  if(currentUser.role==='admin') navTo('admin-dash');
-  else navTo('agent-queue');
-}
-
-function buildSidebar() {
-  const roleEl = document.getElementById('sb-role');
-  const navEl = document.getElementById('sb-nav');
-
-  if(currentUser.role==='admin') {
-    roleEl.textContent = '👑 Admin Principal';
-    navEl.innerHTML = `
-      <div class="nav-section">
-        <span class="nav-section-label">Painel</span>
-        <button class="nav-item" onclick="navTo('admin-dash')"><span class="ni">📊</span>Dashboard</button>
-        <button class="nav-item" onclick="navTo('admin-tickets')"><span class="ni">🎫</span>Todos os Tickets<span class="nav-badge" id="nb-open">0</span></button>
-        <button class="nav-item" onclick="navTo('admin-agents')"><span class="ni">👥</span>Atendentes</button>
-        <button class="nav-item" onclick="navTo('admin-commissions')"><span class="ni">💸</span>Comissões</button>
-        <button class="nav-item" onclick="navTo('admin-ranking')"><span class="ni">🏆</span>Ranking</button>
-      </div>
-    `;
-  } else {
-    roleEl.textContent = '🎧 Atendente';
-    navEl.innerHTML = `
-      <div class="nav-section">
-        <span class="nav-section-label">Atendimento</span>
-        <button class="nav-item" onclick="navTo('agent-queue')"><span class="ni">🎯</span>Fila de Tickets<span class="nav-badge" id="nb-queue">0</span></button>
-        <button class="nav-item" onclick="navTo('agent-mine')"><span class="ni">📋</span>Meus Tickets</button>
-        <button class="nav-item" onclick="navTo('agent-done')"><span class="ni">✅</span>Finalizados</button>
-      </div>
-      <div class="nav-section">
-        <span class="nav-section-label">Performance</span>
-        <button class="nav-item" onclick="navTo('agent-earnings')"><span class="ni">💰</span>Meus Ganhos</button>
-        <button class="nav-item" onclick="navTo('agent-ranking')"><span class="ni">🏆</span>Ranking</button>
-      </div>
-    `;
-  }
+function doLogout(){currentUser=null;document.getElementById('login-user').value='';document.getElementById('login-pass').value='';showScreen('client');}
+function enterDashboard(){buildSidebar();showScreen('dashboard');if(currentUser.role==='admin')navTo('admin-dash');else navTo('agent-queue');}
+function buildSidebar(){
+  document.getElementById('sb-role').textContent=currentUser.role==='admin'?'👑 Admin Principal':'🎧 Atendente';
+  document.getElementById('sb-nav').innerHTML=currentUser.role==='admin'?`<div class="nav-section"><span class="nav-section-label">Painel</span><button class="nav-item" onclick="navTo('admin-dash')"><span class="ni">📊</span>Dashboard</button><button class="nav-item" onclick="navTo('admin-tickets')"><span class="ni">🎫</span>Todos os Tickets<span class="nav-badge" id="nb-open">0</span></button><button class="nav-item" onclick="navTo('admin-agents')"><span class="ni">👥</span>Atendentes</button><button class="nav-item" onclick="navTo('admin-commissions')"><span class="ni">💸</span>Comissões</button><button class="nav-item" onclick="navTo('admin-ranking')"><span class="ni">🏆</span>Ranking</button><button class="nav-item" onclick="navTo('admin-finance')"><span class="ni">💰</span>Acerto de Contas</button></div>`:`<div class="nav-section"><span class="nav-section-label">Atendimento</span><button class="nav-item" onclick="navTo('agent-queue')"><span class="ni">🎯</span>Fila de Tickets<span class="nav-badge" id="nb-queue">0</span></button><button class="nav-item" onclick="navTo('agent-mine')"><span class="ni">📋</span>Meus Tickets</button><button class="nav-item" onclick="navTo('agent-done')"><span class="ni">✅</span>Finalizados</button></div><div class="nav-section"><span class="nav-section-label">Performance</span><button class="nav-item" onclick="navTo('agent-earnings')"><span class="ni">💰</span>Meus Ganhos</button><button class="nav-item" onclick="navTo('agent-ranking')"><span class="ni">🏆</span>Ranking</button></div>`;
   updateBadges();
 }
-
-function updateBadges() {
-  const openCount = TICKETS.filter(t=>t.status==='open').length;
-  const nb = document.getElementById('nb-open');
-  if(nb) nb.textContent = openCount;
-
-  if(currentUser && currentUser.role==='agent') {
-    const ag = getAgent(currentUser.id);
-    if(ag) {
-      const queueCount = TICKETS.filter(t=>t.status==='open'&&ag.products.includes(t.product)).length;
-      const nq = document.getElementById('nb-queue');
-      if(nq) nq.textContent = queueCount;
-    }
-  }
-}
-
-function navTo(page) {
-  currentPage = page;
+function updateBadges(){const o=TICKETS.filter(t=>t.status==='open').length;const nb=document.getElementById('nb-open');if(nb)nb.textContent=o;if(currentUser&&currentUser.role==='agent'){const ag=getAgent(currentUser.id);if(ag){const nq=document.getElementById('nb-queue');if(nq)nq.textContent=TICKETS.filter(t=>t.status==='open'&&ag.products.includes(t.product)).length;}}}
+function navTo(page){
+  currentPage=page;
   document.querySelectorAll('.dash-page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
-  const pageEl = document.getElementById('page-'+page);
-  if(pageEl) pageEl.classList.add('active');
-
-  // highlight sidebar item
-  document.querySelectorAll('.nav-item').forEach(b=>{
-    if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes(`'${page}'`))
-      b.classList.add('active');
-  });
-
-  // render content
-  const renders = {
-    'admin-dash':    renderAdminDash,
-    'admin-tickets': renderAdminTickets,
-    'admin-agents':  renderAdminAgents,
-    'admin-commissions': renderCommissions,
-    'admin-ranking': ()=>renderRanking('adm-rank-list'),
-    'agent-queue':   renderAgentQueue,
-    'agent-mine':    renderAgentMine,
-    'agent-done':    renderAgentDone,
-    'agent-earnings':renderAgentEarnings,
-    'agent-ranking': ()=>renderRanking('ag-rank-list'),
-  };
-  if(renders[page]) renders[page]();
-  updateBadges();
+  const pe=document.getElementById('page-'+page);if(pe)pe.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(b=>{if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes(`'${page}'`))b.classList.add('active');});
+  const r={'admin-dash':renderAdminDash,'admin-tickets':renderAdminTickets,'admin-agents':renderAdminAgents,'admin-commissions':renderCommissions,'admin-ranking':()=>renderRanking('adm-rank-list'),'admin-finance':renderAdminFinance,'agent-queue':renderAgentQueue,'agent-mine':renderAgentMine,'agent-done':renderAgentDone,'agent-earnings':renderAgentEarnings,'agent-ranking':()=>renderRanking('ag-rank-list')};
+  if(r[page])r[page]();updateBadges();
 }
-
-/* ─── ADMIN RENDERS ─── */
-function renderAdminDash() {
-  const open   = TICKETS.filter(t=>t.status==='open').length;
-  const claimed= TICKETS.filter(t=>t.status==='claimed').length;
-  const done   = TICKETS.filter(t=>t.status==='done').length;
-  const paid   = TICKETS.filter(t=>t.status==='done').reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0);
-  document.getElementById('adm-stats').innerHTML = `
-    <div class="stat-box"><div class="s-label">Tickets Abertos</div><div class="s-val">${open}</div><div class="s-sub">Aguardando atendente</div></div>
-    <div class="stat-box purple"><div class="s-label">Em Atendimento</div><div class="s-val">${claimed}</div><div class="s-sub">Em progresso</div></div>
-    <div class="stat-box green"><div class="s-label">Finalizados</div><div class="s-val">${done}</div><div class="s-sub">Total histórico</div></div>
-    <div class="stat-box gold"><div class="s-label">Comissões Pagas</div><div class="s-val">${fmtMoney(paid)}</div><div class="s-sub">Distribuído</div></div>
-  `;
-  document.getElementById('adm-recent').innerHTML = `
-    <div class="table-top"><h3>Tickets Recentes</h3><div class="live-pill"><div class="live-dot"></div>AO VIVO</div></div>
-    <table><thead><tr><th>ID</th><th>Cliente</th><th>Produto</th><th>Status</th><th>Atendente</th><th>Abertura</th></tr></thead>
-    <tbody>${TICKETS.slice(0,8).map(t=>{
-      const pr=getProd(t.product); const ag=getAgent(t.agent);
-      return `<tr onclick="openDetail('${t.id}')">
-        <td><span class="t-id">${t.id}</span></td>
-        <td><div class="t-client">${t.clientName}</div><div class="t-email">${t.clientEmail}</div></td>
-        <td>${pr?pr.emoji+' '+pr.name+' '+pr.plan:t.product}</td>
-        <td>${badge(t.status)}</td>
-        <td>${ag?ag.name:'<span style="color:var(--text3)">—</span>'}</td>
-        <td style="color:var(--text3);font-size:12px">${fmtDate(t.createdAt)}</td>
-      </tr>`;
-    }).join('')}</tbody></table>
-  `;
+function renderAdminDash(){
+  const op=TICKETS.filter(t=>t.status==='open').length,cl=TICKETS.filter(t=>t.status==='claimed').length,dn=TICKETS.filter(t=>t.status==='done').length,pd=TICKETS.filter(t=>t.status==='done').reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0);
+  document.getElementById('adm-stats').innerHTML=`<div class="stat-box"><div class="s-label">Abertos</div><div class="s-val">${op}</div><div class="s-sub">Aguardando</div></div><div class="stat-box purple"><div class="s-label">Em Atendimento</div><div class="s-val">${cl}</div></div><div class="stat-box green"><div class="s-label">Finalizados</div><div class="s-val">${dn}</div></div><div class="stat-box gold"><div class="s-label">Comissões Pagas</div><div class="s-val">${fmtMoney(pd)}</div></div>`;
+  document.getElementById('adm-recent').innerHTML=`<div class="table-top"><h3>Tickets Recentes</h3><div class="live-pill"><div class="live-dot"></div>AO VIVO</div></div><table><thead><tr><th>ID</th><th>Código</th><th>Cliente</th><th>Produto</th><th>Status</th><th>Atendente</th><th>Abertura</th></tr></thead><tbody>${TICKETS.slice(0,8).map(t=>{const pr=getProd(t.product),ag=getAgent(t.agent);return`<tr onclick="openDetail('${t.id}')"><td><span class="t-id">${t.id}</span></td><td><span class="t-id" style="color:var(--yellow);letter-spacing:.06em">${t.code||'—'}</span></td><td><div class="t-client">${t.clientName}</div><div class="t-email">${t.clientEmail}</div></td><td>${(t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join(', ')}</td><td>${badge(t.status)}</td><td>${ag?ag.name:'<span style="color:var(--text3)">—</span>'}</td><td style="color:var(--text3);font-size:11px">${fmtDate(t.createdAt)}</td></tr>`;}).join('')}</tbody></table>`;
 }
-
-function renderAdminTickets() {
-  const list = filterStatus==='all' ? TICKETS : TICKETS.filter(t=>t.status===filterStatus);
-  document.getElementById('adm-tickets-tbl').innerHTML = `
-    <div class="table-top">
-      <h3>Tickets (${list.length})</h3>
-      <div class="filter-row">
-        ${['all','open','claimed','done'].map(s=>`
-          <button class="f-btn ${filterStatus===s?'on':''}" onclick="setFilter('${s}')">${
-            s==='all'?'Todos':s==='open'?'Abertos':s==='claimed'?'Em Atend.':'Finalizados'
-          }</button>`).join('')}
-      </div>
-    </div>
-    <table><thead><tr><th>ID</th><th>Cliente</th><th>Produto</th><th>Tipo</th><th>Status</th><th>Atendente</th><th>Abertura</th><th>Ações</th></tr></thead>
-    <tbody>${list.map(t=>{
-      const pr=getProd(t.product); const ag=getAgent(t.agent);
-      return `<tr>
-        <td><span class="t-id">${t.id}</span></td>
-        <td><div class="t-client">${t.clientName}</div><div class="t-email">${t.clientEmail}</div></td>
-        <td>${pr?pr.emoji+' '+pr.name+' '+pr.plan:t.product}</td>
-        <td style="font-size:12px;color:var(--text3)">${t.type}</td>
-        <td>${badge(t.status)}</td>
-        <td>${ag?ag.name:'<span style="color:var(--text3)">—</span>'}</td>
-        <td style="color:var(--text3);font-size:12px">${fmtDate(t.createdAt)}</td>
-        <td>
-          <button class="act-btn" onclick="openDetail('${t.id}')">👁 Ver</button>
-          ${t.status!=='done'?`<button class="act-btn green" onclick="adminClose('${t.id}')">✅</button>`:''}
-          <button class="act-btn red" onclick="adminDel('${t.id}')">🗑</button>
-        </td>
-      </tr>`;
-    }).join('')}</tbody></table>
-  `;
+function renderAdminTickets(){
+  const list=filterStatus==='all'?TICKETS:TICKETS.filter(t=>t.status===filterStatus);
+  document.getElementById('adm-tickets-tbl').innerHTML=`<div class="table-top"><h3>Tickets (${list.length})</h3><div class="filter-row">${['all','open','claimed','done'].map(s=>`<button class="f-btn ${filterStatus===s?'on':''}" onclick="setFilter('${s}')">${s==='all'?'Todos':s==='open'?'Abertos':s==='claimed'?'Em Atend.':'Finalizados'}</button>`).join('')}</div></div><table><thead><tr><th>ID</th><th>Código</th><th>Cliente</th><th>Produto</th><th>Tipo</th><th>Status</th><th>Atendente</th><th>Abertura</th><th>Ações</th></tr></thead><tbody>${list.map(t=>{const pr=getProd(t.product),ag=getAgent(t.agent);return`<tr><td><span class="t-id">${t.id}</span></td><td><span class="t-id" style="color:var(--yellow);letter-spacing:.06em">${t.code||'—'}</span></td><td><div class="t-client">${t.clientName}</div><div class="t-email">${t.clientEmail}</div></td><td>${(t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join(', ')}</td><td style="font-size:11px;color:var(--text3)">${t.type}</td><td>${badge(t.status)}</td><td>${ag?ag.name:'<span style="color:var(--text3)">—</span>'}</td><td style="color:var(--text3);font-size:11px">${fmtDate(t.createdAt)}</td><td><button class="act-btn" onclick="openDetail('${t.id}')">👁 Ver</button>${t.status!=='done'?`<button class="act-btn green" onclick="adminClose('${t.id}')">✅</button>`:''}<button class="act-btn red" onclick="adminDel('${t.id}')">🗑</button></td></tr>`;}).join('')}</tbody></table>`;
 }
-
-function renderAdminAgents() {
-  document.getElementById('adm-agents-grid').innerHTML = AGENTS.map(a=>{
-    const extra = TICKETS.filter(t=>t.agent===a.id&&t.status==='done').reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0);
-    const active = TICKETS.filter(t=>t.agent===a.id&&t.status==='claimed').length;
-    return `<div class="agent-card">
-      <div class="ag-top">
-        <div class="ag-avatar">${initials(a.name)}</div>
-        <div>
-          <div class="ag-name">${a.name}</div>
-          <div class="ag-email">${a.email}</div>
-          <div style="font-size:10px;color:var(--purple3);font-family:var(--font-mono);margin-top:3px">@${a.login}</div>
-        </div>
-      </div>
-      <div class="ag-stats">
-        <div class="ag-stat"><div class="label">Fechados</div><div class="val">${a.closed}</div></div>
-        <div class="ag-stat"><div class="label">Em Aberto</div><div class="val">${active}</div></div>
-      </div>
-      <div class="ag-prods">${a.products.map(pid=>{const p=getProd(pid);return`<span class="ag-prod-tag">${p?p.emoji+' '+p.name:pid}</span>`;}).join('')}</div>
-      <div class="ag-earnings">
-        <div class="label">💰 Ganhos</div>
-        <div class="amount">${fmtMoney(a.earnings+extra)}</div>
-      </div>
-      <div class="ag-actions">
-        <button class="act-btn red" onclick="removeAgent('${a.id}')">Remover</button>
-      </div>
-    </div>`;
-  }).join('') || '<div class="empty-box"><div class="e-icon">👥</div><p>Nenhum atendente cadastrado.</p></div>';
+function renderAdminAgents(){
+  document.getElementById('adm-agents-grid').innerHTML=AGENTS.map(a=>{const extra=TICKETS.filter(t=>t.agent===a.id&&t.status==='done').reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0);const active=TICKETS.filter(t=>t.agent===a.id&&t.status==='claimed').length;return`<div class="agent-card"><div class="ag-top"><div class="ag-avatar">${initials(a.name)}</div><div><div class="ag-name">${a.name}</div><div class="ag-email"><a href="https://wa.me/55${(a.email||'').replace(/\D/g,'')}" target="_blank" style="color:var(--green);text-decoration:none">📱 ${a.email}</a></div><div class="ag-login-tag">@${a.login}</div></div></div><div class="ag-stats"><div class="ag-stat"><div class="label">Fechados</div><div class="val">${a.closed}</div></div><div class="ag-stat"><div class="label">Em Aberto</div><div class="val">${active}</div></div></div><div class="ag-prods">${a.products.map(pid=>{const p=getProd(pid);return`<span class="ag-prod-tag">${p?p.emoji+' '+p.name:pid}</span>`;}).join('')}</div><div class="ag-earnings"><div class="label">💰 Ganhos</div><div class="amount">${fmtMoney(a.earnings+extra)}</div></div><div class="ag-actions"><button class="act-btn red" onclick="removeAgent('${a.id}')">Remover</button></div></div>`;}).join('')||'<div class="empty-box"><div class="e-icon">👥</div><p>Nenhum atendente cadastrado.</p></div>';
 }
-
-function renderCommissions() {
-  document.getElementById('adm-comm-list').innerHTML = PRODUCTS.map(p=>`
-    <div class="comm-row">
-      <div><div class="comm-prod-name">${p.emoji} ${p.name}</div><div class="comm-prod-plan">${p.plan}</div></div>
-      <div style="font-size:11px;color:var(--text3);font-family:var(--font-mono)">Comissão por ticket</div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <span style="color:var(--text3)">R$</span>
-        <input class="comm-input" type="number" min="0" step="0.5" value="${COMMISSIONS[p.id]||0}"
-          oninput="COMMISSIONS['${p.id}']=parseFloat(this.value)||0;document.getElementById('cd-${p.id}').textContent=fmtMoney(COMMISSIONS['${p.id}'])" />
-      </div>
-      <div class="comm-display" id="cd-${p.id}">${fmtMoney(COMMISSIONS[p.id]||0)}</div>
-    </div>
-  `).join('');
-}
-
-function renderRanking(containerId) {
-  const sorted = AGENTS.map(a=>{
-    const extra=TICKETS.filter(t=>t.agent===a.id&&t.status==='done').reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0);
-    return {...a, total:a.earnings+extra};
-  }).sort((a,b)=>b.total-a.total);
-
-  document.getElementById(containerId).innerHTML = sorted.map((a,i)=>`
-    <div class="rank-row ${i===0?'first':''}">
-      <div class="rank-num ${i===0?'g':i===1?'s':i===2?'b':''}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</div>
-      <div class="ag-avatar" style="width:44px;height:44px;font-size:16px">${initials(a.name)}</div>
-      <div class="rank-info">
-        <div class="rank-name">${a.name}</div>
-        <div class="rank-sub">${a.closed} tickets finalizados · @${a.login}</div>
-      </div>
-      <div class="rank-earn">${fmtMoney(a.total)}</div>
-    </div>
-  `).join('') || '<div class="empty-box"><div class="e-icon">🏆</div><p>Nenhum dado ainda.</p></div>';
-}
-
-/* ─── AGENT RENDERS ─── */
-function renderAgentQueue() {
-  const me = getAgent(currentUser.id);
-  const avail = me ? TICKETS.filter(t=>t.status==='open'&&me.products.includes(t.product)) : [];
-  document.getElementById('ag-queue-tbl').innerHTML = avail.length===0
-    ? `<div class="empty-box"><div class="e-icon">🎉</div><p>Fila vazia! Nenhum ticket disponível agora.</p></div>`
-    : `<table><thead><tr><th>ID</th><th>Cliente</th><th>Produto</th><th>Tipo</th><th>Abertura</th><th>Comissão</th><th>Ação</th></tr></thead>
-       <tbody>${avail.map(t=>{
-         const pr=getProd(t.product);
-         return `<tr>
-           <td><span class="t-id">${t.id}</span></td>
-           <td>${t.clientName}</td>
-           <td>${pr?pr.emoji+' '+pr.name+' '+pr.plan:t.product}</td>
-           <td style="font-size:12px;color:var(--text3)">${t.type}</td>
-           <td style="font-size:12px;color:var(--text3)">${fmtDate(t.createdAt)}</td>
-           <td style="font-family:var(--font-display);color:var(--gold);font-weight:700">${fmtMoney(COMMISSIONS[t.product]||0)}</td>
-           <td><button class="act-btn fill" onclick="claimTicket('${t.id}')">⚡ Pegar</button></td>
-         </tr>`;
-       }).join('')}</tbody></table>`;
-}
-
-function renderAgentMine() {
-  const mine = TICKETS.filter(t=>t.agent===currentUser.id&&t.status==='claimed');
-  document.getElementById('ag-mine-tbl').innerHTML = mine.length===0
-    ? `<div class="empty-box"><div class="e-icon">📭</div><p>Nenhum ticket em andamento.</p></div>`
-    : `<table><thead><tr><th>ID</th><th>Cliente</th><th>Produto</th><th>Status</th><th>Comissão</th><th>Ações</th></tr></thead>
-       <tbody>${mine.map(t=>{
-         const pr=getProd(t.product);
-         return `<tr>
-           <td><span class="t-id">${t.id}</span></td>
-           <td>${t.clientName}</td>
-           <td>${pr?pr.emoji+' '+pr.name:t.product}</td>
-           <td>${badge(t.status)}</td>
-           <td style="font-family:var(--font-display);color:var(--gold);font-weight:700">${fmtMoney(COMMISSIONS[t.product]||0)}</td>
-           <td>
-             <button class="act-btn" onclick="openDetail('${t.id}')">💬 Atender</button>
-             <button class="act-btn green" onclick="agentClose('${t.id}')">✅ Finalizar</button>
-           </td>
-         </tr>`;
-       }).join('')}</tbody></table>`;
-}
-
-function renderAgentDone() {
-  const done = TICKETS.filter(t=>t.agent===currentUser.id&&t.status==='done');
-  document.getElementById('ag-done-tbl').innerHTML = done.length===0
-    ? `<div class="empty-box"><div class="e-icon">📦</div><p>Nenhum ticket finalizado ainda.</p></div>`
-    : `<table><thead><tr><th>ID</th><th>Cliente</th><th>Produto</th><th>Finalizado em</th><th>Comissão</th><th></th></tr></thead>
-       <tbody>${done.map(t=>{
-         const pr=getProd(t.product);
-         return `<tr>
-           <td><span class="t-id">${t.id}</span></td>
-           <td>${t.clientName}</td>
-           <td>${pr?pr.emoji+' '+pr.name:t.product}</td>
-           <td style="font-size:12px;color:var(--text3)">${fmtDate(t.closedAt)}</td>
-           <td style="font-family:var(--font-display);color:var(--green);font-weight:700">${fmtMoney(COMMISSIONS[t.product]||0)}</td>
-           <td><button class="act-btn" onclick="openDetail('${t.id}')">👁 Ver</button></td>
-         </tr>`;
-       }).join('')}</tbody></table>`;
-}
-
-function renderAgentEarnings() {
-  const me = getAgent(currentUser.id);
-  if(!me) return;
-  const extra = TICKETS.filter(t=>t.agent===me.id&&t.status==='done').reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0);
-  const total = me.earnings + extra;
-  const totalClosed = me.closed;
-  document.getElementById('ag-earnings-content').innerHTML = `
-    <div class="stats-row" style="grid-template-columns:repeat(3,1fr)">
-      <div class="stat-box green"><div class="s-label">Total Acumulado</div><div class="s-val">${fmtMoney(total)}</div></div>
-      <div class="stat-box purple"><div class="s-label">Tickets Fechados</div><div class="s-val">${totalClosed}</div></div>
-      <div class="stat-box gold"><div class="s-label">Média por Ticket</div><div class="s-val">${fmtMoney(total/Math.max(1,totalClosed))}</div></div>
-    </div>
-    <div class="data-table" style="margin-top:24px">
-      <div class="table-top"><h3>Minhas Comissões por Produto</h3></div>
-      <table><thead><tr><th>Produto</th><th>Comissão por Ticket</th></tr></thead>
-      <tbody>${me.products.map(pid=>{
-        const p=getProd(pid);
-        return `<tr><td>${p?p.emoji+' '+p.name+' '+p.plan:pid}</td>
-          <td style="font-family:var(--font-display);color:var(--gold);font-size:20px;font-weight:700">${fmtMoney(COMMISSIONS[pid]||0)}</td></tr>`;
-      }).join('')}</tbody></table>
-    </div>
-  `;
-}
-
-/* ─── TICKET ACTIONS ─── */
-function claimTicket(id) {
-  const t=TICKETS.find(t=>t.id===id);
-  if(!t||t.status!=='open'){toast('⚠️ Ticket já foi pego por outro atendente!');return;}
-  t.status='claimed'; t.agent=currentUser.id;
-  toast(`⚡ Você pegou o ticket ${id}! Vá para "Meus Tickets".`);
-  navTo('agent-queue');
-}
-
-function agentClose(id) {
-  const t=TICKETS.find(t=>t.id===id); if(!t) return;
-  t.status='done'; t.closedAt=new Date().toISOString();
-  const comm=COMMISSIONS[t.product]||0;
-  const ag=getAgent(currentUser.id);
-  if(ag){ag.closed++;ag.earnings+=comm;}
-  toast(`✅ Ticket ${id} finalizado! Você ganhou ${fmtMoney(comm)} 🎉`);
-  navTo('agent-mine');
-}
-
-function adminClose(id) {
-  const t=TICKETS.find(t=>t.id===id); if(!t||t.status==='done') return;
-  t.status='done'; t.closedAt=new Date().toISOString();
-  const ag=getAgent(t.agent);
-  if(ag){ag.closed++;ag.earnings+=(COMMISSIONS[t.product]||0);}
-  toast(`✅ Ticket ${id} encerrado.`);
-  navTo(currentPage);
-}
-
-function adminDel(id) {
-  const idx=TICKETS.findIndex(t=>t.id===id);
-  if(idx>-1){TICKETS.splice(idx,1);toast('🗑 Ticket removido.');navTo(currentPage);}
-}
-
-function setFilter(s) { filterStatus=s; renderAdminTickets(); }
-
-/* ─── TICKET DETAIL (admin vê tudo, agente vê os seus) ─── */
-function openDetail(id) {
-  const t=TICKETS.find(t=>t.id===id); if(!t) return;
-  const pr=getProd(t.product); const ag=getAgent(t.agent);
-  const isAdmin = currentUser.role==='admin';
-  const isOwner = currentUser.role==='agent' && t.agent===currentUser.id;
-  const canReply = isAdmin || isOwner;
-  const canFinalize = isOwner && t.status==='claimed';
-
-  document.getElementById('dt-title').textContent = `Ticket ${t.id}`;
-  document.getElementById('dt-sub').textContent = `${t.clientName} · ${pr?pr.name+' '+pr.plan:t.product}`;
-
-  document.getElementById('dt-body').innerHTML = `
-    <div class="detail-grid">
-      <div class="detail-item"><div class="label">Cliente</div><div class="val">${t.clientName}</div></div>
-      <div class="detail-item"><div class="label">Email</div><div class="val">${t.clientEmail}</div></div>
-      <div class="detail-item"><div class="label">Produto</div><div class="val">${pr?pr.emoji+' '+pr.name+' '+pr.plan:t.product}</div></div>
-      <div class="detail-item"><div class="label">Tipo</div><div class="val">${t.type}</div></div>
-      <div class="detail-item"><div class="label">Status</div><div class="val">${badge(t.status)}</div></div>
-      <div class="detail-item"><div class="label">Atendente</div><div class="val">${ag?ag.name:'<span style="color:var(--text3)">Aguardando</span>'}</div></div>
-    </div>
-    <div style="background:var(--bg2);border-radius:12px;padding:16px;margin-bottom:20px;font-size:14px;line-height:1.7">
-      <div style="font-size:10px;color:var(--text3);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Descrição</div>
-      ${t.desc}
-    </div>
-    <div style="margin-bottom:8px;font-size:10px;color:var(--text3);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.1em">Conversa (${t.messages.length} mensagens)</div>
-    <div class="chat-thread" id="chat-thread-${t.id}">
-      ${t.messages.length===0
-        ? '<div style="text-align:center;color:var(--text3);padding:20px;font-size:13px">Nenhuma mensagem ainda.</div>'
-        : t.messages.map(m=>`
-          <div class="msg-bubble ${m.isAgent?'agent':''}">
-            <div class="msg-from">${m.from} · ${fmtDate(m.ts)}</div>
-            <div class="msg-text">${m.text}</div>
-          </div>`).join('')}
-    </div>
-    ${canReply ? `
-      <div class="chat-input-row">
-        <input id="chat-inp-${t.id}" placeholder="Digite uma mensagem..." onkeydown="if(event.key==='Enter')sendMsg('${t.id}')" />
-        <button class="act-btn fill" onclick="sendMsg('${t.id}')">Enviar</button>
-      </div>` : ''}
-    <hr class="div">
-    <div style="display:flex;gap:10px">
-      <button class="act-btn" style="flex:1;padding:12px" onclick="closeOv('ov-detail')">Fechar</button>
-      ${canFinalize ? `<button class="act-btn fill" style="flex:2;padding:12px" onclick="agentClose('${t.id}');closeOv('ov-detail')">✅ Finalizar e Ganhar ${fmtMoney(COMMISSIONS[t.product]||0)}</button>` : ''}
-      ${isAdmin && t.status!=='done' ? `<button class="act-btn green" style="flex:2;padding:12px" onclick="adminClose('${t.id}');closeOv('ov-detail')">✅ Encerrar (Admin)</button>` : ''}
-    </div>
-  `;
+function renderCommissions(){document.getElementById('adm-comm-list').innerHTML=PRODUCTS.map(p=>`<div class="comm-row"><div><div class="comm-prod-name">${p.emoji} ${p.name}</div><div class="comm-prod-plan">${p.plan}</div></div><div style="font-size:11px;color:var(--text3);font-family:var(--mono)">por ticket</div><div style="display:flex;align-items:center;gap:7px"><span style="color:var(--text3)">R$</span><input class="comm-input" type="number" min="0" step="0.5" value="${COMMISSIONS[p.id]||0}" oninput="COMMISSIONS['${p.id}']=parseFloat(this.value)||0;document.getElementById('cd-${p.id}').textContent=fmtMoney(COMMISSIONS['${p.id}'])"/></div><div class="comm-display" id="cd-${p.id}">${fmtMoney(COMMISSIONS[p.id]||0)}</div></div>`).join('');}
+function renderRanking(cid){const sorted=AGENTS.map(a=>{const extra=TICKETS.filter(t=>t.agent===a.id&&t.status==='done').reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0);return{...a,total:a.earnings+extra};}).sort((a,b)=>b.total-a.total);document.getElementById(cid).innerHTML=sorted.map((a,i)=>`<div class="rank-row ${i===0?'first':''}"><div class="rank-num ${i===0?'g':i===1?'s':i===2?'b':''}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</div><div class="ag-avatar" style="width:42px;height:42px;font-size:15px">${initials(a.name)}</div><div class="rank-info"><div class="rank-name">${a.name}</div><div class="rank-sub">${a.closed} tickets · @${a.login}</div></div><div class="rank-earn">${fmtMoney(a.total)}</div></div>`).join('')||'<div class="empty-box"><div class="e-icon">🏆</div><p>Nenhum dado ainda.</p></div>';}
+function renderAgentQueue(){const me=getAgent(currentUser.id),avail=me?TICKETS.filter(t=>t.status==='open'&&(t.products||[t.product]).some(p=>me.products.includes(p))):[];document.getElementById('ag-queue-tbl').innerHTML=avail.length===0?'<div class="empty-box"><div class="e-icon">🎉</div><p>Fila vazia!</p></div>':`<table><thead><tr><th>ID</th><th>Cliente</th><th>Produto</th><th>Tipo</th><th>Abertura</th><th>Comissão</th><th>Ação</th></tr></thead><tbody>${avail.map(t=>{const pr=getProd(t.product);return`<tr><td><span class="t-id">${t.id}</span></td><td>${t.clientName}</td><td>${(t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join(', ')}</td><td style="font-size:11px;color:var(--text3)">${t.type}</td><td style="font-size:11px;color:var(--text3)">${fmtDate(t.createdAt)}</td><td style="color:var(--yellow);font-weight:800">${fmtMoney(COMMISSIONS[t.product]||0)}</td><td><button class="act-btn yf" onclick="claimTicket('${t.id}')">⚡ Pegar</button></td></tr>`;}).join('')}</tbody></table>`;}
+function renderAgentMine(){const mine=TICKETS.filter(t=>t.agent===currentUser.id&&t.status==='claimed');document.getElementById('ag-mine-tbl').innerHTML=mine.length===0?'<div class="empty-box"><div class="e-icon">📭</div><p>Nenhum ticket em andamento.</p></div>':`<table><thead><tr><th>ID</th><th>Cliente</th><th>Produto</th><th>Status</th><th>Comissão</th><th>Ações</th></tr></thead><tbody>${mine.map(t=>{const pr=getProd(t.product);return`<tr><td><span class="t-id">${t.id}</span></td><td>${t.clientName}</td><td>${(t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join(', ')}</td><td>${badge(t.status)}</td><td style="color:var(--yellow);font-weight:800">${fmtMoney(COMMISSIONS[t.product]||0)}</td><td><button class="act-btn" onclick="openDetail('${t.id}')">💬 Atender</button><button class="act-btn green" onclick="agentClose('${t.id}')">✅ Finalizar</button></td></tr>`;}).join('')}</tbody></table>`;}
+function renderAgentDone(){const done=TICKETS.filter(t=>t.agent===currentUser.id&&t.status==='done');document.getElementById('ag-done-tbl').innerHTML=done.length===0?'<div class="empty-box"><div class="e-icon">📦</div><p>Nenhum finalizado ainda.</p></div>':`<table><thead><tr><th>ID</th><th>Cliente</th><th>Produto</th><th>Finalizado em</th><th>Comissão</th><th></th></tr></thead><tbody>${done.map(t=>{const pr=getProd(t.product);return`<tr><td><span class="t-id">${t.id}</span></td><td>${t.clientName}</td><td>${(t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join(', ')}</td><td style="font-size:11px;color:var(--text3)">${fmtDate(t.closedAt)}</td><td style="color:var(--green);font-weight:800">${fmtMoney(COMMISSIONS[t.product]||0)}</td><td><button class="act-btn" onclick="openDetail('${t.id}')">👁 Ver</button></td></tr>`;}).join('')}</tbody></table>`;}
+function renderAgentEarnings(){const me=getAgent(currentUser.id);if(!me)return;const extra=TICKETS.filter(t=>t.agent===me.id&&t.status==='done').reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0);const total=me.earnings+extra;document.getElementById('ag-earnings-content').innerHTML=`<div class="stats-row" style="grid-template-columns:repeat(3,1fr)"><div class="stat-box green"><div class="s-label">Total Acumulado</div><div class="s-val">${fmtMoney(total)}</div></div><div class="stat-box purple"><div class="s-label">Tickets Fechados</div><div class="s-val">${me.closed}</div></div><div class="stat-box gold"><div class="s-label">Média por Ticket</div><div class="s-val">${fmtMoney(total/Math.max(1,me.closed))}</div></div></div><div class="data-table" style="margin-top:20px"><div class="table-top"><h3>Comissões por Produto</h3></div><table><thead><tr><th>Produto</th><th>Comissão por Ticket</th></tr></thead><tbody>${me.products.map(pid=>{const p=getProd(pid);return`<tr><td>${p?p.emoji+' '+p.name+' '+p.plan:pid}</td><td style="color:var(--yellow);font-size:19px;font-weight:800">${fmtMoney(COMMISSIONS[pid]||0)}</td></tr>`;}).join('')}</tbody></table></div>`;}
+function claimTicket(id){const t=TICKETS.find(t=>t.id===id);if(!t||t.status!=='open'){toast('⚠️ Ticket já foi pego!');return;}t.status='claimed';t.agent=currentUser.id;toast(`⚡ Você pegou o ticket ${id}!`);navTo('agent-queue');}
+function agentClose(id){const t=TICKETS.find(t=>t.id===id);if(!t)return;t.status='done';t.closedAt=new Date().toISOString();const comm=COMMISSIONS[t.product]||0;const ag=getAgent(currentUser.id);if(ag){ag.closed++;ag.earnings+=comm;}toast(`✅ Ticket ${id} finalizado! Você ganhou ${fmtMoney(comm)} 🎉`);navTo('agent-mine');}
+function adminClose(id){const t=TICKETS.find(t=>t.id===id);if(!t||t.status==='done')return;t.status='done';t.closedAt=new Date().toISOString();const ag=getAgent(t.agent);if(ag){ag.closed++;ag.earnings+=(COMMISSIONS[t.product]||0);}toast(`✅ Ticket ${id} encerrado.`);navTo(currentPage);}
+function adminDel(id){const idx=TICKETS.findIndex(t=>t.id===id);if(idx>-1){TICKETS.splice(idx,1);toast('🗑 Ticket removido.');navTo(currentPage);}}
+function setFilter(s){filterStatus=s;renderAdminTickets();}
+function openDetail(id){
+  const t=TICKETS.find(t=>t.id===id);if(!t)return;
+  const pr=getProd(t.product),ag=getAgent(t.agent);
+  const isAdmin=currentUser.role==='admin',isOwner=currentUser.role==='agent'&&t.agent===currentUser.id,canFinalize=isOwner&&t.status==='claimed';
+  document.getElementById('dt-title').innerHTML=`Ticket ${t.id} <span style='font-family:var(--mono);font-size:13px;color:var(--yellow);font-weight:600;margin-left:8px'>${t.code||''}</span>`;
+  document.getElementById('dt-sub').textContent=`${t.clientName} · ${(t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.name:pid;}).join(', ')}` ;
+  document.getElementById('dt-body').innerHTML=`<div class="detail-grid"><div class="detail-item"><div class="label">Cliente</div><div class="val">${t.clientName}</div></div><div class="detail-item"><div class="label">📱 WhatsApp</div><div class="val"><a href="https://wa.me/55${t.clientEmail.replace(/\D/g,'')}" target="_blank" style="color:var(--green);text-decoration:none">${t.clientEmail} 💬</a></div></div><div class="detail-item"><div class="label">Produto(s)</div><div class="val">${(t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join('<br/>')}</div></div><div class="detail-item"><div class="label">Tipo</div><div class="val">${t.type}</div></div><div class="detail-item"><div class="label">Status</div><div class="val">${badge(t.status)}</div></div><div class="detail-item"><div class="label">Atendente</div><div class="val">${ag?ag.name:'<span style="color:var(--text3)">Aguardando</span>'}</div></div></div><div style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:18px;font-size:13px;line-height:1.7"><div style="font-size:9px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px">Descrição</div>${t.desc}</div>
+    ${t.attachment?`<div style="margin-bottom:18px"><div style="font-size:9px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">📎 Anexo do Cliente</div>${t.attachment.type&&t.attachment.type.startsWith('image/')?`<img src="${t.attachment.data}" style="max-width:100%;border-radius:10px;border:1px solid var(--border);cursor:pointer" onclick="window.open(this.src)" title="Clique para abrir"/>`:''}<div style="font-size:12px;color:var(--text3);margin-top:6px">📄 ${t.attachment.name}</div></div>`:''}<div style="margin-bottom:7px;font-size:9px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em">Conversa (${t.messages.length} mensagens)</div><div class="chat-thread" id="chat-thread-${t.id}">${t.messages.length===0?'<div style="text-align:center;color:var(--text3);padding:18px;font-size:12px">Nenhuma mensagem ainda.</div>':t.messages.map(m=>`<div class="msg-bubble ${m.isAgent?'agent':''}"><div class="msg-from">${m.from} · ${fmtDate(m.ts)}</div><div class="msg-text">${m.text}</div></div>`).join('')}</div>${(isAdmin||isOwner)?`<div class="chat-input-row"><input id="chat-inp-${t.id}" placeholder="Digite uma mensagem..." onkeydown="if(event.key==='Enter')sendMsg('${t.id}')"/><button class="act-btn fill" onclick="sendMsg('${t.id}')">Enviar</button></div>`:''}<hr class="div"><div style="display:flex;gap:8px"><button class="act-btn" style="flex:1;padding:11px" onclick="closeOv('ov-detail')">Fechar</button>${canFinalize?`<button class="act-btn fill" style="flex:2;padding:11px" onclick="agentClose('${t.id}');closeOv('ov-detail')">✅ Finalizar · Ganhar ${fmtMoney(COMMISSIONS[t.product]||0)}</button>`:''} ${isAdmin&&t.status!=='done'?`<button class="act-btn green" style="flex:2;padding:11px" onclick="adminClose('${t.id}');closeOv('ov-detail')">✅ Encerrar (Admin)</button>`:''}</div>`;
   openOv('ov-detail');
 }
+function sendMsg(id){const inp=document.getElementById('chat-inp-'+id);if(!inp)return;const text=inp.value.trim();if(!text)return;const t=TICKETS.find(t=>t.id===id);if(!t)return;const sender=currentUser.role==='admin'?'Admin':getAgent(currentUser.id)?.name||'Atendente';t.messages.push({from:sender,isAgent:true,text,ts:new Date().toISOString()});const thread=document.getElementById('chat-thread-'+id);if(thread){const d=document.createElement('div');d.className='msg-bubble agent';d.innerHTML=`<div class="msg-from">${sender} · Agora</div><div class="msg-text">${text}</div>`;thread.appendChild(d);thread.scrollTop=thread.scrollHeight;}inp.value='';}
 
-function sendMsg(id) {
-  const inp=document.getElementById('chat-inp-'+id); if(!inp) return;
-  const text=inp.value.trim(); if(!text) return;
-  const t=TICKETS.find(t=>t.id===id); if(!t) return;
-  const senderName = currentUser.role==='admin'?'Admin':getAgent(currentUser.id)?.name||'Atendente';
-  const msg={from:senderName, isAgent:true, text, ts:new Date().toISOString()};
-  t.messages.push(msg);
-  const thread=document.getElementById('chat-thread-'+id);
-  if(thread){
-    const d=document.createElement('div');
-    d.className='msg-bubble agent';
-    d.innerHTML=`<div class="msg-from">${senderName} · Agora</div><div class="msg-text">${text}</div>`;
-    thread.appendChild(d); thread.scrollTop=thread.scrollHeight;
-  }
-  inp.value='';
-}
-
-/* ─── TICKET CREATION (client) ─── */
-(function buildProdGrid(){
-  const g=document.getElementById('tk-prod-grid');
-  g.innerHTML=PRODUCTS.map(p=>`
-    <div class="prod-card" data-id="${p.id}" onclick="selProd('${p.id}')">
-      <div class="p-check">✓</div>
-      <span class="p-emoji">${p.emoji}</span>
-      <div class="p-name">${p.name}</div>
-      <div class="p-plan">${p.plan}</div>
-    </div>`).join('');
-
-  // Add agent product checkboxes
-  const cg=document.getElementById('ag-chk-grid');
-  cg.innerHTML=PRODUCTS.map(p=>`
-    <div class="chk-item">
-      <input type="checkbox" id="chk-${p.id}" value="${p.id}">
-      <label for="chk-${p.id}">${p.emoji} ${p.name} ${p.plan}</label>
-    </div>`).join('');
+(function init(){
+  document.getElementById('tk-prod-grid').innerHTML=PRODUCTS.map(p=>`<div class="prod-card" data-id="${p.id}" onclick="selProd('${p.id}')"><div class="p-check">✓</div><span class="p-emoji">${p.emoji}</span><div class="p-name">${p.name}</div><div class="p-plan">${p.plan}</div></div>`).join('');
+  document.getElementById('ag-chk-grid').innerHTML=PRODUCTS.map(p=>`<div class="chk-item"><input type="checkbox" id="chk-${p.id}" value="${p.id}"><label for="chk-${p.id}">${p.emoji} ${p.name} ${p.plan}</label></div>`).join('');
 })();
 
-function selProd(id) {
-  selectedProduct=id;
-  document.querySelectorAll('.prod-card').forEach(c=>c.classList.toggle('sel',c.dataset.id===id));
+function selProd(id){
+  const idx=selectedProducts.indexOf(id);
+  if(idx>-1) selectedProducts.splice(idx,1); else selectedProducts.push(id);
+  document.querySelectorAll('.prod-card').forEach(c=>c.classList.toggle('sel',selectedProducts.includes(c.dataset.id)));
 }
-
-function submitTicket() {
-  const name=document.getElementById('tk-name').value.trim();
-  const email=document.getElementById('tk-email').value.trim();
-  const type=document.getElementById('tk-type').value;
-  const desc=document.getElementById('tk-desc').value.trim();
-  if(!name||!email||!type||!selectedProduct||!desc){toast('⚠️ Preencha todos os campos!');return;}
-  TICKETS.unshift({
-    id:genId(), clientName:name, clientEmail:email,
-    product:selectedProduct, type, desc,
-    status:'open', agent:null,
-    createdAt:new Date().toISOString(), messages:[]
-  });
-  closeOv('ov-ticket');
-  toast(`✅ Ticket aberto! Em breve um especialista irá te contatar.`);
-  document.getElementById('tk-name').value='';
-  document.getElementById('tk-email').value='';
-  document.getElementById('tk-type').value='';
-  document.getElementById('tk-desc').value='';
-  selectedProduct=null;
-  document.querySelectorAll('.prod-card').forEach(c=>c.classList.remove('sel'));
-}
-
-/* ─── ADD AGENT ─── */
-function addAgent() {
-  const name=document.getElementById('ag-name').value.trim();
-  const email=document.getElementById('ag-email').value.trim();
-  const login=document.getElementById('ag-login').value.trim();
-  const pass=document.getElementById('ag-pass').value;
-  const products=[...document.querySelectorAll('#ag-chk-grid input:checked')].map(i=>i.value);
-  if(!name||!email||!login||!pass||products.length===0){
-    toast('⚠️ Preencha tudo e selecione ao menos 1 produto!');return;
+function submitTicket(){
+  const name=document.getElementById('tk-name').value.trim(),
+        email=document.getElementById('tk-email').value.trim(),
+        desc=document.getElementById('tk-desc').value.trim(),
+        fileInput=document.getElementById('tk-file');
+  if(!name||!email||selectedProducts.length===0||!desc){toast('⚠️ Escolha ao menos 1 produto e preencha todos os campos!');return;}
+  const file=fileInput&&fileInput.files[0];
+  if(file&&file.size>5*1024*1024){toast('⚠️ Arquivo muito grande! Máximo 5MB.');return;}
+  function finish(attachment){
+    const ticketId=genId();
+    const ticketCode=genCode();
+    TICKETS.unshift({id:ticketId,code:ticketCode,clientName:name,clientEmail:email,products:[...selectedProducts],product:selectedProducts[0],type:pendingType||'duvida',desc,attachment:attachment||null,status:'open',agent:null,createdAt:new Date().toISOString(),messages:[]});
+    closeOv('ov-ticket');
+    showTicketCode(ticketCode);
+    document.getElementById('tk-name').value='';
+    document.getElementById('tk-email').value='';
+    document.getElementById('tk-desc').value='';
+    if(fileInput)fileInput.value='';
+    selectedProducts=[];pendingType='';
+    document.querySelectorAll('.prod-card').forEach(c=>c.classList.remove('sel'));
   }
-  if(AGENTS.find(a=>a.login===login)){toast('⚠️ Este login já está em uso!');return;}
-  if(login===ADMIN_CRED.login){toast('⚠️ Este login é reservado!');return;}
-  AGENTS.push({id:'ag'+Date.now(),name,email,login,pass,products,closed:0,earnings:0});
-  closeOv('ov-add-agent');
-  document.getElementById('ag-name').value='';
-  document.getElementById('ag-email').value='';
-  document.getElementById('ag-login').value='';
-  document.getElementById('ag-pass').value='';
-  document.querySelectorAll('#ag-chk-grid input').forEach(i=>i.checked=false);
-  toast(`✅ Atendente ${name} cadastrado! Login: ${login}`);
-  navTo('admin-agents');
+  if(file){
+    const reader=new FileReader();
+    reader.onload=e=>finish({name:file.name,type:file.type,data:e.target.result});
+    reader.readAsDataURL(file);
+  } else {finish(null);}
+}
+/* ─── FINANCIAL CONTROL ─── */
+let PAYMENTS = {}; // {agId: [{id, amount, date, note, paid}]}
+
+function getAgentDebt(agId) {
+  const ag = getAgent(agId); if(!ag) return {total:0,paid:0,pending:0};
+  const earned = TICKETS.filter(t=>t.agent===agId&&t.status==='done').reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0) + ag.earnings;
+  const paidOut = (PAYMENTS[agId]||[]).reduce((s,p)=>s+(p.paid?p.amount:0),0);
+  return {total:earned, paid:paidOut, pending:earned-paidOut};
 }
 
-function removeAgent(id) {
-  const idx=AGENTS.findIndex(a=>a.id===id);
-  if(idx>-1){AGENTS.splice(idx,1);toast('🗑 Atendente removido.');renderAdminAgents();}
+function renderAdminFinance() {
+  const container = document.getElementById('adm-finance-content');
+  container.innerHTML = AGENTS.map(a => {
+    const debt = getAgentDebt(a.id);
+    const payments = PAYMENTS[a.id] || [];
+    return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
+        <div class="ag-avatar">${initials(a.name)}</div>
+        <div style="flex:1"><div style="font-weight:700;font-size:15px">${a.name}</div><div style="font-size:11px;color:var(--text3)">@${a.login}</div></div>
+        <div style="text-align:right">
+          <div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:3px">SALDO DEVEDOR</div>
+          <div style="font-size:28px;font-weight:800;color:${debt.pending>0?'var(--red)':'var(--green)'}">
+            ${debt.pending>0?'- ':'✅ '}${fmtMoney(debt.pending)}
+          </div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px">
+        <div style="background:var(--bg2);border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:9px;color:var(--text3);font-family:var(--mono);margin-bottom:4px">TOTAL GANHO</div>
+          <div style="font-size:18px;font-weight:800;color:var(--text)">${fmtMoney(debt.total)}</div>
+        </div>
+        <div style="background:var(--bg2);border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:9px;color:var(--text3);font-family:var(--mono);margin-bottom:4px">JÁ PAGO</div>
+          <div style="font-size:18px;font-weight:800;color:var(--green)">${fmtMoney(debt.paid)}</div>
+        </div>
+        <div style="background:var(--bg2);border:1px solid ${debt.pending>0?'rgba(248,113,113,.3)':'rgba(34,211,126,.2)'};border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:9px;color:var(--text3);font-family:var(--mono);margin-bottom:4px">AINDA DEVE</div>
+          <div style="font-size:18px;font-weight:800;color:${debt.pending>0?'var(--red)':'var(--green)'}">${fmtMoney(debt.pending)}</div>
+        </div>
+      </div>
+      <div style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:12px">
+        <div style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:10px;text-transform:uppercase;letter-spacing:.1em">Registrar Pagamento</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input id="pay-amt-${a.id}" type="number" min="0" step="0.50" placeholder="Valor R$" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:9px;font-size:13px;font-family:var(--font);outline:none;width:130px"/>
+          <input id="pay-note-${a.id}" type="text" placeholder="Observação (ex: pix, dia 10)" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:9px;font-size:13px;font-family:var(--font);outline:none;flex:1;min-width:150px"/>
+          <button class="act-btn fill" style="padding:9px 16px" onclick="addPayment('${a.id}')">+ Registrar Pago</button>
+        </div>
+      </div>
+      ${payments.length>0?`
+      <div>
+        <div style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:8px;text-transform:uppercase;letter-spacing:.1em">Histórico de Pagamentos</div>
+        ${payments.slice().reverse().map(p=>`
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface2);border-radius:9px;margin-bottom:6px;border:1px solid var(--border)">
+            <span style="font-size:16px">${p.paid?'✅':'⏳'}</span>
+            <div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--green)">${fmtMoney(p.amount)}</div>${p.note?`<div style="font-size:11px;color:var(--text3)">${p.note}</div>`:''}</div>
+            <div style="font-size:10px;color:var(--text3);font-family:var(--mono)">${fmtDate(p.date)}</div>
+            <button class="act-btn red" onclick="removePayment('${a.id}','${p.id}')" style="padding:3px 8px">🗑</button>
+          </div>`).join('')}
+      </div>`:''}
+    </div>`;
+  }).join('') || '<div class="empty-box"><div class="e-icon">💰</div><p>Nenhum atendente cadastrado.</p></div>';
 }
 
-// Init: show client portal by default
+function addPayment(agId) {
+  const amtEl=document.getElementById('pay-amt-'+agId),noteEl=document.getElementById('pay-note-'+agId);
+  const amt=parseFloat(amtEl.value);
+  if(!amt||amt<=0){toast('⚠️ Informe um valor válido!');return;}
+  if(!PAYMENTS[agId])PAYMENTS[agId]=[];
+  PAYMENTS[agId].push({id:'p'+Date.now(),amount:amt,note:noteEl.value.trim(),date:new Date().toISOString(),paid:true});
+  amtEl.value='';noteEl.value='';
+  const ag=getAgent(agId);
+  toast(`✅ Pagamento de ${fmtMoney(amt)} para ${ag?ag.name:agId} registrado!`);
+  renderAdminFinance();
+}
+
+function removePayment(agId,pid) {
+  if(!PAYMENTS[agId])return;
+  PAYMENTS[agId]=PAYMENTS[agId].filter(p=>p.id!==pid);
+  renderAdminFinance();
+  toast('🗑 Pagamento removido.');
+}
+
+function addAgent(){const name=document.getElementById('ag-name').value.trim(),email=document.getElementById('ag-email').value.trim(),login=document.getElementById('ag-login').value.trim(),pass=document.getElementById('ag-pass').value,products=[...document.querySelectorAll('#ag-chk-grid input:checked')].map(i=>i.value);if(!name||!email||!login||!pass||products.length===0){toast('⚠️ Preencha tudo e selecione ao menos 1 produto!');return;}if(AGENTS.find(a=>a.login===login)){toast('⚠️ Login já em uso!');return;}if(login===ADMIN_CRED.login){toast('⚠️ Login reservado!');return;}AGENTS.push({id:'ag'+Date.now(),name,email,login,pass,products,closed:0,earnings:0});closeOv('ov-add-agent');['ag-name','ag-email','ag-login','ag-pass'].forEach(id=>document.getElementById(id).value='');document.querySelectorAll('#ag-chk-grid input').forEach(i=>i.checked=false);toast(`✅ Atendente ${name} cadastrado! Login: ${login}`);navTo('admin-agents');}
+function lookupTicket(){
+  const code=document.getElementById('lookup-code').value.trim().toUpperCase();
+  const resEl=document.getElementById('lookup-result');
+  if(!code){resEl.innerHTML='<div style="color:var(--red);font-size:13px;padding:8px 0">⚠️ Digite o código do chamado.</div>';return;}
+  const t=TICKETS.find(t=>t.code===code);
+  if(!t){resEl.innerHTML='<div style="background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.3);color:var(--red);padding:14px;border-radius:10px;font-size:13px;margin-bottom:14px">❌ Código não encontrado. Verifique se digitou corretamente.</div>';return;}
+  const ag=getAgent(t.agent);
+  const prods=(t.products||[t.product]).map(pid=>{const p=getProd(pid);return p?p.emoji+' '+p.name:pid;}).join(', ');
+  const statusLabel={open:'⏳ Aguardando atendente',claimed:'🎧 Em atendimento',done:'✅ Finalizado'};
+  const statusColor={open:'var(--yellow)',claimed:'var(--purple3)',done:'var(--green)'};
+  resEl.innerHTML=`
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div>
+          <div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:3px">TICKET ${t.id}</div>
+          <div style="font-weight:800;font-size:16px">${t.clientName}</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px">📱 ${t.clientEmail}</div>
+        </div>
+        <div style="font-size:13px;font-weight:700;color:${statusColor[t.status]||'var(--text)'}">${statusLabel[t.status]||t.status}</div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:4px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em">Produto(s)</div>
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px">${prods}</div>
+      ${ag?`<div style="font-size:11px;color:var(--text3);margin-bottom:4px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em">Atendente</div><div style="font-size:13px;font-weight:600;margin-bottom:12px">🎧 ${ag.name}</div>`:''}
+      <div style="font-size:11px;color:var(--text3);margin-bottom:4px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em">Aberto em</div>
+      <div style="font-size:12px;color:var(--text2)">${fmtDate(t.createdAt)}</div>
+    </div>
+    ${t.messages.length>0?`
+    <div style="margin-bottom:8px;font-size:10px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em">Conversa (${t.messages.length} mensagens)</div>
+    <div class="chat-thread" style="margin-bottom:14px">${t.messages.map(m=>`<div class="msg-bubble ${m.isAgent?'agent':''}"><div class="msg-from">${m.from} · ${fmtDate(m.ts)}</div><div class="msg-text">${m.text}</div></div>`).join('')}</div>`:'<div style="font-size:12px;color:var(--text3);padding:8px 0;margin-bottom:10px">Nenhuma mensagem ainda — aguarde o atendente.</div>'}
+  `;
+}
+
+function removeAgent(id){const idx=AGENTS.findIndex(a=>a.id===id);if(idx>-1){AGENTS.splice(idx,1);toast('🗑 Atendente removido.');renderAdminAgents();}}
+
 document.getElementById('screen-client').classList.add('active');
-document.getElementById('screen-client').addEventListener('click',()=>{});
 </script>
 </body>
 </html>
