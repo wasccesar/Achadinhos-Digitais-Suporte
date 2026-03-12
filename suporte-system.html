@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SupportArena — Sistema de Suporte</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #1a1a24;
+    --border: #2a2a3a;
+    --accent: #ff6b35;
+    --accent2: #7c3aed;
+    --accent3: #10b981;
+    --gold: #f59e0b;
+    --text: #e8e8f0;
+    --muted: #6b6b80;
+    --danger: #ef4444;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── GRID NOISE BG ── */
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background-image:
+      linear-gradient(rgba(124,58,237,.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,58,237,.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events:none; z-index:0;
+  }
+
+  /* ── VIEWS ── */
+  .view { display:none; position:relative; z-index:1; }
+  .view.active { display:block; }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top:0; left:0; right:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 16px 32px;
+    background: rgba(10,10,15,.9);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+  .logo {
+    font-family:'Syne',sans-serif; font-weight:800; font-size:20px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .logo-dot { width:10px; height:10px; border-radius:50%; background:var(--accent); box-shadow:0 0 10px var(--accent); }
+  nav .nav-links { display:flex; gap:8px; }
+  .nav-btn {
+    background:none; border:1px solid var(--border); color:var(--muted);
+    padding:7px 16px; border-radius:8px; cursor:pointer; font-size:13px;
+    font-family:'DM Sans',sans-serif; transition:all .2s;
+  }
+  .nav-btn:hover, .nav-btn.active { border-color:var(--accent); color:var(--accent); }
+  .nav-btn.primary {
+    background: var(--accent); border-color:var(--accent); color:#fff;
+  }
+  .nav-btn.primary:hover { opacity:.85; }
+
+  /* ── HERO / CLIENT PORTAL ── */
+  .hero {
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    flex-direction:column; text-align:center; padding: 100px 24px 60px;
+  }
+  .hero-badge {
+    display:inline-flex; align-items:center; gap:6px;
+    background: rgba(255,107,53,.1); border:1px solid rgba(255,107,53,.3);
+    padding:6px 14px; border-radius:100px; font-size:12px;
+    color:var(--accent); font-family:'DM Mono',monospace; margin-bottom:28px;
+  }
+  .hero h1 {
+    font-family:'Syne',sans-serif; font-size:clamp(36px,7vw,80px);
+    font-weight:800; line-height:1.05; margin-bottom:16px;
+  }
+  .hero h1 span { color:var(--accent); }
+  .hero p { color:var(--muted); font-size:18px; max-width:500px; line-height:1.6; margin-bottom:40px; }
+
+  .ticket-open-btn {
+    background: var(--accent);
+    border:none; color:#fff; padding:18px 42px;
+    border-radius:12px; font-size:18px; font-weight:600;
+    font-family:'Syne',sans-serif; cursor:pointer;
+    transition: all .3s; position:relative; overflow:hidden;
+    box-shadow: 0 0 40px rgba(255,107,53,.3);
+  }
+  .ticket-open-btn::before {
+    content:''; position:absolute; inset:0;
+    background: linear-gradient(135deg, rgba(255,255,255,.15), transparent);
+  }
+  .ticket-open-btn:hover { transform:translateY(-2px); box-shadow:0 0 60px rgba(255,107,53,.5); }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position:fixed; inset:0; background:rgba(0,0,0,.85);
+    backdrop-filter:blur(8px); z-index:200;
+    display:none; align-items:center; justify-content:center; padding:20px;
+  }
+  .modal-overlay.open { display:flex; }
+  .modal {
+    background: var(--surface);
+    border:1px solid var(--border);
+    border-radius:20px; width:100%; max-width:560px;
+    max-height:90vh; overflow-y:auto;
+    animation: slideUp .3s ease;
+  }
+  @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
+  .modal-header {
+    padding:28px 28px 0;
+    display:flex; justify-content:space-between; align-items:flex-start;
+  }
+  .modal-title { font-family:'Syne',sans-serif; font-size:22px; font-weight:700; }
+  .modal-close {
+    background:none; border:none; color:var(--muted); font-size:24px;
+    cursor:pointer; padding:0; line-height:1; transition:.2s;
+  }
+  .modal-close:hover { color:var(--text); }
+  .modal-body { padding:24px 28px 28px; }
+
+  /* ── FORM ELEMENTS ── */
+  .form-group { margin-bottom:20px; }
+  .form-group label {
+    display:block; font-size:13px; font-weight:500;
+    color:var(--muted); margin-bottom:8px; text-transform:uppercase;
+    letter-spacing:.05em; font-family:'DM Mono',monospace;
+  }
+  .form-group input, .form-group textarea, .form-group select {
+    width:100%; background:var(--bg); border:1px solid var(--border);
+    color:var(--text); padding:12px 16px; border-radius:10px;
+    font-size:15px; font-family:'DM Sans',sans-serif;
+    transition:border-color .2s; outline:none;
+  }
+  .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+    border-color:var(--accent);
+  }
+  .form-group textarea { resize:vertical; min-height:90px; }
+  .form-group select option { background:var(--surface); }
+
+  /* Product grid selector */
+  .product-grid {
+    display:grid; grid-template-columns:repeat(2,1fr); gap:10px;
+  }
+  .product-card {
+    border:1px solid var(--border); border-radius:12px;
+    padding:14px; cursor:pointer; transition:all .2s;
+    background:var(--bg);
+  }
+  .product-card:hover { border-color:var(--accent2); }
+  .product-card.selected { border-color:var(--accent); background:rgba(255,107,53,.08); }
+  .product-card .prod-name { font-weight:600; font-size:14px; margin-bottom:2px; }
+  .product-card .prod-plan { font-size:12px; color:var(--muted); }
+  .product-card .prod-emoji { font-size:22px; margin-bottom:6px; display:block; }
+
+  .btn-submit {
+    width:100%; background:var(--accent); border:none; color:#fff;
+    padding:15px; border-radius:12px; font-size:16px; font-weight:600;
+    font-family:'Syne',sans-serif; cursor:pointer; transition:.2s;
+  }
+  .btn-submit:hover { opacity:.85; }
+
+  /* ── ADMIN PANEL ── */
+  .admin-wrap {
+    padding-top:80px; min-height:100vh;
+    display:grid; grid-template-columns:260px 1fr;
+  }
+
+  .sidebar {
+    background:var(--surface); border-right:1px solid var(--border);
+    padding:24px 16px; position:sticky; top:80px;
+    height:calc(100vh - 80px); overflow-y:auto;
+  }
+  .sidebar-section { margin-bottom:24px; }
+  .sidebar-label {
+    font-size:10px; text-transform:uppercase; letter-spacing:.1em;
+    color:var(--muted); font-family:'DM Mono',monospace;
+    padding:0 12px 8px;
+  }
+  .sidebar-item {
+    display:flex; align-items:center; gap:10px;
+    padding:10px 12px; border-radius:8px; cursor:pointer;
+    transition:.2s; font-size:14px; color:var(--muted); border:none;
+    background:none; width:100%; text-align:left;
+  }
+  .sidebar-item:hover { background:var(--surface2); color:var(--text); }
+  .sidebar-item.active { background:rgba(255,107,53,.12); color:var(--accent); }
+  .sidebar-item .icon { font-size:16px; }
+
+  .main-content { padding:32px; }
+  .page-header { margin-bottom:32px; }
+  .page-header h2 { font-family:'Syne',sans-serif; font-size:28px; font-weight:700; }
+  .page-header p { color:var(--muted); margin-top:4px; }
+
+  /* Stats cards */
+  .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:32px; }
+  .stat-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:14px; padding:20px;
+  }
+  .stat-card .stat-label { font-size:12px; color:var(--muted); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .stat-card .stat-value { font-family:'Syne',sans-serif; font-size:32px; font-weight:800; }
+  .stat-card .stat-sub { font-size:12px; color:var(--muted); margin-top:4px; }
+  .stat-card.highlight { border-color:var(--accent); background:rgba(255,107,53,.06); }
+  .stat-card.green { border-color:var(--accent3); background:rgba(16,185,129,.06); }
+  .stat-card.purple { border-color:var(--accent2); background:rgba(124,58,237,.06); }
+
+  /* Tickets table */
+  .tickets-table {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:16px; overflow:hidden;
+  }
+  .table-header {
+    padding:20px 24px;
+    display:flex; justify-content:space-between; align-items:center;
+    border-bottom:1px solid var(--border);
+  }
+  .table-header h3 { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; }
+  .filters { display:flex; gap:8px; }
+  .filter-btn {
+    background:none; border:1px solid var(--border); color:var(--muted);
+    padding:6px 14px; border-radius:8px; font-size:12px; cursor:pointer;
+    transition:.2s; font-family:'DM Mono',monospace;
+  }
+  .filter-btn:hover, .filter-btn.active { border-color:var(--accent); color:var(--accent); }
+  table { width:100%; border-collapse:collapse; }
+  thead th {
+    padding:12px 20px; text-align:left; font-size:11px;
+    text-transform:uppercase; letter-spacing:.08em; color:var(--muted);
+    font-family:'DM Mono',monospace; border-bottom:1px solid var(--border);
+  }
+  tbody tr { border-bottom:1px solid rgba(42,42,58,.5); transition:.15s; }
+  tbody tr:hover { background:var(--surface2); }
+  tbody tr:last-child { border:none; }
+  td { padding:16px 20px; font-size:14px; }
+
+  .badge {
+    display:inline-flex; align-items:center; gap:4px;
+    padding:4px 10px; border-radius:100px; font-size:11px; font-weight:500;
+    font-family:'DM Mono',monospace;
+  }
+  .badge.open { background:rgba(255,107,53,.15); color:var(--accent); }
+  .badge.claimed { background:rgba(124,58,237,.15); color:#a78bfa; }
+  .badge.done { background:rgba(16,185,129,.15); color:var(--accent3); }
+  .badge.waiting { background:rgba(245,158,11,.15); color:var(--gold); }
+  .badge::before { content:'●'; font-size:8px; }
+
+  .action-btn {
+    background:none; border:1px solid var(--border); color:var(--text);
+    padding:6px 12px; border-radius:7px; font-size:12px; cursor:pointer;
+    transition:.2s; font-family:'DM Mono',monospace;
+  }
+  .action-btn:hover { border-color:var(--accent3); color:var(--accent3); }
+  .action-btn.danger:hover { border-color:var(--danger); color:var(--danger); }
+  .action-btn.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+
+  /* ── AGENTS PANEL ── */
+  .agents-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  .agent-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:16px; padding:24px;
+  }
+  .agent-top { display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+  .agent-avatar {
+    width:48px; height:48px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:20px; font-weight:800; font-family:'Syne',sans-serif;
+    flex-shrink:0;
+  }
+  .agent-name { font-weight:700; font-size:16px; }
+  .agent-email { font-size:12px; color:var(--muted); }
+  .agent-stats { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+  .agent-stat { background:var(--bg); border-radius:8px; padding:10px 12px; }
+  .agent-stat .label { font-size:10px; color:var(--muted); font-family:'DM Mono',monospace; }
+  .agent-stat .val { font-size:18px; font-weight:700; font-family:'Syne',sans-serif; }
+  .agent-products { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px; }
+  .prod-tag {
+    background:var(--surface2); border:1px solid var(--border);
+    padding:3px 8px; border-radius:6px; font-size:11px;
+    font-family:'DM Mono',monospace; color:var(--muted);
+  }
+  .agent-earnings {
+    background: linear-gradient(135deg, rgba(245,158,11,.1), rgba(255,107,53,.08));
+    border:1px solid rgba(245,158,11,.3);
+    border-radius:10px; padding:12px;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .agent-earnings .label { font-size:12px; color:var(--gold); }
+  .agent-earnings .amount { font-size:20px; font-weight:800; font-family:'Syne',sans-serif; color:var(--gold); }
+
+  /* Ranking */
+  .ranking-list { display:flex; flex-direction:column; gap:10px; }
+  .rank-item {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:12px; padding:16px 20px;
+    display:flex; align-items:center; gap:16px;
+  }
+  .rank-pos { font-size:24px; font-weight:800; font-family:'Syne',sans-serif; width:36px; }
+  .rank-pos.gold { color:var(--gold); }
+  .rank-pos.silver { color:#94a3b8; }
+  .rank-pos.bronze { color:#b45309; }
+  .rank-info { flex:1; }
+  .rank-name { font-weight:700; }
+  .rank-sub { font-size:12px; color:var(--muted); }
+  .rank-earnings { font-size:22px; font-weight:800; font-family:'Syne',sans-serif; color:var(--accent3); }
+
+  /* Commissions table */
+  .commissions-grid { display:grid; gap:12px; }
+  .commission-row {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:12px; padding:16px 20px;
+    display:grid; grid-template-columns:1fr auto auto auto auto;
+    align-items:center; gap:20px;
+  }
+  .prod-info .prod-title { font-weight:700; }
+  .prod-info .prod-plan { font-size:12px; color:var(--muted); }
+  .commission-input {
+    background:var(--bg); border:1px solid var(--border);
+    color:var(--text); padding:8px 12px; border-radius:8px;
+    font-size:14px; font-family:'DM Mono',monospace; width:100px;
+    text-align:center; outline:none;
+  }
+  .commission-input:focus { border-color:var(--gold); }
+
+  /* Add agent form */
+  .add-agent-form {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:16px; padding:28px; margin-bottom:28px;
+  }
+  .add-agent-form h3 { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; margin-bottom:20px; }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+
+  .checkbox-group { display:flex; flex-wrap:wrap; gap:8px; }
+  .checkbox-item {
+    display:flex; align-items:center; gap:6px;
+    background:var(--bg); border:1px solid var(--border);
+    padding:6px 12px; border-radius:8px; cursor:pointer; transition:.2s;
+  }
+  .checkbox-item input { accent-color:var(--accent); }
+  .checkbox-item:has(input:checked) { border-color:var(--accent); background:rgba(255,107,53,.08); }
+  .checkbox-item label { font-size:13px; cursor:pointer; }
+
+  /* Notifications */
+  .toast {
+    position:fixed; bottom:24px; right:24px; z-index:999;
+    background:var(--surface2); border:1px solid var(--accent3);
+    color:var(--text); padding:14px 20px; border-radius:12px;
+    font-size:14px; display:none; animation:slideUp .3s;
+    max-width:300px;
+  }
+  .toast.show { display:block; }
+  .toast .t-icon { font-size:18px; margin-right:8px; }
+
+  /* Arena Live indicator */
+  .live-badge {
+    display:inline-flex; align-items:center; gap:6px;
+    background:rgba(239,68,68,.1); border:1px solid rgba(239,68,68,.3);
+    color:#f87171; padding:4px 12px; border-radius:100px; font-size:11px;
+    font-family:'DM Mono',monospace;
+  }
+  .live-badge::before {
+    content:'●'; animation:pulse 1s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  /* Panel tabs */
+  .panel-tabs { display:flex; gap:4px; margin-bottom:28px; }
+  .panel-tab {
+    background:none; border:1px solid var(--border); color:var(--muted);
+    padding:9px 20px; border-radius:10px; cursor:pointer; font-size:13px;
+    font-family:'Syne',sans-serif; font-weight:600; transition:.2s;
+  }
+  .panel-tab.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .panel-tab:hover:not(.active) { border-color:var(--muted); color:var(--text); }
+
+  .tab-content { display:none; }
+  .tab-content.active { display:block; }
+
+  /* Sub-panel (admin areas) */
+  .admin-page { display:none; }
+  .admin-page.active { display:block; }
+
+  /* Ticket detail expanded */
+  .ticket-detail-modal .modal { max-width:700px; }
+  .detail-section { margin-bottom:20px; }
+  .detail-section h4 {
+    font-size:11px; text-transform:uppercase; letter-spacing:.1em;
+    color:var(--muted); font-family:'DM Mono',monospace; margin-bottom:10px;
+  }
+  .detail-meta { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .meta-item { background:var(--bg); border-radius:8px; padding:12px; }
+  .meta-item .label { font-size:11px; color:var(--muted); margin-bottom:4px; }
+  .meta-item .val { font-weight:600; }
+  .messages-thread { display:flex; flex-direction:column; gap:12px; max-height:220px; overflow-y:auto; }
+  .msg {
+    background:var(--bg); border-radius:10px; padding:12px;
+    font-size:13px; position:relative;
+  }
+  .msg .msg-from { font-size:11px; color:var(--muted); margin-bottom:4px; font-family:'DM Mono',monospace; }
+  .msg.agent-msg { background:rgba(124,58,237,.1); border:1px solid rgba(124,58,237,.2); }
+  .msg-input-area { display:flex; gap:10px; margin-top:12px; }
+  .msg-input-area input {
+    flex:1; background:var(--bg); border:1px solid var(--border);
+    color:var(--text); padding:10px 14px; border-radius:8px;
+    font-family:'DM Sans',sans-serif; font-size:14px; outline:none;
+  }
+  .msg-input-area input:focus { border-color:var(--accent2); }
+
+  .section-divider {
+    border:none; border-top:1px solid var(--border); margin:24px 0;
+  }
+
+  /* Responsive tweaks */
+  @media(max-width:900px) {
+    .admin-wrap { grid-template-columns:1fr; }
+    .sidebar { display:none; }
+    .stats-grid { grid-template-columns:1fr 1fr; }
+    .agents-grid { grid-template-columns:1fr; }
+  }
+  @media(max-width:600px) {
+    .stats-grid { grid-template-columns:1fr; }
+    .product-grid { grid-template-columns:1fr; }
+    nav { padding:14px 16px; }
+    .main-content { padding:20px 16px; }
+  }
+
+  /* Color helpers for agent avatars */
+  .av1{background:rgba(255,107,53,.2);color:var(--accent);}
+  .av2{background:rgba(124,58,237,.2);color:#a78bfa;}
+  .av3{background:rgba(16,185,129,.2);color:var(--accent3);}
+  .av4{background:rgba(245,158,11,.2);color:var(--gold);}
+  .av5{background:rgba(239,68,68,.2);color:#f87171;}
+
+  select { appearance:none; }
+
+  .empty-state {
+    text-align:center; padding:60px 20px; color:var(--muted);
+  }
+  .empty-state .e-icon { font-size:48px; margin-bottom:12px; }
+  .empty-state p { font-size:15px; }
+</style>
+</head>
+<body>
+
+<!-- ── NAVIGATION ── -->
+<nav>
+  <div class="logo"><div class="logo-dot"></div>SupportArena</div>
+  <div class="nav-links">
+    <button class="nav-btn active" onclick="showView('client')">🎫 Abrir Ticket</button>
+    <button class="nav-btn" onclick="showView('agent')">🎮 Área do Atendente</button>
+    <button class="nav-btn primary" onclick="showView('admin')">⚙️ Painel Admin</button>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════
+     VIEW 1 — CLIENT PORTAL
+════════════════════════════════════════════ -->
+<div id="view-client" class="view active">
+  <div class="hero">
+    <div class="hero-badge">⚡ Suporte em tempo real</div>
+    <h1>Precisa de ajuda com<br>seu <span>produto?</span></h1>
+    <p>Abra um ticket e um de nossos atendentes especializados vai te atender rapidinho.</p>
+    <button class="ticket-open-btn" onclick="openModal('ticket-modal')">
+      + Abrir Novo Ticket
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     VIEW 2 — AGENT AREA
+════════════════════════════════════════════ -->
+<div id="view-agent" class="view">
+  <div class="admin-wrap">
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Atendente</div>
+        <button class="sidebar-item active" onclick="agentTab('queue')">
+          <span class="icon">🎯</span> Fila de Tickets
+        </button>
+        <button class="sidebar-item" onclick="agentTab('my')">
+          <span class="icon">📋</span> Meus Tickets
+        </button>
+        <button class="sidebar-item" onclick="agentTab('done')">
+          <span class="icon">✅</span> Finalizados
+        </button>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Meu Desempenho</div>
+        <button class="sidebar-item" onclick="agentTab('earnings')">
+          <span class="icon">💰</span> Meus Ganhos
+        </button>
+        <button class="sidebar-item" onclick="agentTab('ranking')">
+          <span class="icon">🏆</span> Ranking Geral
+        </button>
+      </div>
+    </aside>
+    <main class="main-content" id="agent-main">
+      <!-- filled by JS -->
+    </main>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     VIEW 3 — ADMIN PANEL
+════════════════════════════════════════════ -->
+<div id="view-admin" class="view">
+  <div class="admin-wrap">
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Gestão</div>
+        <button class="sidebar-item active" onclick="adminTab('dashboard')">
+          <span class="icon">📊</span> Dashboard
+        </button>
+        <button class="sidebar-item" onclick="adminTab('tickets')">
+          <span class="icon">🎫</span> Todos os Tickets
+        </button>
+        <button class="sidebar-item" onclick="adminTab('agents')">
+          <span class="icon">👥</span> Atendentes
+        </button>
+        <button class="sidebar-item" onclick="adminTab('commissions')">
+          <span class="icon">💸</span> Comissões
+        </button>
+        <button class="sidebar-item" onclick="adminTab('ranking')">
+          <span class="icon">🏆</span> Ranking
+        </button>
+      </div>
+    </aside>
+    <main class="main-content" id="admin-main">
+      <!-- filled by JS -->
+    </main>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     MODAL — TICKET CREATION
+════════════════════════════════════════════ -->
+<div class="modal-overlay" id="ticket-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Novo Ticket de Suporte</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:4px;">Preencha os dados abaixo</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('ticket-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Seu Nome</label>
+        <input type="text" id="client-name" placeholder="Ex: João Silva" />
+      </div>
+      <div class="form-group">
+        <label>Seu Email</label>
+        <input type="email" id="client-email" placeholder="joao@email.com" />
+      </div>
+      <div class="form-group">
+        <label>Tipo de Suporte</label>
+        <select id="support-type">
+          <option value="">Selecione o tipo...</option>
+          <option value="suporte">🛠️ Suporte Técnico</option>
+          <option value="resgatar">🎁 Resgatar Produto</option>
+          <option value="cancelamento">❌ Cancelamento</option>
+          <option value="renovacao">🔄 Renovação</option>
+          <option value="duvida">❓ Dúvida Geral</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Produto</label>
+        <div class="product-grid" id="product-grid">
+          <!-- filled by JS -->
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Descreva o Problema</label>
+        <textarea id="ticket-desc" placeholder="Explique sua dúvida ou problema em detalhes..."></textarea>
+      </div>
+      <button class="btn-submit" onclick="submitTicket()">🚀 Abrir Ticket</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     MODAL — TICKET DETAIL
+════════════════════════════════════════════ -->
+<div class="modal-overlay ticket-detail-modal" id="detail-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="detail-title">Ticket #0000</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:4px;" id="detail-subtitle"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal('detail-modal')">×</button>
+    </div>
+    <div class="modal-body" id="detail-body">
+      <!-- filled by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     MODAL — ADD AGENT
+════════════════════════════════════════════ -->
+<div class="modal-overlay" id="add-agent-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Adicionar Atendente</div>
+      <button class="modal-close" onclick="closeModal('add-agent-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nome</label>
+          <input type="text" id="ag-name" placeholder="Nome completo" />
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="ag-email" placeholder="email@..." />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Produtos que pode atender</label>
+        <div class="checkbox-group" id="ag-products-check">
+          <!-- filled by JS -->
+        </div>
+      </div>
+      <button class="btn-submit" onclick="addAgent()">✅ Cadastrar Atendente</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span class="t-icon">✅</span><span id="toast-msg"></span></div>
+
+<!-- ════════════════════ SCRIPT ════════════════════ -->
+<script>
+/* ─────────────────────────── DATA ─────────────────────────── */
+const PRODUCTS = [
+  { id:'gemini-m', name:'Gemini', plan:'Mensal', emoji:'🤖' },
+  { id:'gemini-a', name:'Gemini', plan:'Anual', emoji:'🤖' },
+  { id:'chatgpt-m', name:'ChatGPT', plan:'Mensal', emoji:'💬' },
+  { id:'chatgpt-a', name:'ChatGPT', plan:'Anual', emoji:'💬' },
+  { id:'capcut-m', name:'CapCut', plan:'Mensal', emoji:'🎬' },
+  { id:'capcut-a', name:'CapCut', plan:'Anual', emoji:'🎬' },
+  { id:'grok', name:'Super Grok', plan:'Único', emoji:'⚡' },
+  { id:'perplexity', name:'Perplexity', plan:'Único', emoji:'🔍' },
+];
+
+// Comissões padrão por produto (R$)
+let COMMISSIONS = {
+  'gemini-m': 5, 'gemini-a': 15,
+  'chatgpt-m': 6, 'chatgpt-a': 18,
+  'capcut-m': 4, 'capcut-a': 12,
+  'grok': 10, 'perplexity': 8
+};
+
+let AGENTS = [
+  { id:'ag1', name:'Carlos Henrique', email:'carlos@arena.com', products:['gemini-m','gemini-a','chatgpt-m','chatgpt-a'], color:'av1', closed:12, earnings:187 },
+  { id:'ag2', name:'Ana Beatriz', email:'ana@arena.com', products:['capcut-m','capcut-a','grok'], color:'av2', closed:9, earnings:134 },
+  { id:'ag3', name:'Rafael Souza', email:'rafael@arena.com', products:['chatgpt-m','chatgpt-a','perplexity','grok'], color:'av3', closed:7, earnings:98 },
+];
+
+let TICKETS = [
+  { id:'T001', clientName:'Maria Santos', clientEmail:'maria@gmail.com', product:'gemini-m', type:'suporte', desc:'Não consigo fazer login no Gemini. Aparece erro 403.', status:'open', agent:null, createdAt: new Date(Date.now()-3600000).toISOString(), messages:[] },
+  { id:'T002', clientName:'João Pedro', clientEmail:'joao@gmail.com', product:'chatgpt-a', type:'resgatar', desc:'Quero resgatar meu acesso ao ChatGPT Plus anual.', status:'claimed', agent:'ag1', createdAt: new Date(Date.now()-7200000).toISOString(), messages:[{from:'Carlos Henrique (Atendente)',text:'Olá João! Vou te ajudar com o resgate. Pode me passar seu login?',ts:new Date(Date.now()-3000000).toISOString()}] },
+  { id:'T003', clientName:'Fernanda Lima', clientEmail:'fer@gmail.com', product:'capcut-m', type:'cancelamento', desc:'Quero cancelar minha assinatura mensal do CapCut.', status:'done', agent:'ag2', createdAt: new Date(Date.now()-86400000).toISOString(), messages:[], closedAt: new Date(Date.now()-3600000).toISOString() },
+];
+
+let ticketCounter = 4;
+let currentAgentId = 'ag1'; // simulated logged-in agent
+let currentAdminPage = 'dashboard';
+let currentAgentPage = 'queue';
+let filterStatus = 'all';
+
+/* ─────────────────────────── HELPERS ─────────────────────────── */
+function genId() { return 'T' + String(ticketCounter++).padStart(3,'0'); }
+function getAgent(id) { return AGENTS.find(a=>a.id===id); }
+function getProduct(id) { return PRODUCTS.find(p=>p.id===id); }
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+}
+function fmtMoney(v) { return 'R$ ' + Number(v).toFixed(2).replace('.',','); }
+function agentInitials(name) { return name.split(' ').map(w=>w[0]).slice(0,2).join(''); }
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function statusBadge(s) {
+  const map = { open:'🟠 Aberto', claimed:'🟣 Em Atendimento', done:'🟢 Finalizado', waiting:'🟡 Aguardando' };
+  const cls = { open:'open', claimed:'claimed', done:'done', waiting:'waiting' };
+  return `<span class="badge ${cls[s]||'open'}">${map[s]||s}</span>`;
+}
+
+/* ─────────────────────────── VIEWS ─────────────────────────── */
+function showView(v) {
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  if(v==='admin') renderAdmin();
+  if(v==='agent') renderAgent();
+}
+
+/* ─────────────────────────── CLIENT ─────────────────────────── */
+(function buildProductGrid(){
+  const g = document.getElementById('product-grid');
+  let selected = null;
+  g.innerHTML = PRODUCTS.map(p=>`
+    <div class="product-card" data-id="${p.id}" onclick="selectProduct('${p.id}')">
+      <span class="prod-emoji">${p.emoji}</span>
+      <div class="prod-name">${p.name}</div>
+      <div class="prod-plan">${p.plan}</div>
+    </div>
+  `).join('');
+
+  const agChk = document.getElementById('ag-products-check');
+  agChk.innerHTML = PRODUCTS.map(p=>`
+    <div class="checkbox-item">
+      <input type="checkbox" id="chk-${p.id}" value="${p.id}">
+      <label for="chk-${p.id}">${p.emoji} ${p.name} ${p.plan}</label>
+    </div>
+  `).join('');
+})();
+
+let selectedProduct = null;
+function selectProduct(id) {
+  selectedProduct = id;
+  document.querySelectorAll('.product-card').forEach(c=>{
+    c.classList.toggle('selected', c.dataset.id===id);
+  });
+}
+
+function submitTicket() {
+  const name = document.getElementById('client-name').value.trim();
+  const email = document.getElementById('client-email').value.trim();
+  const type = document.getElementById('support-type').value;
+  const desc = document.getElementById('ticket-desc').value.trim();
+  if(!name||!email||!type||!selectedProduct||!desc) {
+    showToast('⚠️ Preencha todos os campos!'); return;
+  }
+  const ticket = {
+    id: genId(), clientName:name, clientEmail:email,
+    product: selectedProduct, type, desc,
+    status:'open', agent:null,
+    createdAt: new Date().toISOString(), messages:[]
+  };
+  TICKETS.unshift(ticket);
+  closeModal('ticket-modal');
+  showToast(`✅ Ticket ${ticket.id} aberto com sucesso! Em breve um atendente irá te ajudar.`);
+  // reset
+  document.getElementById('client-name').value='';
+  document.getElementById('client-email').value='';
+  document.getElementById('support-type').value='';
+  document.getElementById('ticket-desc').value='';
+  selectedProduct=null;
+  document.querySelectorAll('.product-card').forEach(c=>c.classList.remove('selected'));
+}
+
+/* ─────────────────────────── AGENT ─────────────────────────── */
+function agentTab(page) {
+  currentAgentPage = page;
+  document.querySelectorAll('#view-agent .sidebar-item').forEach(b=>b.classList.remove('active'));
+  event.target.closest('.sidebar-item').classList.add('active');
+  renderAgent();
+}
+
+function renderAgent() {
+  const el = document.getElementById('agent-main');
+  const me = getAgent(currentAgentId);
+  if(!me) { el.innerHTML='<p style="color:var(--muted)">Atendente não encontrado.</p>'; return; }
+
+  if(currentAgentPage==='queue') {
+    // Tickets available for this agent's products, still open
+    const avail = TICKETS.filter(t=>t.status==='open' && me.products.includes(t.product));
+    el.innerHTML = `
+      <div class="page-header">
+        <h2>🎯 Fila de Tickets</h2>
+        <p>Tickets disponíveis para você atender. Seja o primeiro! <span class="live-badge">AO VIVO</span></p>
+      </div>
+      ${avail.length===0 ? `<div class="empty-state"><div class="e-icon">🎉</div><p>Nenhum ticket na fila. Tudo em dia!</p></div>` : `
+      <div class="tickets-table">
+        <div class="table-header"><h3>Disponíveis (${avail.length})</h3></div>
+        <table>
+          <thead><tr>
+            <th>ID</th><th>Cliente</th><th>Produto</th><th>Tipo</th>
+            <th>Abertura</th><th>Comissão</th><th>Ação</th>
+          </tr></thead>
+          <tbody>
+            ${avail.map(t=>{
+              const prod = getProduct(t.product);
+              const comm = COMMISSIONS[t.product]||0;
+              return `<tr>
+                <td><span style="font-family:var(--dm-mono);font-size:13px;color:var(--muted)">${t.id}</span></td>
+                <td>${t.clientName}</td>
+                <td>${prod?prod.emoji+' '+prod.name+' '+prod.plan:t.product}</td>
+                <td>${t.type}</td>
+                <td style="font-size:12px;color:var(--muted)">${fmtDate(t.createdAt)}</td>
+                <td><span style="color:var(--gold);font-weight:700;font-family:'Syne',sans-serif">${fmtMoney(comm)}</span></td>
+                <td><button class="action-btn primary" onclick="claimTicket('${t.id}')">⚡ Pegar</button></td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>`}
+    `;
+  } else if(currentAgentPage==='my') {
+    const mine = TICKETS.filter(t=>t.agent===currentAgentId && t.status==='claimed');
+    el.innerHTML = `
+      <div class="page-header"><h2>📋 Meus Tickets em Aberto</h2></div>
+      ${mine.length===0?`<div class="empty-state"><div class="e-icon">📭</div><p>Nenhum ticket ativo.</p></div>`:`
+      <div class="tickets-table">
+        <div class="table-header"><h3>Em Atendimento (${mine.length})</h3></div>
+        <table>
+          <thead><tr><th>ID</th><th>Cliente</th><th>Produto</th><th>Status</th><th>Comissão</th><th>Ações</th></tr></thead>
+          <tbody>
+            ${mine.map(t=>{
+              const prod=getProduct(t.product);
+              return `<tr>
+                <td style="font-family:'DM Mono';font-size:13px;color:var(--muted)">${t.id}</td>
+                <td>${t.clientName}</td>
+                <td>${prod?prod.emoji+' '+prod.name:t.product}</td>
+                <td>${statusBadge(t.status)}</td>
+                <td><span style="color:var(--gold);font-weight:700">${fmtMoney(COMMISSIONS[t.product]||0)}</span></td>
+                <td>
+                  <button class="action-btn" onclick="openDetail('${t.id}')">💬 Atender</button>
+                  <button class="action-btn" style="margin-left:6px;border-color:var(--accent3);color:var(--accent3)" onclick="closeTicketAgent('${t.id}')">✅ Finalizar</button>
+                </td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>`}
+    `;
+  } else if(currentAgentPage==='done') {
+    const done = TICKETS.filter(t=>t.agent===currentAgentId && t.status==='done');
+    el.innerHTML = `
+      <div class="page-header"><h2>✅ Tickets Finalizados</h2></div>
+      ${done.length===0?`<div class="empty-state"><div class="e-icon">📦</div><p>Nenhum ticket finalizado ainda.</p></div>`:`
+      <div class="tickets-table">
+        <table>
+          <thead><tr><th>ID</th><th>Cliente</th><th>Produto</th><th>Finalizado em</th><th>Comissão Recebida</th></tr></thead>
+          <tbody>
+            ${done.map(t=>{
+              const prod=getProduct(t.product);
+              return `<tr>
+                <td style="font-family:'DM Mono';font-size:13px;color:var(--muted)">${t.id}</td>
+                <td>${t.clientName}</td>
+                <td>${prod?prod.emoji+' '+prod.name:t.product}</td>
+                <td style="font-size:12px;color:var(--muted)">${t.closedAt?fmtDate(t.closedAt):'-'}</td>
+                <td><span style="color:var(--accent3);font-weight:700">${fmtMoney(COMMISSIONS[t.product]||0)}</span></td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>`}
+    `;
+  } else if(currentAgentPage==='earnings') {
+    const done = TICKETS.filter(t=>t.agent===currentAgentId && t.status==='done');
+    const total = done.reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0) + me.earnings;
+    el.innerHTML = `
+      <div class="page-header"><h2>💰 Meus Ganhos</h2></div>
+      <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+        <div class="stat-card green">
+          <div class="stat-label">Total Acumulado</div>
+          <div class="stat-value" style="color:var(--accent3)">${fmtMoney(total)}</div>
+        </div>
+        <div class="stat-card highlight">
+          <div class="stat-label">Tickets Fechados</div>
+          <div class="stat-value">${me.closed + done.length}</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-label">Ticket Médio</div>
+          <div class="stat-value" style="color:#a78bfa">${fmtMoney(total / Math.max(1, me.closed+done.length))}</div>
+        </div>
+      </div>
+      <div style="margin-top:24px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px">
+        <h3 style="font-family:'Syne',sans-serif;margin-bottom:16px">💸 Comissões por Produto</h3>
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr>
+            <th style="text-align:left;padding:10px 0;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;border-bottom:1px solid var(--border)">Produto</th>
+            <th style="text-align:right;padding:10px 0;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;border-bottom:1px solid var(--border)">Comissão</th>
+          </tr></thead>
+          <tbody>
+            ${me.products.map(pid=>{
+              const p=getProduct(pid);
+              return `<tr style="border-bottom:1px solid rgba(42,42,58,.4)">
+                <td style="padding:12px 0">${p?p.emoji+' '+p.name+' '+p.plan:pid}</td>
+                <td style="text-align:right;color:var(--gold);font-weight:700;font-family:'Syne',sans-serif;font-size:18px">${fmtMoney(COMMISSIONS[pid]||0)}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  } else if(currentAgentPage==='ranking') {
+    renderRankingPage(el);
+  }
+}
+
+function claimTicket(id) {
+  const t = TICKETS.find(t=>t.id===id);
+  if(!t || t.status!=='open') { showToast('⚠️ Ticket já foi pego!'); return; }
+  t.status='claimed'; t.agent=currentAgentId;
+  showToast(`⚡ Você pegou o ticket ${id}! Vá para "Meus Tickets".`);
+  renderAgent();
+}
+
+function closeTicketAgent(id) {
+  const t = TICKETS.find(t=>t.id===id);
+  if(!t) return;
+  t.status='done'; t.closedAt=new Date().toISOString();
+  const comm = COMMISSIONS[t.product]||0;
+  const ag = getAgent(currentAgentId);
+  if(ag) { ag.closed++; ag.earnings+=comm; }
+  showToast(`✅ Ticket ${id} finalizado! Você ganhou ${fmtMoney(comm)} 🎉`);
+  renderAgent();
+}
+
+/* ─────────────────────────── TICKET DETAIL ─────────────────────────── */
+function openDetail(id) {
+  const t = TICKETS.find(t=>t.id===id);
+  if(!t) return;
+  const prod = getProduct(t.product);
+  document.getElementById('detail-title').textContent = `Ticket ${t.id}`;
+  document.getElementById('detail-subtitle').textContent = `${t.clientName} · ${prod?prod.name+' '+prod.plan:t.product}`;
+
+  document.getElementById('detail-body').innerHTML = `
+    <div class="detail-section">
+      <h4>Informações</h4>
+      <div class="detail-meta">
+        <div class="meta-item"><div class="label">Cliente</div><div class="val">${t.clientName}</div></div>
+        <div class="meta-item"><div class="label">Email</div><div class="val">${t.clientEmail}</div></div>
+        <div class="meta-item"><div class="label">Produto</div><div class="val">${prod?prod.emoji+' '+prod.name+' '+prod.plan:t.product}</div></div>
+        <div class="meta-item"><div class="label">Tipo</div><div class="val">${t.type}</div></div>
+      </div>
+    </div>
+    <div class="detail-section">
+      <h4>Descrição do Problema</h4>
+      <div style="background:var(--bg);border-radius:10px;padding:14px;font-size:14px;line-height:1.6">${t.desc}</div>
+    </div>
+    <div class="detail-section">
+      <h4>Chat de Atendimento</h4>
+      <div class="messages-thread" id="msg-thread">
+        ${t.messages.length===0?'<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px">Nenhuma mensagem ainda.</div>':
+          t.messages.map(m=>`<div class="msg ${m.isAgent?'agent-msg':''}"><div class="msg-from">${m.from} · ${fmtDate(m.ts)}</div>${m.text}</div>`).join('')
+        }
+      </div>
+      <div class="msg-input-area">
+        <input type="text" id="msg-input" placeholder="Digite uma mensagem..." onkeydown="if(event.key==='Enter')sendMsg('${t.id}')" />
+        <button class="action-btn primary" onclick="sendMsg('${t.id}')">Enviar</button>
+      </div>
+    </div>
+    <hr class="section-divider">
+    <div style="display:flex;gap:10px">
+      <button class="action-btn" style="flex:1;padding:12px;border-color:var(--danger);color:var(--danger)" onclick="closeModal('detail-modal')">Fechar</button>
+      <button class="action-btn primary" style="flex:2;padding:12px" onclick="closeTicketAgent('${t.id}');closeModal('detail-modal')">✅ Finalizar e Ganhar ${fmtMoney(COMMISSIONS[t.product]||0)}</button>
+    </div>
+  `;
+  openModal('detail-modal');
+}
+
+function sendMsg(ticketId) {
+  const input = document.getElementById('msg-input');
+  const text = input.value.trim();
+  if(!text) return;
+  const t = TICKETS.find(t=>t.id===ticketId);
+  if(!t) return;
+  const me = getAgent(currentAgentId);
+  t.messages.push({ from: me?me.name+' (Atendente)':'Atendente', text, ts:new Date().toISOString(), isAgent:true });
+  const thread = document.getElementById('msg-thread');
+  if(thread) {
+    const d=document.createElement('div');
+    d.className='msg agent-msg';
+    d.innerHTML=`<div class="msg-from">${me?me.name:'Atendente'} · Agora</div>${text}`;
+    thread.appendChild(d);
+    thread.scrollTop=thread.scrollHeight;
+  }
+  input.value='';
+}
+
+/* ─────────────────────────── ADMIN ─────────────────────────── */
+function adminTab(page) {
+  currentAdminPage = page;
+  document.querySelectorAll('#view-admin .sidebar-item').forEach(b=>b.classList.remove('active'));
+  event.target.closest('.sidebar-item').classList.add('active');
+  renderAdmin();
+}
+
+function renderAdmin() {
+  const el = document.getElementById('admin-main');
+  const openT = TICKETS.filter(t=>t.status==='open').length;
+  const claimedT = TICKETS.filter(t=>t.status==='claimed').length;
+  const doneT = TICKETS.filter(t=>t.status==='done').length;
+  const totalPaid = TICKETS.filter(t=>t.status==='done')
+    .reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0);
+
+  if(currentAdminPage==='dashboard') {
+    el.innerHTML = `
+      <div class="page-header">
+        <h2>📊 Dashboard</h2>
+        <p>Visão geral em tempo real do sistema</p>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card highlight">
+          <div class="stat-label">Tickets Abertos</div>
+          <div class="stat-value" style="color:var(--accent)">${openT}</div>
+          <div class="stat-sub">Aguardando atendente</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-label">Em Atendimento</div>
+          <div class="stat-value" style="color:#a78bfa">${claimedT}</div>
+          <div class="stat-sub">Em progresso</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">Finalizados</div>
+          <div class="stat-value" style="color:var(--accent3)">${doneT}</div>
+          <div class="stat-sub">Total histórico</div>
+        </div>
+        <div class="stat-card" style="border-color:var(--gold);background:rgba(245,158,11,.06)">
+          <div class="stat-label">Comissões Pagas</div>
+          <div class="stat-value" style="color:var(--gold)">${fmtMoney(totalPaid)}</div>
+          <div class="stat-sub">Total distribuído</div>
+        </div>
+      </div>
+      <div class="tickets-table">
+        <div class="table-header">
+          <h3>Tickets Recentes</h3>
+          <span class="live-badge">AO VIVO</span>
+        </div>
+        <table>
+          <thead><tr><th>ID</th><th>Cliente</th><th>Produto</th><th>Status</th><th>Atendente</th><th>Abertura</th></tr></thead>
+          <tbody>
+            ${TICKETS.slice(0,6).map(t=>{
+              const prod=getProduct(t.product);
+              const ag=getAgent(t.agent);
+              return `<tr>
+                <td style="font-family:'DM Mono';font-size:13px;color:var(--muted)">${t.id}</td>
+                <td>${t.clientName}</td>
+                <td>${prod?prod.emoji+' '+prod.name+' '+prod.plan:t.product}</td>
+                <td>${statusBadge(t.status)}</td>
+                <td>${ag?ag.name:'<span style="color:var(--muted)">—</span>'}</td>
+                <td style="font-size:12px;color:var(--muted)">${fmtDate(t.createdAt)}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  } else if(currentAdminPage==='tickets') {
+    const filtered = filterStatus==='all' ? TICKETS : TICKETS.filter(t=>t.status===filterStatus);
+    el.innerHTML = `
+      <div class="page-header"><h2>🎫 Todos os Tickets</h2></div>
+      <div class="tickets-table">
+        <div class="table-header">
+          <h3>Tickets (${filtered.length})</h3>
+          <div class="filters">
+            ${['all','open','claimed','done'].map(s=>`
+              <button class="filter-btn ${filterStatus===s?'active':''}" onclick="setFilter('${s}')">${s==='all'?'Todos':s==='open'?'Abertos':s==='claimed'?'Em Atend.':'Finalizados'}</button>
+            `).join('')}
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>ID</th><th>Cliente</th><th>Produto</th><th>Tipo</th><th>Status</th><th>Atendente</th><th>Abertura</th><th>Ações</th></tr></thead>
+          <tbody>
+            ${filtered.map(t=>{
+              const prod=getProduct(t.product);
+              const ag=getAgent(t.agent);
+              return `<tr>
+                <td style="font-family:'DM Mono';font-size:13px;color:var(--muted)">${t.id}</td>
+                <td>${t.clientName}<br><span style="font-size:11px;color:var(--muted)">${t.clientEmail}</span></td>
+                <td>${prod?prod.emoji+' '+prod.name+' '+prod.plan:t.product}</td>
+                <td>${t.type}</td>
+                <td>${statusBadge(t.status)}</td>
+                <td>${ag?ag.name:'<span style="color:var(--muted)">Aguardando</span>'}</td>
+                <td style="font-size:12px;color:var(--muted)">${fmtDate(t.createdAt)}</td>
+                <td>
+                  ${t.status!=='done'?`<button class="action-btn danger" onclick="adminCloseTicket('${t.id}')">✅ Fechar</button>`:''}
+                  <button class="action-btn" style="margin-left:4px" onclick="adminDeleteTicket('${t.id}')">🗑️</button>
+                </td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  } else if(currentAdminPage==='agents') {
+    el.innerHTML = `
+      <div class="page-header">
+        <h2>👥 Atendentes</h2>
+        <p>Gerencie sua equipe de suporte</p>
+      </div>
+      <div style="margin-bottom:20px">
+        <button class="nav-btn primary" onclick="openModal('add-agent-modal')">+ Adicionar Atendente</button>
+      </div>
+      <div class="agents-grid">
+        ${AGENTS.map(a=>`
+          <div class="agent-card">
+            <div class="agent-top">
+              <div class="agent-avatar ${a.color}">${agentInitials(a.name)}</div>
+              <div>
+                <div class="agent-name">${a.name}</div>
+                <div class="agent-email">${a.email}</div>
+              </div>
+            </div>
+            <div class="agent-stats">
+              <div class="agent-stat">
+                <div class="label">Finalizados</div>
+                <div class="val">${a.closed}</div>
+              </div>
+              <div class="agent-stat">
+                <div class="label">Em Aberto</div>
+                <div class="val">${TICKETS.filter(t=>t.agent===a.id&&t.status==='claimed').length}</div>
+              </div>
+            </div>
+            <div class="agent-products">
+              ${a.products.map(pid=>{const p=getProduct(pid);return`<span class="prod-tag">${p?p.emoji+' '+p.name:pid}</span>`;}).join('')}
+            </div>
+            <div class="agent-earnings">
+              <div class="label">💰 Ganhos Totais</div>
+              <div class="amount">${fmtMoney(a.earnings + TICKETS.filter(t=>t.agent===a.id&&t.status==='done').reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0))}</div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:12px">
+              <button class="action-btn" style="flex:1" onclick="switchAgent('${a.id}');showView('agent')">👤 Entrar como</button>
+              <button class="action-btn danger" style="flex:1" onclick="removeAgent('${a.id}')">🗑️ Remover</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  } else if(currentAdminPage==='commissions') {
+    el.innerHTML = `
+      <div class="page-header">
+        <h2>💸 Comissões por Produto</h2>
+        <p>Defina quanto cada atendente ganha por ticket finalizado</p>
+      </div>
+      <div class="commissions-grid">
+        ${PRODUCTS.map(p=>`
+          <div class="commission-row">
+            <div class="prod-info">
+              <div class="prod-title">${p.emoji} ${p.name}</div>
+              <div class="prod-plan">${p.plan}</div>
+            </div>
+            <div style="font-size:13px;color:var(--muted);font-family:'DM Mono',monospace">Comissão por ticket</div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="color:var(--muted);font-family:'DM Mono',monospace">R$</span>
+              <input class="commission-input" type="number" min="0" step="0.5"
+                value="${COMMISSIONS[p.id]||0}"
+                onchange="COMMISSIONS['${p.id}']=parseFloat(this.value)||0;showToast('✅ Comissão atualizada!')"
+              />
+            </div>
+            <div style="color:var(--gold);font-family:'Syne',sans-serif;font-weight:700;font-size:20px">
+              ${fmtMoney(COMMISSIONS[p.id]||0)}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  } else if(currentAdminPage==='ranking') {
+    renderRankingPage(el);
+  }
+}
+
+function renderRankingPage(el) {
+  const agentScores = AGENTS.map(a=>{
+    const extra = TICKETS.filter(t=>t.agent===a.id&&t.status==='done').reduce((s,t)=>s+(COMMISSIONS[t.product]||0),0);
+    return { ...a, totalEarnings: a.earnings+extra, totalClosed: a.closed };
+  }).sort((a,b)=>b.totalEarnings-a.totalEarnings);
+
+  el.innerHTML = `
+    <div class="page-header">
+      <h2>🏆 Ranking de Atendentes</h2>
+      <p>Disputa em tempo real — quem atender mais, ganha mais!</p>
+    </div>
+    <div class="ranking-list">
+      ${agentScores.map((a,i)=>{
+        const posClass = i===0?'gold':i===1?'silver':i===2?'bronze':'';
+        const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+        return `<div class="rank-item" style="${i===0?'border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.05)':''}">
+          <div class="rank-pos ${posClass}">${medal||('#'+(i+1))}</div>
+          <div class="agent-avatar ${a.color}" style="width:40px;height:40px;font-size:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-family:'Syne',sans-serif">${agentInitials(a.name)}</div>
+          <div class="rank-info">
+            <div class="rank-name">${a.name}</div>
+            <div class="rank-sub">${a.totalClosed} tickets finalizados</div>
+          </div>
+          <div class="rank-earnings">${fmtMoney(a.totalEarnings)}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+function setFilter(s) {
+  filterStatus=s;
+  renderAdmin();
+}
+
+function adminCloseTicket(id) {
+  const t = TICKETS.find(t=>t.id===id);
+  if(!t||t.status==='done') return;
+  t.status='done'; t.closedAt=new Date().toISOString();
+  const ag = getAgent(t.agent);
+  if(ag) { ag.closed++; ag.earnings+=(COMMISSIONS[t.product]||0); }
+  showToast(`✅ Ticket ${id} encerrado pelo admin.`);
+  renderAdmin();
+}
+
+function adminDeleteTicket(id) {
+  const idx = TICKETS.findIndex(t=>t.id===id);
+  if(idx>-1) { TICKETS.splice(idx,1); renderAdmin(); showToast('🗑️ Ticket removido.'); }
+}
+
+function addAgent() {
+  const name = document.getElementById('ag-name').value.trim();
+  const email = document.getElementById('ag-email').value.trim();
+  const products = [...document.querySelectorAll('#ag-products-check input:checked')].map(i=>i.value);
+  if(!name||!email||products.length===0) { showToast('⚠️ Preencha tudo e selecione ao menos 1 produto!'); return; }
+  const colors = ['av1','av2','av3','av4','av5'];
+  AGENTS.push({ id:'ag'+Date.now(), name, email, products, color:colors[AGENTS.length%colors.length], closed:0, earnings:0 });
+  closeModal('add-agent-modal');
+  document.getElementById('ag-name').value='';
+  document.getElementById('ag-email').value='';
+  document.querySelectorAll('#ag-products-check input').forEach(i=>i.checked=false);
+  showToast(`✅ Atendente ${name} cadastrado!`);
+  renderAdmin();
+}
+
+function removeAgent(id) {
+  const idx = AGENTS.findIndex(a=>a.id===id);
+  if(idx>-1) { AGENTS.splice(idx,1); renderAdmin(); showToast('🗑️ Atendente removido.'); }
+}
+
+function switchAgent(id) {
+  currentAgentId=id;
+  currentAgentPage='queue';
+  renderAgent();
+  showToast(`👤 Agora você é ${getAgent(id).name}`);
+}
+</script>
+</body>
+</html>
