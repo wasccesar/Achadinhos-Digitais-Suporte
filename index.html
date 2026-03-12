@@ -1034,7 +1034,8 @@ window.showNotifPop = function(title, msg, cb) {
   const old=document.getElementById('_np'); if(old)old.remove();
   const el=document.createElement('div');
   el.id='_np'; el.className='notif-pop';
-  el.innerHTML='<div class="np-ico">🔔</div><div class="np-body"><div class="np-title">'+title+'</div><div class="np-msg">'+msg+'</div></div><div class="np-x" onclick="event.stopPropagation();document.getElementById('_np').remove()">✕</div>';
+  el.innerHTML='<div class="np-ico">🔔</div><div class="np-body"><div class="np-title">'+title+'</div><div class="np-msg">'+msg+'</div></div><span class="np-x">✕</span>';
+  el.querySelector('.np-x').addEventListener('click',function(e){e.stopPropagation();el.remove();});
   if(cb) el.addEventListener('click',cb);
   document.body.appendChild(el);
   setTimeout(()=>{const e=document.getElementById('_np');if(e)e.remove();},6000);
