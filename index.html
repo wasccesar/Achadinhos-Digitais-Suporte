@@ -996,7 +996,7 @@ function showGoogleDashboard(user) {
         const preview=last
           ?'<div class="ptk-preview">'+(unread?'<div class="ptk-unread"></div>':'<span style="font-size:13px">'+(last.isAgent?'🎧':'👤')+'</span>')+'<div class="pp-txt">'+(last.isAgent?'<strong style="color:var(--purple3)">Atendente:</strong> ':'')+last.text+'</div><div class="pp-time">'+fmtDate(last.ts)+'</div></div>'
           :'<div class="ptk-preview"><span style="font-size:13px">⏳</span><div class="pp-txt" style="color:var(--text3)">Aguardando atendente...</div></div>';
-        return '<div class="ptk-card" onclick="portalOpenChat(''+t.id+'')"><div class="ptk-top"><div class="ptk-info"><div class="ptk-id">TICKET '+t.id+' · '+fmtDate(t.createdAt)+'</div><div class="ptk-title">'+prods+'</div><div class="ptk-type">'+t.type+'</div></div><span class="badge" style="color:'+sColor[t.status]+';background:transparent;border-color:'+sColor[t.status]+'30;flex-shrink:0">'+sLabel[t.status]+'</span></div>'+preview+'</div>';
+        return '<div class="ptk-card" onclick="portalOpenChat(this.dataset.tid)" data-tid="'+t.id+'"><div class="ptk-top"><div class="ptk-info"><div class="ptk-id">TICKET '+t.id+' · '+fmtDate(t.createdAt)+'</div><div class="ptk-title">'+prods+'</div><div class="ptk-type">'+t.type+'</div></div><span class="badge" style="color:'+sColor[t.status]+';background:transparent;border-color:'+sColor[t.status]+'30;flex-shrink:0">'+sLabel[t.status]+'</span></div>'+preview+'</div>';
       }).join('');
     }
   }
