@@ -118,7 +118,7 @@ input[type=file]::file-selector-button:hover{border-color:var(--purple2);color:v
 .online-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:5px;box-shadow:0 0 8px var(--green);animation:pulse 2s infinite;}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 
-.chat-body{background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 24px 24px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.5),0 0 0 1px rgba(124,58,237,.1);}
+.chat-body{background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 24px 24px;overflow:visible;box-shadow:0 24px 60px rgba(0,0,0,.5),0 0 0 1px rgba(124,58,237,.1);}
 
 .chat-messages{padding:20px 20px 8px;display:flex;flex-direction:column;gap:8px;}
 .bot-msg{display:flex;gap:10px;align-items:flex-start;animation:msgIn .3s ease;}
@@ -440,15 +440,15 @@ hr.div{border:none;border-top:1px solid var(--border);margin:18px 0;}
           <span class="opt-arrow">→</span>
         </button>
       </div>
-      <div style="padding:10px 16px 16px;position:relative;z-index:2">
-        <div style="height:1px;background:var(--border);margin-bottom:12px"></div>
-        <button onclick="startTicketWithLogin(null)" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;border:1.5px solid #e0e0e0;color:#3c3c3c;padding:12px 16px;border-radius:12px;font-size:14px;font-weight:600;font-family:var(--font);cursor:pointer;transition:.2s;box-shadow:0 1px 6px rgba(0,0,0,.15)" onmouseover="this.style.boxShadow='0 3px 12px rgba(0,0,0,.2)'" onmouseout="this.style.boxShadow='0 1px 6px rgba(0,0,0,.15)'">
-          <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z"/></svg>
-          Entrar com Google — acessar meus chamados
-        </button>
-        <div style="text-align:center;margin-top:8px;font-size:11px;color:var(--text3)">Faça login para abrir chamados e acompanhar em tempo real</div>
-      </div>
     </div>
+  </div>
+  <!-- Google login button - OUTSIDE chat-body to avoid overflow:hidden clipping -->
+  <div style="padding:12px 0 4px;position:relative;z-index:10">
+    <button onclick="startTicketWithLogin(null)" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;border:1.5px solid #e0e0e0;color:#3c3c3c;padding:13px 16px;border-radius:14px;font-size:14px;font-weight:600;font-family:var(--font);cursor:pointer;transition:.2s;box-shadow:0 2px 10px rgba(0,0,0,.2)" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,.28)'" onmouseout="this.style.boxShadow='0 2px 10px rgba(0,0,0,.2)'">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z"/></svg>
+      Entrar com Google — acessar meus chamados
+    </button>
+    <div style="text-align:center;margin-top:7px;font-size:11px;color:var(--text3)">Faça login para abrir chamados e acompanhar em tempo real</div>
   </div>
   <div class="internal-link-area"><button onclick="goLogin()">área interna</button></div>
 </div>
@@ -940,57 +940,11 @@ window._fbSendMsg = async function(id, text, sender) {
   }
 };
 
-// ── Google Sign-In ──
-// ── Google Sign-In (works even before Firebase module loads) ──
-window._fbSignInQueue = [];
-window._fbSignInWithPopup = async function() {
-  // Wait for Firebase to be ready (max 8 seconds)
-  if(!window._fbReady) {
-    await new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => reject(new Error('Firebase não carregou. Verifique sua conexão.')), 8000);
-      window._fbSignInQueue.push(() => { clearTimeout(timeout); resolve(); });
-    });
-  }
-  const {signInWithPopup} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
-  const result = await signInWithPopup(window._fbAuth, window._fbGoogleProvider);
-  const user = result.user;
-  window._gUser = user;
-  if(window._fbSaveGoogleUser) await window._fbSaveGoogleUser(user);
-  return user;
-};
 
-window.signInWithGoogle = async function() {
-  try {
-    const result = await signInWithPopup(auth, googleProvider);
-    const user = result.user;
-    // Save/update user profile in Firestore
-    const userRef = doc(db, 'clientUsers', user.uid);
-    await setDoc(userRef, {
-      uid: user.uid,
-      name: user.displayName,
-      email: user.email,
-      photo: user.photoURL,
-      lastLogin: new Date().toISOString()
-    }, {merge: true});
-    if(typeof Notification!=='undefined'&&Notification.permission==='default')Notification.requestPermission().catch(()=>{});
-    showGoogleDashboard(user);
-  } catch(e) {
-    console.warn('Google sign-in error', e);
-    if(e.code === 'auth/popup-closed-by-user') return;
-    if(e.code === 'auth/unauthorized-domain') {
-      toast('❌ Domínio não autorizado no Firebase. Acesse via achadinhos-suporte.firebaseapp.com');
-    } else if(e.code === 'auth/popup-blocked') {
-      toast('⚠️ Popup bloqueado! Permita popups para este site e tente novamente.');
-    } else {
-      toast('❌ Erro Google: ' + (e.message||e.code||'desconhecido'));
-    }
-  }
-};
 
-window.signOutGoogle = async function() {
-  try { await signOut(auth); } catch(e){}
-  showScreen('client');
-};
+
+
+
 
 // ── Google portal ──
 window._gUser = null;
@@ -1131,6 +1085,47 @@ onAuthStateChanged(auth, user => {
 
 </script>
 <script>
+window._fbSignInQueue = [];
+window._fbSignInWithPopup = async function() {
+  // Wait for Firebase to be ready (max 8 seconds)
+  if(!window._fbReady) {
+    await new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => reject(new Error('Firebase não carregou. Verifique sua conexão.')), 8000);
+      window._fbSignInQueue.push(() => { clearTimeout(timeout); resolve(); });
+    });
+  }
+  const {signInWithPopup} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
+  const result = await signInWithPopup(window._fbAuth, window._fbGoogleProvider);
+  const user = result.user;
+  window._gUser = user;
+  if(window._fbSaveGoogleUser) await window._fbSaveGoogleUser(user);
+  return user;
+};
+
+window.signInWithGoogle = async function() {
+  try {
+    const user = await window._fbSignInWithPopup();
+    showGoogleDashboard(user);
+  } catch(e) {
+    if(!e || e.code === 'auth/popup-closed-by-user') return;
+    if(e.code === 'auth/popup-blocked') {
+      toast('⚠️ Popup bloqueado! Permita popups neste site.');
+    } else {
+      toast('❌ Erro Google: ' + (e.message||e.code||'desconhecido'));
+    }
+  }
+};
+window.signOutGoogle = async function() {
+  if(window._fbAuth) {
+    try {
+      const {signOut} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
+      await signOut(window._fbAuth);
+    } catch(e){}
+  }
+  window._gUser = null;
+  showScreen('client');
+};
+
 const PRODUCTS=[{id:'gemini-m',name:'Gemini',plan:'Mensal',emoji:'🤖'},{id:'gemini-a',name:'Gemini',plan:'Anual',emoji:'🤖'},{id:'chatgpt-m',name:'ChatGPT',plan:'Mensal',emoji:'💬'},{id:'chatgpt-a',name:'ChatGPT',plan:'Anual',emoji:'💬'},{id:'capcut-m',name:'CapCut',plan:'Mensal',emoji:'🎬'},{id:'capcut-a',name:'CapCut',plan:'Anual',emoji:'🎬'},{id:'grok',name:'Super Grok',plan:'Único',emoji:'⚡'},{id:'perplexity',name:'Perplexity',plan:'Único',emoji:'🔍'}];
 let COMMISSIONS={'gemini-m':5,'gemini-a':15,'chatgpt-m':6,'chatgpt-a':18,'capcut-m':4,'capcut-a':12,'grok':10,'perplexity':8};
 let ADMIN_CRED={login:'admin',pass:'admin123',name:'Admin Principal'};
